@@ -1,0 +1,1 @@
+Thise sound files includes background music, collision and other effects in the game. All sound files stay in this folder.
