@@ -833,6 +833,7 @@
         let cachedAtmanSprite = null; let cachedAtmanGlowKey = -1;        
         let isNaamaJaapa = false;
         let naamaGhera = 0;
+        let naamaJaapaPower = 0;
         let jaapaNaama = "राधा";
         let chetanaaJagrita = false;
         let timerSoundPlayed = false;   // 🆕 "अंतिम चरण" चेतावनी ध्वनि — हर जीवन-चक्र में एक बार
@@ -2324,6 +2325,7 @@
             if (key === ' ') {
                 if (!gameOver && !isPaused) {
                     if (activeNaam >= 1 && !isNaamaJaapa) {
+                        naamaJaapaPower = activeNaam;
                         activeNaam--;
                         isNaamaJaapa = true;
                         naamaGhera = smoothSize / 2;
@@ -2617,6 +2619,14 @@
                             samarpita++;
                             takraavaMaya = true;
                             m.active = false; continue;
+                        } else if (m.type === 'rikta') {
+                            if (naamaJaapaPower >= 5) {
+                                createExplosion(mCx, mCy, explColor);
+                                addFloatingText("🙏", "#fb923c", {x: mCx, y: mCy });
+                                samarpita++;
+                                takraavaMaya = true;
+                                m.active = false; continue;
+                            }
                         }
 
                     }
@@ -2629,7 +2639,16 @@
                 if (naamaGhera > NAAMA_JAAP_MAX_RADIUS) {
                     isNaamaJaapa = false;
                     naamaGhera = 0;
-                    updateAlert("नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");
+                    if(naamaJaapaPower >= 10 && prarabdha > 0) {
+                        prarabdha--;
+                        addFloatingText("-📜", "#a78bfa", {vy, -3, isBigName: true });
+                        playSound('bandhanaMukta');
+                        updateAlert("🔥 दस नाम से प्रारब्ध भस्म हुआ!", "#a78bfa");                        
+                    }
+                    else {
+                        updateAlert("नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");
+                    }
+                    naamaJaapaPower = 0; // reset                    
                 }
             }
 
