@@ -2612,7 +2612,7 @@
                             grantKripa(mCx, mCy);
                             takraavaMaya = true;
                             m.active = false; continue;
-                        } else {
+                        } else if (m.type === 'shuvha') {
                             // सिर्फ़ शुभ/अशुभ (असली कर्म) — यही समर्पित होगा
                             createExplosion(mCx, mCy, explColor);
                             addFloatingText("🙏", "#fb923c", { x: mCx, y: mCy });
