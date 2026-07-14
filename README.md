@@ -417,8 +417,7 @@ gameReadinessMode = (audioLoadFailures.length === 0) ? 'high' : 'low';
 2. Foreground tab (background RAF throttle से timer गड़बड़ाता है)
 3. Zoom 100% (scaleGame() से conflict)
 4. Extensions: aggressive blockers → CDN audio/font block → Low Mode
-
----
-
-*यह दस्तावेज़ Claude द्वारा `index.html` (3733 lines) के ऑडिट पर आधारित।*
-*बड़ा रिफ़ैक्टर/नया feature जुड़ने पर इसे अपडेट करवाएँ।*
+#
+* Play the prototype now on [itch.io](https://pj904ich.itch.io/moksha)
+* Support the development of MOKSHA on [PayPal](https://paypal.me/pankajsharma18)
+* Buy me a coffee on [ko-fi](ko-fi.com/pankajsharma84017)
