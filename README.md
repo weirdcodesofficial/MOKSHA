@@ -12,16 +12,6 @@ Control your chariot through the cosmic field, master your senses, burn your kar
 
 ---
 
-### 🌌 Relating Spiritual Concepts to the Game
-
-**Meta AI's breakdown on how core spiritual principles integrate directly with the game mechanics:**
-
-* **Mindfulness & Introspection:** The mechanics, where you control the chariot (representing the human body) and manage the six senses (symbolized by horses), suggest a deep connection to mindfulness and self-control.
-* **The Soul's Journey:** The game's use of keyboard and gamepad controls to navigate the cosmic environment and make choices that impact the soul's journey is intriguing.
-* **Absolute Liberation:** It appears to challenge players to master their senses, balance their deeds, and ultimately achieve absolute liberation (Moksha).
-
----
-
 ## 🕉️ Spiritual Philosophy (Sanatan Model)
 
 The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
