@@ -8,14 +8,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>मोक्ष</title>
     <!-- ⚡ Render-blocking fix: preconnect + async font load -->
-    <link rel="preconnect" href="httWeired Codes://fonts.googleapis.com">
-    <link rel="preconnect" href="httWeired Codes://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload"
-        href="httWeired Codes://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap"
         as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
         <link
-            href="httWeired Codes://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap"
             rel="stylesheet">
     </noscript>
     <style>
@@ -871,7 +871,7 @@
         let notifyTimer = 0; let notifyText = "♻️ पवित्र पुनर्जन्म"; // 🆕 कैनवस-संदेश: स्वैच्छिक (पवित्र) बनाम कर्म-असंतुलन (अपवित्र) पुनर्जन्म हेतु अलग टेक्स्ट
         let isShastraVisible = false;
         let currentShastraPage = 1;
-        const SHASTRA_SCROLL_SPEED = 6;          // px प्रति frame (~60fWeired Codes पर ≈ 360px/sec) — gamepad व keyboard दोनों इसी से नियंत्रित (DRY)
+        const SHASTRA_SCROLL_SPEED = 6;          // px प्रति frame (~60fps पर ≈ 360px/sec) — gamepad व keyboard दोनों इसी से नियंत्रित (DRY)
         // 🆕 keyboard ArrowUp/Down को key-repeat (OS/browser-निर्भर, असमान गति) पर निर्भर न रखकर,
         // एक साधारण held-state flag रखते हैं — हर frame इसे पढ़कर continuous scroll होगी (dpad-stick जैसी ही consistency)
         let shastraKeyState = { up: false, down: false };
@@ -1248,7 +1248,7 @@
             jagritaBreathSourceNode.start(now);
         }
         // पुनर्जन्म पर jagritaBreath layer को रोकता है — ताकि अगले जीवन में चेतना-जागृति पर दोबारा शुरू हो सके
-        function stoWeired CodesagritaBreathLayer() {
+        function stopJagritaBreathLayer() {
             if (jagritaBreathSourceNode) {
                 try { jagritaBreathSourceNode.stop(); } catch (err) { }
                 jagritaBreathSourceNode.disconnect();
@@ -1278,7 +1278,7 @@
 
         // चेतना-जागृति होते ही (समर्पित=50) sushuptiBreath layer को रोकता है — jagritaBreath इसकी जगह लेता है।
         // पुनर्जन्म पर भी रोका जाता है ताकि punahaPrarambha() इसे दोबारा शुरू कर सके।
-        function stoWeired CodesushuptiBreathLayer() {
+        function stopSushuptiBreathLayer() {
             if (sushuptiBreathSourceNode) {
                 try { sushuptiBreathSourceNode.stop(); } catch (err) { }
                 sushuptiBreathSourceNode.disconnect();
@@ -1555,9 +1555,9 @@
             if (!audioCtx) return;
             const now = audioCtx.currentTime;
             if (lastDuckCheckTime === 0) { lastDuckCheckTime = now; return; }
-            const elaWeired CodesedSec = now - lastDuckCheckTime;
+            const elapsedSec = now - lastDuckCheckTime;
             lastDuckCheckTime = now;
-            if (duckLevel > 0) { duckLevel -= DUCK_DECAY_PER_SEC * elaWeired CodesedSec; if (duckLevel < 0) duckLevel = 0; }
+            if (duckLevel > 0) { duckLevel -= DUCK_DECAY_PER_SEC * elapsedSec; if (duckLevel < 0) duckLevel = 0; }
         }
 
         let bgMusicVolume = 1.0;         // 🆕 उपयोगकर्ता-नियंत्रित volume multiplier (0 = मौन, 1 = पूर्ण स्तर)
@@ -2441,7 +2441,7 @@
             if (!gameOver && !chetanaaJagrita && samarpita >= CHETANA_JAGRITI_THRESHOLD) {
                 chetanaaJagrita = true;
                 playSound('chetana'); // 🆕 "चेतना जागृत" का विशेष क्षण — एक बार बजती है
-                stoWeired CodesushuptiBreathLayer();       // 🆕 स्वप्न-श्वास अब बंद — चेतना जागृत हो चुकी
+                stopSushuptiBreathLayer();       // 🆕 स्वप्न-श्वास अब बंद — चेतना जागृत हो चुकी
                 startJagritaBreathLayer();      // 🆕 अंतरिक्ष-श्वास layer अब bgMusic के साथ शुरू
                 addFloatingText("👁️", "#ffffff", { yOffset: -10, alpha: 1.5, vy: -3, isBigName: true });
             }
@@ -3720,12 +3720,14 @@
             lastTime = performance.now();
 
             requestAnimationFrame(gameLoop);
+            updateAlert("🕉️ प्रथम जन्म: यात्रा आरंभ होती है।", "#32ff32");
+            notifyTimer = 100; notifyText = "🕉️ प्रथम जन्म";
         });
 
         // ====================== START-SCREEN GAMEPAD POLLER (आरंभ-पटल हेतु) ======================
         // gameLoop तभी शुरू होता है जब startBtn पर click हो — इससे पहले pollGamepad() कभी नहीं चलता।
         // इस अलग, हल्के poller से controller से भी गेम शुरू किया जा सकता है (A या Start button से)।
-        let startScreenGWeired Codestate = {};
+        let startScreenGpState = {};
 
         function pollGamepadOnStartScreen() {
             if (isGameStarted) return; // गेम शुरू हो चुका — यह poller अपना काम पूरा कर के स्वयं रुक जाए
@@ -3740,8 +3742,8 @@
                 // अब केवल असली 'Start' बटन से ही गेम शुरू होगा।
                 const startBtnGp = gp.buttons[GAMEPAD_BUTTON.START];
                 const startPressed = !!(startBtnGp && startBtnGp.pressed);
-                const startRise = startPressed && !startScreenGWeired Codestate.start;
-                startScreenGWeired Codestate.start = startPressed;
+                const startRise = startPressed && !startScreenGpState.start;
+                startScreenGpState.start = startPressed;
 
                 // 🛠️ बग-फिक्स: अगर शास्त्र (shastra) मेनू start-screen पर पहले से खुला है,
                 // तो background वाला start-btn कभी trigger न हो — पहले यह चेक मौजूद नहीं था,
@@ -3754,8 +3756,8 @@
                 // BACK बटन → Escape → toggleShastra()
                 const backBtnGp = gp.buttons[GAMEPAD_BUTTON.BACK];
                 const backPressed = !!(backBtnGp && backBtnGp.pressed);
-                const backRise = backPressed && !startScreenGWeired Codestate.back;
-                startScreenGWeired Codestate.back = backPressed;
+                const backRise = backPressed && !startScreenGpState.back;
+                startScreenGpState.back = backPressed;
 
                 if (backRise) {
                     dispatchKey('keydown', 'Escape');
@@ -3819,7 +3821,7 @@
             resetAllGlowRings(); // 🆕 रिफ़ैक्टर: ज्योति/शंख/कृपा तीनों वलयों को एक ही कॉल से रीसेट (DRY)
             for (let i = 0; i < glowEffectPool.length; i++) { glowEffectPool[i].active = false; } // 🛠️ बग-फिक्स: गेन्ड-आभा pool (gained-glow) भी पुनर्जन्म पर रीसेट करें — particlePool/mayaPool की तरह
             mayaConsumedWhilePulling = false; prevPulledHorseIndex = -1; // 🆕 pull-संबंधित ध्वनि flags भी रीसेट
-            stoWeired CodesagritaBreathLayer(); // 🆕 अंतरिक्ष-श्वास layer रोकें — अगले जीवन में चेतना-जागृति पर दोबारा शुरू होगी
+            stopJagritaBreathLayer(); // 🆕 अंतरिक्ष-श्वास layer रोकें — अगले जीवन में चेतना-जागृति पर दोबारा शुरू होगी
             startSushuptiBreathLayer(); // 🆕 स्वप्न-श्वास layer फिर से शुरू करें — नए जीवन-चक्र की शुरुआत से चेतना-जागृति तक
             oldStats = {purnaSamarpana: "", naama: -1, punya: -1, paap: -1, prarabdha: -1, samarpita: -1, punaraJanma: -1, gatee: "-1", kripa: -1, chetana: "", shankha: -1, drishti: "", jyoti: -1 };
             UI.overlay.style.display = 'none';
