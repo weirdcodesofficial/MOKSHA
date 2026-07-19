@@ -1,4 +1,4 @@
-# 🕉️ MOKSHA — *By Leaving*
+# 🕉️ *Moksha*
 
 > **"मोक्ष प्राप्ति का एकमात्र मार्ग — त्याग।"**
 > *The only path to liberation — is letting go.*
