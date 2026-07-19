@@ -65,13 +65,6 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | **शंख** (Conch) | `shankha` | Dispels cyclone (तूफ़ान) of Maya |
 | **ज्योति** (Lamp) | `jyoti` | Restores vision in the darkness of bad karma |
 
-### Moksha Condition
-```js
-if (shuvhaKarma === 0 && ashuvhaKarma === 0 && !pendingGoodKarma
-    && prarabdha === 0 && chetanaaJagrita && purnaSamarpana) { /* मोक्ष */ }
-```
-> ⚠️ Always use `chetanaaJagrita` boolean — not `samarpita >= 50`.
-
 ---
 
 ## 🎮 Controls
