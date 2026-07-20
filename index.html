@@ -750,6 +750,10 @@
         const updateAmbientVolumes = () => AudioManager.updateAmbientVolumes();
         const ensureAudio = () => AudioManager.ensureAudio();
 
+        function debounce(func, delay) {
+            let timeoutId;
+            return function () { clearTimeout(timeoutId);  timeoutId = setTimeout(func, delay); };
+        }
         const UI = {
             container: document.getElementById('gameContainer'),
             naama: document.getElementById('naama'),
