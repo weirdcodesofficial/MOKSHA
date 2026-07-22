@@ -24,11 +24,8 @@
 
 import { Renderer }     from './render.js';
 import { KarmaEngine, SAMAYA_PRAARAMBHIKA }  from './engine.js';
-import { Audio } from './audio.js';
-
-// ====================== AUDIO (IIFE global) ======================
+import Audio from './audio.js';
 const AM = Audio;
-
 // ====================== CANVAS SETUP ======================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', {
@@ -101,6 +98,7 @@ let isScaleGameDone = false;
 let currentShastraPage = 1;
 // 🛠️ key-repeat बिना continuous scroll (dpad-stick जैसी consistency)
 let shastraKeyState = { up: false, down: false };
+const shastraBody = document.getElementById('shastra-body'); // one time cashe
 
 // ====================== GAMEPAD MODULE ======================
 const GAMEPAD_DEADZONE  = 0.18;
@@ -169,7 +167,7 @@ function handleShastraGamepadNav(gp) {
 
     // Analog stick → smooth scroll (collision-free)
     if (stickY < -GAMEPAD_DEADZONE || stickY > GAMEPAD_DEADZONE) {
-        const body = shastraBody;
+        const body = document.getElementById('shastra-body');
         if (body) body.scrollTop += stickY * 6 * 2;
     }
 }
@@ -245,12 +243,14 @@ function toggleShastra() {
 // ====================== CONTINUOUS SHASTRA SCROLL ======================
 // ArrowUp/Down को OS key-repeat पर निर्भर न रखकर — held-flag से smooth scroll
 function continuousShastraScrollLoop() {
-    if (!engine.isShastraVisible) return;
-    const body = document.getElementById('shastra-body');
-    if(body) {
+    if (engine.isShastraVisible) {
+        const body = document.getElementById('shastra-body');
+        if(body) {
         if (shastraKeyState.up) body.scrollTop -= 6;
         if (shastraKeyState.down) body.scrollTop += 6;
+        }
     }
+    requestAnimationFrame(continuousShastraScrollLoop);
 }
 requestAnimationFrame(continuousShastraScrollLoop);
 

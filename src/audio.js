@@ -98,36 +98,36 @@ const SUSHUPTI_BREATH_DUCK_REDUCTION = 0.20;
  * महत्वपूर्ण ध्वनियाँ ambient को ज़्यादा धीमा करती हैं;
  * हल्के SFX कम।
  */
-const DUCK_STRENGTH = {
-    purnaSamarpana:    0.60,
-    drishti:           0.35,
-    andhakaara:        0.40,
-    shuvha:            0.50,
-    rikta:             0.55,
-    jaapa:             0.55,
-    samarpita:         0.45,
-    naamaSamarpita:    0.55,
-    aakarshana:        0.25,
-    tyaaga:            0.25,
-    punaha:            0.70,
-    viraama:           0.20,
-    resume:            0.15,
-    takraava:          0.70,
-    vijaya:            0.65,
-    chetana:           0.65,
-    timer:             0.30,
-    prarabdhaBandhana: 0.40,
-    paapaBandhana:     0.40,
-    punyaBandhana:     0.40,
-    bandhanaMukta:     0.35,
-    naama:             0.45,
-    antimCharana:      0.35,
-    kripa:             0.50,
-    shankhaDhwani:     0.45,
-    jyotiDhwani:       0.40,
-    shankhaPrapta:     0.45,
-    jyotiPrapta:       0.40,
-};
+const DUCK_STRENGTH = new Map([
+    ['purnaSamarpana',    0.60],
+    ['drishti',           0.35],
+    ['andhakaara',        0.40],
+    ['shuvha',            0.50],
+    ['rikta',             0.55],
+    ['jaapa',             0.55],
+    ['samarpita',         0.45],
+    ['naamaSamarpita',    0.55],
+    ['aakarshana',        0.25],
+    ['tyaaga',            0.25],
+    ['punaha',            0.70],
+    ['viraama',           0.20],
+    ['resume',            0.15],
+    ['takraava',          0.70],
+    ['vijaya',            0.65],
+    ['chetana',           0.65],
+    ['timer',             0.30],
+    ['prarabdhaBandhana', 0.40],
+    ['paapaBandhana',     0.40],
+    ['punyaBandhana',     0.40],
+    ['bandhanaMukta',     0.35],
+    ['naama',             0.45],
+    ['antimCharana',      0.35],
+    ['kripa',             0.50],
+    ['shankhaDhwani',     0.45],
+    ['jyotiDhwani',       0.40],
+    ['shankhaPrapta',     0.45],
+    ['jyotiPrapta',       0.40],
+]);
 
 
 // ====================== AudioManager CLASS ======================
@@ -407,8 +407,8 @@ class AudioManager {
      */
     playSound(name) {
         // SFX से पहले ambient duck करें
-        if (DUCK_STRENGTH[name] !== undefined) {
-            this.duckBackgroundMusic(DUCK_STRENGTH[name]);
+        if (DUCK_STRENGTH.has(name)) {
+            this.duckBackgroundMusic(DUCK_STRENGTH.get(name));
         }
 
         const buf = this.audioBuffers;
@@ -956,9 +956,7 @@ class AudioManager {
      */
     _checkReadiness() {
         if (this._isGameFullyReady) return; // एक बार निर्णय — दोबारा नहीं
-        const fontsReady = this._getFontsReady?.()    ?? true; // getter न हो तो assume ready
-        const scaleReady = this._getScaleGameDone?.() ?? true;
-        if (!fontsReady || !this._isAudioPreloadDone || !scaleReady) return;
+        if(!this._isAudioPreloadDone) return;
         this._finalizeReadiness();
     }
 
@@ -1258,6 +1256,4 @@ class AudioManager {
  * Audio.setGameStateGetter(...);
  * Audio.init();
  */
-const Audio = new AudioManager();
-
-export { Audio };
+export default new AudioManager();
