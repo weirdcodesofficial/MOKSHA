@@ -152,6 +152,7 @@ class AudioManager {
 
         /** विफल ऑडियो-फ़ाइलों के URL (Low-Mode निर्णय हेतु) */
         this.audioLoadFailures  = [];
+        this.ambientLoadFailures = [];
 
         /** सुरक्षा-timeout handle */
         this._readinessTimeoutId = null;
@@ -969,10 +970,16 @@ class AudioManager {
         this._isGameFullyReady = true;
 
         this.gameReadinessMode = (this.audioLoadFailures.length === 0) ? 'high' : 'low';
-        if (this.audioLoadFailures.length > 0) {
-            console.warn('🟡 Low Mode — निम्न ऑडियो-फ़ाइलें लोड नहीं हो सकीं:', this.audioLoadFailures);
+        
+        if(this.gameReadinessMode === 'high' && this.ambientLoadFailures.length === 0) {
+            console.info('🟢 High Mode - all audio loaded successfully');
         }
-
+        if (this.audioLoadFailures.length > 0) {
+            console.warn('🔴 Low Mode - essential ऑडियो लोड विफल:', this.audioLoadFailures);
+        }
+        if (this.ambientLoadFailures.length > 0) {
+            console.warn('🟡 High Mode (degraded) ambient tracks unavailable:', this.ambientLoadFailures);
+        }
         // timeout cancel करें (पहले ही ready हो गए)
         if (this._readinessTimeoutId) {
             clearTimeout(this._readinessTimeoutId);
@@ -1106,13 +1113,19 @@ class AudioManager {
      * बैच 1 से अलग रखा गया ताकि शुरुआती SFX bgMusic के पीछे network-queue में न अटकें।
      */
     async _loadDeferredAudioBuffers() {
-        const [bg, chetana, pralaya, jagritaBreath, moksha, antimCharana] = await Promise.all([
-            this._loadAudioBuffer('./audio/bgMusic.mp3'),
-            this._loadAudioBuffer('./audio/chetanaJagrita.mp3'),
-            this._loadAudioBuffer('./audio/pralaya.mp3'),
-            this._loadAudioBuffer('./audio/jagritaBreath.mp3'),
-            this._loadAudioBuffer('./audio/moksha.mp3'),
-            this._loadAudioBuffer('./audio/antimaCharana.mp3'),
+
+        const _loadAmbient = async (url) => {
+            const buf = await this._loadAudioBufferWithRetry(url, 3, 1000);
+            if (!buf) this.ambientLoadFailures.push(url);
+            return buf;
+        };
+        const [bg, chetana, pralaya, jagritaBreath, moksha, antimaCharana] = await Promise.all([
+            _loadAmbient('./audio/bgMusic.mp3'),
+            _loadAmbient('./audio/chetanaJagrita.mp3'),
+            _loadAmbient('./audio/pralaya.mp3'),
+            _loadAmbient('./audio/jagritaBreath.mp3'),
+            _loadAmbient('./audio/moksha.mp3'),
+            _loadAmbient('./audio/antimaCharana.mp3'),
         ]);
 
         Object.assign(this.audioBuffers, {
@@ -1121,7 +1134,7 @@ class AudioManager {
             pralaya,
             jagritaBreath,
             moksha,
-            antimCharana,
+            antimaCharana,
         });
 
         // ── Late-loading fix ──
@@ -1138,6 +1151,28 @@ class AudioManager {
      * @param   {string}       url — ./audio/filename.mp3
      * @returns {Promise<AudioBuffer|null>}
      */
+
+    async _loadAudioBufferWithRetry(url, retries = 3, delay = 1000) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const arrayBuffer = await response.arrayBuffer();
+            return await this.audioCtx.decodeAudioData(arrayBuffer);
+        } catch (err) {
+            const isLastAttempt = attempt === retries;
+            if (isLastAttempt) {
+                console.warn(`⚠️ ऑडियो लोड विफल (${url}) — ${retries} retries exhausted:`, err);
+                return null;
+            }
+            const backoff = delay * Math.pow(2, attempt); // 1s → 2s → 4s
+            console.warn(`↩️ retry ${attempt + 1}/${retries} (${backoff}ms) — ${url}`);
+            await new Promise(r => setTimeout(r, backoff));
+        }
+    }
+    return null;
+    }
+
     async _loadAudioBuffer(url) {
         try {
             const response = await fetch(url);
