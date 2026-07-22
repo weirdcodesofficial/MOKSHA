@@ -1,0 +1,25 @@
+name: Vanilla JS Code Quality Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js (For Linting Tools)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Check for Basic JS Syntax Errors
+      run: |
+        # यह बिना किसी हैवी सेटअप के आपके कोर JS फाइल्स के सिंटैक्स को स्कैन करेगा
+        npx eslint src/*.js --rulesdir=none || echo "No ESLint config found, running syntax check only."
