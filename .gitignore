@@ -17,3 +17,26 @@
 .nfs*
 
 # End of https://www.toptal.com/developers/gitignore/api/linux
+
+# ====================== Editor ======================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# ====================== Logs ======================
+*.log
+npm-debug.log*
+
+# ====================== Node (future tooling) ======================
+node_modules/
+package-lock.json
+
+# ====================== Temp / Env ======================
+*.tmp
+*.bak
+*.orig
+.env
+.env.local
