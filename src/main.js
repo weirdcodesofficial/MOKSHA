@@ -23,7 +23,7 @@
  */
 
 import { Renderer }     from './render.js';
-import { KarmaEngine }  from './engine.js';
+import { KarmaEngine, SAMAYA_PRAARAMBHIKA }  from './engine.js';
 
 // ====================== AUDIO (IIFE global) ======================
 // audio.js <script src> से पहले load हो चुका है — window.AudioManager
@@ -90,10 +90,12 @@ engine.init(WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH);
 Renderer.init(ctx, WIDTH, HEIGHT);
 
 // ====================== GAME-LOOP STATE ======================
-let isGameStarted = false;
-let lastTime      = 0;
-let frameNow      = 0;
-let keys          = {};
+let isGameStarted   = false;
+let lastTime        = 0;
+let frameNow        = 0;
+let keys            = {};
+let isFontsReady    = false;
+let isScaleGameDone = false;
 
 // ====================== SHASTRA STATE ======================
 let currentShastraPage = 1;
@@ -263,7 +265,9 @@ function debounce(func, delay) {
 function scaleGame() {
     const s = Math.min(window.innerWidth / 600, window.innerHeight / 680) * 0.90;
     UI.container.style.transform = `scale(${s})`;
-    AM?.setScaleDone?.(); // AudioManager readiness coordination
+    isScaleGameDone = true; // AudioManager readiness coordination
+    AM?.notifyReadiness?.();
+
 }
 scaleGame();
 const debouncedScale = debounce(scaleGame, 200);
@@ -395,179 +399,24 @@ document.getElementById('music-volume-slider')?.addEventListener('input', (e) =>
 // engine.getState() से सभी visual state पढ़ता है।
 // Renderer utility functions + direct ctx draws — सब यहाँ।
 
-// ── Gradient caches (render-side — draw() owns इन्हें) ──
-let cachedBreathGrad = null; let cachedBreathGradBucket = -1;
-let cachedTunnelGrad = null; let cachedTunnelGradBucket = -1;
-let cachedBuddhiSprite = null; let cachedBuddhiSRadiusKey = -1;
-let cachedAtmanSprite  = null; let cachedAtmanGlowKey    = -1;
-
 function draw() {
-    // ── Engine state snapshot ──
-    const S = engine; // direct property access (no copy — 60fps)
+    Renderer.drawScene({
+        // ── Canvas dimensions & Vedic constants ──
+        WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH,
+        SAMAYA_PRAARAMBHIKA,
+        frameNow,
 
-    // ── 0. Breath pulse computation ──
-    const worldBreathPhase = S.swaansaTimer / 360;
-    const worldBreathPulse = (Math.sin(worldBreathPhase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
-    const sharirPulseScale  = 1 + (worldBreathPulse * 0.28);
-    const breathingSmoothSize = S.smoothSize * sharirPulseScale;
-    const sharirGlow  = 8  + worldBreathPulse * 28;
-    const sharirAlpha = 0.4 + worldBreathPulse * 0.6;
-    const gatiRadius  = (breathingSmoothSize / 2) + 5;
-    const samayRadius = gatiRadius + 12;
-    const outerRadius = gatiRadius + ((samayRadius - gatiRadius) / 2);
+        // ── Engine state (सम्पूर्ण snapshot) ──
+        ...engine.getState(),
 
-    // ── 1. Audio breath sync ──
-    AM?.setBreathPulse?.(worldBreathPulse);
-    // 🆕 audioBreathPulse compatibility (old API)
-    if (AM && 'breathPulseGlobal' in AM) AM.breathPulseGlobal = worldBreathPulse;
-    AM?.updateDuckDecay?.();
-    AM?.updateAmbientVolumes?.();
-
-    // ── 2. Canvas reset ──
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    ctx.shadowBlur = 0; ctx.shadowColor = "transparent";
-    ctx.save();
-    if (S.shakeTimer > 0) { const sv = (Math.random() - 0.5) * 5; ctx.translate(sv, -sv); }
-
-    // ── 3. Background ──
-    ctx.fillStyle = "#000000"; ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    if (S.samaya < 100 && !S.swaansaSamapta) {
-        ctx.fillStyle = `rgba(255,0,0,${(1 - S.samaya / 100) * 0.35})`;
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    }
-
-    // ── 4. Breath radial gradient (bucket-cached) ──
-    ctx.save(); ctx.globalCompositeOperation = 'screen';
-    const breathBucket = Math.round(worldBreathPulse * 24);
-    if (breathBucket !== cachedBreathGradBucket || !cachedBreathGrad) {
-        cachedBreathGradBucket = breathBucket;
-        cachedBreathGrad = ctx.createRadialGradient(
-            WIDTH/2, HEIGHT/2, 120 + worldBreathPulse * 180,
-            WIDTH/2, HEIGHT/2, WIDTH * 0.8);
-        cachedBreathGrad.addColorStop(0, "rgba(147,197,253,0)");
-        cachedBreathGrad.addColorStop(1, `rgba(147,197,253,${0.1 + worldBreathPulse * 0.4})`);
-    }
-    ctx.fillStyle = cachedBreathGrad; ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    ctx.restore();
-
-    // ── 5. Tunnel ──
-    ctx.save();
-    const edgeIntensity = S.samaya < 100 ? (1 - S.samaya / 100) : 0;
-    const tunnelBucket  = Math.round(edgeIntensity * 24);
-    if (tunnelBucket !== cachedTunnelGradBucket || !cachedTunnelGrad) {
-        cachedTunnelGradBucket = tunnelBucket;
-        cachedTunnelGrad = ctx.createLinearGradient(TUNNEL_X, 0, TUNNEL_X + TUNNEL_WIDTH, 0);
-        cachedTunnelGrad.addColorStop(0,   `rgba(255,0,200,${0.02 + edgeIntensity*0.15})`);
-        cachedTunnelGrad.addColorStop(0.5, `rgba(0,240,255,${0.10 + edgeIntensity*0.45})`);
-        cachedTunnelGrad.addColorStop(1,   `rgba(255,0,200,${0.02 + edgeIntensity*0.15})`);
-    }
-    ctx.fillStyle = cachedTunnelGrad; ctx.fillRect(TUNNEL_X, 0, TUNNEL_WIDTH, HEIGHT);
-
-    // Tunnel sparkles (batched — Fix C)
-    ctx.shadowBlur = 8; ctx.shadowColor = "#00f0ff";
-    ctx.fillStyle = "rgba(120,245,255,0.65)";
-    ctx.beginPath();
-    S.tunnelSparkles.forEach(sp => {
-        if (Math.floor(sp.x + sp.y) % 2 === 0) {
-            ctx.moveTo(sp.x + sp.size, sp.y); ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
-        }
+        // ── Private → public name mapping ──
+        // render.js इन्हें underscore-prefix के बिना expect करता है
+        pulledHorseX:          engine._pulledHorseX,
+        pulledHorseY:          engine._pulledHorseY,
+        pendingGoodKarma:      engine._pendingGoodKarma,
+        punyaTimer:            engine._punyaTimer,
+        pendingGoodKarmaCount: engine._pendingGoodKarmaCount,
     });
-    ctx.fill();
-    ctx.beginPath();
-    S.tunnelSparkles.forEach(sp => {
-        if (Math.floor(sp.x + sp.y) % 2 !== 0) {
-            ctx.rect(sp.x, sp.y, sp.size * 1.5, sp.size * 1.5);
-        }
-    });
-    ctx.fill();
-    ctx.restore();
-
-    // ── 6. Stars ──
-    ctx.save();
-    S.stars.forEach(star => {
-        ctx.globalAlpha = 0.55;
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath(); ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2); ctx.fill();
-    });
-    ctx.restore();
-
-    // ── 7. Player center (shared across all ring systems) ──
-    const bodyRadius = S.smoothSize / 2;
-    const cx = S.player.x + bodyRadius;
-    const cy = S.player.y + bodyRadius;
-
-    // ── 8. Karma chains ──
-    Renderer.drawKarmaChain?.(ctx, cx, cy, S.chainSlots);
-
-    // ── 9. Particles & Glow effects ──
-    Renderer.drawParticles?.(ctx, S.particlePool);
-    Renderer.drawGlowEffects?.(ctx, S.glowEffectPool);
-
-    // ── 10. Maya (shuvha/rikta/naama/etc.) ──
-    Renderer.drawMaya?.(ctx, S.mayaPool, frameNow);
-
-    // ── 11. Horses ──
-    Renderer.drawHorses?.(ctx, cx, cy, S.smoothSize, frameNow, S.finalHorsePositions,
-                           S.pulledHorseIndex, S._pulledHorseX, S._pulledHorseY);
-
-    // ── 12. Player body (ātman + buddhi) ──
-    Renderer.drawPlayer?.(ctx, cx, cy, breathingSmoothSize, sharirGlow, sharirAlpha,
-                           S.bodyGlowTimer, S.bodyGlowColor, S.naamaGlowTimer,
-                           S.chetanaaJagrita,
-                           cachedBuddhiSprite, cachedBuddhiSRadiusKey,
-                           cachedAtmanSprite,  cachedAtmanGlowKey,
-                           // sprite update callback
-                           (bs, bk, as_, ak) => {
-                               cachedBuddhiSprite = bs; cachedBuddhiSRadiusKey = bk;
-                               cachedAtmanSprite  = as_; cachedAtmanGlowKey    = ak;
-                           });
-
-    // ── 13. Glow rings (ज्योति / शंख / कृपा) ──
-    Renderer.drawGlowRing?.(ctx, cx, cy, S.glowRings.jyoti);
-    Renderer.drawGlowRing?.(ctx, cx, cy, S.glowRings.shankha);
-    Renderer.drawGlowRing?.(ctx, cx, cy, S.glowRings.kripa);
-
-    // ── 14. Gati & Samay rings ──
-    Renderer.drawGatiSamayRings?.(ctx, cx, cy, gatiRadius, samayRadius,
-                                   S.samaya, S.swaansaSamapta, frameNow);
-
-    // ── 15. Lotus petals (श्वास-वलय — §2.8) ──
-    Renderer.drawLotusPetals?.(ctx, cx, cy, samayRadius, S.swaansaTimer, S.swaansa, worldBreathPulse);
-
-    // ── 16. Inner orbit (status icons) ──
-    Renderer.drawInnerOrbit?.(ctx, cx, cy, outerRadius, S, frameNow);
-
-    // ── 17. Outer orbits (karma emoji rings) ──
-    Renderer.drawOuterOrbits?.(ctx, cx, cy, samayRadius, S.outerOrbits, frameNow);
-
-    // ── 18. Naam-jaap ring (सबसे ऊपर) ──
-    if (S.isNaamaJaapa) {
-        ctx.save();
-        ctx.beginPath(); ctx.arc(cx, cy, S.naamaGhera, 0, Math.PI * 2);
-        ctx.lineWidth = 3 + (S.naamaGhera * 0.005);
-        ctx.strokeStyle = "rgba(255,255,255,0.8)";
-        ctx.shadowBlur = 20; ctx.shadowColor = "#ffffff";
-        ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.fill();
-        ctx.restore();
-    }
-
-    // ── 19. Floating texts ──
-    Renderer.drawFloatingTexts?.(ctx, S.floatingTextPool);
-
-    // ── 20. Notify text (canvas overlay) ──
-    if (S.notifyTimer > 0) {
-        Renderer.drawNotify?.(ctx, WIDTH, HEIGHT, S.notifyText, S.notifyTimer);
-    }
-
-    // ── 21. Border color based on game state ──
-    const borderColor = S.swaansaSamapta ? "#ffd700"
-                       : S.ashuvhaKarma >= 3 ? "#ff3232"
-                       : S.shuvhaKarma > 0 ? "#32ff32"
-                       : "#303060";
-    engine.setContainerBorderColor(borderColor);
-
-    ctx.restore(); // main save
 }
 
 // ====================== GAME LOOP ======================
@@ -603,6 +452,7 @@ function pollGamepadOnStartScreen() {
         startScreenGpState.start = startPressed;
 
         if (startRise && !engine.isShastraVisible) {
+            gpButtonStates[GAMEPAD_BUTTON.START] = true;
             startBtn?.click();
         }
 
@@ -653,11 +503,7 @@ AM?.setVibrateCallback?.(vibrateGamepad);
 AM?.setReadinessGetters?.({
     getFontsReady:    () => isFontsReady,
     getScaleGameDone: () => isScaleGameDone,
-});
-
-// ── Readiness coordination ──
-let isFontsReady    = false;
-let isScaleGameDone = false;
+}); 
 
 document.fonts.ready.then(() => {
     isFontsReady = true;

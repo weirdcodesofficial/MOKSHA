@@ -531,11 +531,9 @@ export class KarmaEngine {
                         this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
                         this.samarpita++; takraavaMaya = true; m.active = false; continue;
                     } else if (m.type === 'rikta') {
-                        if (this.naamaJaapaPower >= 5) {
                             this._createExplosion(mCx, mCy, explColor);
                             this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
                             this.samarpita++; takraavaMaya = true; m.active = false; continue;
-                        }
                     }
                 }
             }
