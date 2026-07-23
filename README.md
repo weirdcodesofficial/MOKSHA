@@ -140,13 +140,13 @@ gameReadinessMode = (audioLoadFailures.length === 0) ? 'high' : 'low'
 
 ```
 MOKSHA/
-├── index.html        — HTML shell + start screen (632 lines)
+├── index.html        — HTML shell + start screen (212 lines)
 ├── style.css         — All UI styles, extracted from index.html (517 lines)
 ├── audio/            — 28 .mp3 ambient & SFX files
 └── src/
-    ├── audio.js      — AudioManager: 28-mp3 preload, ambient layers, duck system (1277 lines)
+    ├── audio.js      — AudioManager: 28-mp3 preload, ambient layers, duck system (1276 lines)
     ├── engine.js     — KarmaEngine: Vedic logic, physics, pools, state (1449 lines)
-    ├── render.js     — Renderer: Canvas draw functions, sprite caches (764 lines)
+    ├── render.js     — Renderer: Canvas draw functions, sprite caches (780 lines)
     └── main.js       — Orchestrator: wires all modules, gameLoop, input (524 lines)
 ```
 
@@ -496,7 +496,7 @@ AM.updateAmbientVolumes();
 | **🆕 Renderer module** | सभी draw functions → `src/render.js` |
 | **🆕 style.css** | सभी CSS → बाहरी फ़ाइल |
 | **🆕 emojiSpriteCache** | orbit/innerOrbit emoji → offscreen canvas cache; per-frame text draw बंद |
-| **🆕 cachedPankhudi*** | `cachedPankhudiConsumed`, `cachedPankhudiActive`, `cachedPankhudiInactive` — 3 pre-rendered states |
+| **🆕 cachedPankhudi*** | `cachedPankhudiConsumed`, `cachedPankhudiActive`, `cachedPankhudiInactive` — 3 cached states; colors manually tuned |
 | **🆕 cachedBuddhiSprite / cachedAtmanSprite** | नए player-body sprite caches |
 | ग्लो-रिंग | 6 variables → `glowRings` object + helpers |
 | माया-रेंडर | duplicate draw → `drawPickupGlowIcon()` |
@@ -673,12 +673,13 @@ debugging, optimization, और refactoring सहायता के लिए 
 |---|---|
 | 🎮 itch.io | [weirdcodes.itch.io/moksha](https://weirdcodes.itch.io/moksha) |
 | 💻 GitHub | [github.com/weirdcodesofficial](https://github.com/weirdcodesofficial) |
+| 📝 dev.to | [@weirdcodesofficial](https://dev.to/weirdcodesofficial) |
+| 🐘 Mastodon | [@pjatmasto](https://mastodon.social/@pjatmasto) |
+| 𝕏 X (Twitter) | [@weirdcodesx](https://x.com/weirdcodesx) |
 | ▶️ YouTube | [@weirdcodes-official](https://www.youtube.com/@weirdcodes-official) |
 | 📘 Facebook | [weirdcodesofficial](https://www.facebook.com/weirdcodesofficial/) |
 | 📸 Instagram | [@weirdcodes.dev](https://www.instagram.com/weirdcodes.dev/) |
 | 🧵 Threads | [@weirdcodes.dev](https://www.threads.com/@weirdcodes.dev) |
-| 𝕏 X (Twitter) | [@weirdcodesx](https://x.com/weirdcodesx) |
-| 🐘 Mastodon | [@pjatmasto](https://mastodon.social/@pjatmasto) |
 | ☕ Ko-fi | [ko-fi.com/weirdcodes](https://ko-fi.com/weirdcodes) |
 | 💛 PayPal | [paypal.me/pankajsharma18](https://paypal.me/pankajsharma18) |
 
