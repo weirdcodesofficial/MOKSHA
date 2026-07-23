@@ -1,7 +1,7 @@
 # 🕉️ *मोक्ष*
 
 > **"मोक्ष प्राप्ति का एकमात्र मार्ग — त्याग।"**
-> *The only path to liberation — is letting go.*
+> *The only path to liberation — is let it go.*
 
 An HTML5 browser game rooted in **Sanatan Shastra** and **Karmic Philosophy**.
 Control your chariot through the cosmic field, master your senses, burn your karma, and attain **Moksha**.
@@ -639,10 +639,29 @@ gameReadinessMode = (audioLoadFailures.length === 0) ? 'high' : 'low';
 3. Zoom 100% (scaleGame() से conflict)
 4. Extensions: aggressive blockers → CDN audio/font block → Low Mode
 
----
-
 *यह दस्तावेज़ Weired Codes द्वारा ES6 Modular Refactor के ऑडिट पर आधारित।*
 *बड़ा रिफ़ैक्टर/नया feature जुड़ने पर इसे अपडेट करवाएँ।*
+
+---
+
+## 🛠️ Transparency
+
+Human-designed, AI-assisted.
+
+इस गेम का मूल concept, spiritual design, art direction, और gameplay vision
+पूर्णतः मानवीय है। Code development में AI (Claude by Anthropic) का उपयोग
+debugging, optimization, और refactoring सहायता के लिए किया गया।
+सभी रचनात्मक और शास्त्रीय निर्णय Weired Codes द्वारा लिए गए हैं।
+
+
+⚠️ **महत्वपूर्ण चेतावनी (Important Notice)**  
+यह गेम खेलने के लिए **कीबोर्ड (Keyboard)** या **गेमपैड (Gamepad)** की आवश्यकता है। कृपया बेहतर अनुभव के लिए इसे अपने **डेस्कटॉप या लैपटॉप ब्राउज़र** पर ही खोलें।
+
+💛 **सपोर्ट करें (Support the Project)**  
+यदि आप इस आध्यात्मिक और तकनीकी प्रयास को पसंद करते हैं और सीधे सहायता करना चाहते हैं, तो आप **PayPal** के माध्यम से योगदान दे सकते हैं।  
+*(नोट: भुगतान सुरक्षित रूप से ओनर के नाम **Pankaj Sharma (PS)** के अंतर्गत प्रोसेस किया जाएगा।)*
+
+---
 
 ## 👤 Credits
 
@@ -659,6 +678,7 @@ gameReadinessMode = (audioLoadFailures.length === 0) ? 'high' : 'low';
 | 📸 Instagram | [@weirdcodes.dev](https://www.instagram.com/weirdcodes.dev/) |
 | 🧵 Threads | [@weirdcodes.dev](https://www.threads.com/@weirdcodes.dev) |
 | 𝕏 X (Twitter) | [@weirdcodesx](https://x.com/weirdcodesx) |
+| 🐘 Mastodon | [@pjatmasto](https://mastodon.social/@pjatmasto) |
 | ☕ Ko-fi | [ko-fi.com/weirdcodes](https://ko-fi.com/weirdcodes) |
 | 💛 PayPal | [paypal.me/pankajsharma18](https://paypal.me/pankajsharma18) |
 
