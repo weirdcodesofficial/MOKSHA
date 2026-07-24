@@ -661,23 +661,22 @@ export const Renderer = {
             if (!cachedPankhudiConsumed) {
                 // 🌑 खर्च — dim/धुंधला (consumed petals)
                 cachedPankhudiConsumed = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                cachedPankhudiConsumed.addColorStop(0, "rgba(255, 222, 156, 0.86)");
-                cachedPankhudiConsumed.addColorStop(0.55, "rgba(255, 203, 125, 0.89)");
-                cachedPankhudiConsumed.addColorStop(1, "rgba(255, 172, 89, 0.9)");
-                cachedPankhudiActive = cachedPankhudiConsumed;
+                cachedPankhudiConsumed.addColorStop(0, "rgba(250, 198, 93, 0.83)");
+                cachedPankhudiConsumed.addColorStop(0.55, "rgba(255, 196, 108, 0.85)");
+                cachedPankhudiConsumed.addColorStop(1, "rgba(255, 177, 100, 0.85)");
 
                 // 🌸 अभी सांस — चमकीला white → gold (active petal)
                 cachedPankhudiActive = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                cachedPankhudiActive.addColorStop(0, "rgba(255, 170, 60, 1.00)");
+                cachedPankhudiActive.addColorStop(0, "rgba(255, 140, 60, 1.00)");
                 cachedPankhudiActive.addColorStop(0.30, "rgba(255, 240, 180, 1.00)");
                 cachedPankhudiActive.addColorStop(0.70, "rgba(255, 200, 60, 0.95)");
                 cachedPankhudiActive.addColorStop(1, "rgba(255, 160, 20, 0.90)");
 
                 // 🌕 future — सामान्य gold (inactive petals)
                 cachedPankhudiInactive = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                cachedPankhudiInactive.addColorStop(0, "rgba(255, 236, 139, 0.95)");
-                cachedPankhudiInactive.addColorStop(0.55, "rgb(255, 150, 40)");
-                cachedPankhudiInactive.addColorStop(1, "rgb(240, 166, 32)");
+                cachedPankhudiInactive.addColorStop(0, "rgba(255, 236, 139, 0.85)");
+                cachedPankhudiInactive.addColorStop(0.55, "rgba(255, 170, 40, 0.85)");
+                cachedPankhudiInactive.addColorStop(1, "rgba(255, 179, 60, 0.85)");
             }
 
 
