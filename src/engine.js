@@ -636,7 +636,7 @@ export class KarmaEngine {
         const antimaCharana = samayaAntimaCharana || this._pendingGoodKarma;
         if (samayaAntimaCharana && !this._timerSoundPlayed) {
             this._timerSoundPlayed = true;
-            this._cb.playSound?.('antimCharana');
+            this._cb.playSound?.('antimaCharana');
         }
         if (antimaCharana) {
             this._timerTickAccumulator += dt;
@@ -1203,13 +1203,13 @@ export class KarmaEngine {
             this._updateAlert("🌿 नाम सुमिरन: शुद्धिकरण...", "#ffff00");
             if (this.playerInTunnel) {
                 // शास्त्र-संगत क्रम: पुण्य → पाप → प्रारब्ध (एक बार में एक इकाई)
-                if (this.shuvhaKarma > 0 && this.activeNaam >= 1) {
+                if (this.shuvhaKarma > 0 && this.activeNaam > 0) {
                     this.activeNaam -= 1; this.shuvhaKarma -= 1; this.samarpita += 1;
                     this._addFloatingText("🌸", "#32ff32"); this._triggerGlow("#32ff32"); this._cb.playSound?.('samarpita');
-                } else if (this.ashuvhaKarma > 0 && this.activeNaam >= 5) {
+                } else if (this.ashuvhaKarma > 0 && this.activeNaam > 4) {
                     this.activeNaam -= 5; this.ashuvhaKarma -= 1; this.samarpita += 1;
                     this._addFloatingText("💧", "#ff3232"); this._triggerGlow("#ff3232"); this._cb.playSound?.('samarpita');
-                } else if (this.prarabdha > 0 && this.activeNaam >= 10) {
+                } else if (this.prarabdha > 0 && this.activeNaam > 9) {
                     this.activeNaam -= 10; this.prarabdha -= 1; this.samarpita += 1;
                     this._addFloatingText("⚖️", "#a78bfa"); this._triggerGlow("#a78bfa"); this._cb.playSound?.('samarpita');
                 }

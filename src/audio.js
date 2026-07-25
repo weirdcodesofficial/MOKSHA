@@ -120,7 +120,7 @@ const DUCK_STRENGTH = new Map([
     ['punyaBandhana',     0.40],
     ['bandhanaMukta',     0.35],
     ['naama',             0.45],
-    ['antimCharana',      0.35],
+    ['antimaCharana',      0.35],
     ['kripa',             0.50],
     ['shankhaDhwani',     0.45],
     ['jyotiDhwani',       0.40],
@@ -188,7 +188,7 @@ class AudioManager {
             pralaya:            null,  // प्रलय
             jagritaBreath:      null,  // अंतरिक्ष-श्वास (ambient loop)
             moksha:             null,  // मोक्ष-विजय
-            antimCharana:       null,  // अंतिम-चरण
+            antimaCharana:       null,  // अंतिम-चरण
         };
 
         // ── Ambient layer nodes ─────────────────────────────
@@ -523,13 +523,13 @@ class AudioManager {
                 break;
 
             // ── अंतिम-चरण (envelope-controlled) ────────────
-            case 'antimCharana':
+            case 'antimaCharana':
                 // 🔧 TUNED: gain 0.65→0.35, सहज fade-in/fade-out —
                 // envelope बिना अचानक शुरू/खत्म होने से click/pop आता था
-                if (buf.antimCharana) {
+                if (buf.antimaCharana) {
                     const acNow  = ctx.currentTime;
                     const acSrc  = ctx.createBufferSource();
-                    acSrc.buffer = buf.antimCharana;
+                    acSrc.buffer = buf.antimaCharana;
                     const acGain = ctx.createGain();
                     const acPeak = 0.35;
                     const acDur  = acSrc.buffer.duration;
