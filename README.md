@@ -213,7 +213,7 @@ grantKripa(x, y, reason = null) {
 ```
 
 ### 1.5 cyclone — शास्त्र-संगत व्यवहार
-- cyclone **player को नहीं खींचता** — सिर्फ shuvha/rikta माया को
+- cyclone **player को नहीं खींचता** — सिर्फ shuvha/ashuvha माया को
 - naam-jaap वलय cyclone को नहीं छूती — सिर्फ शंख-वलय (Y) ही cyclone भस्म करती है
 
 ---
@@ -346,7 +346,7 @@ let innerOrbit = [
 buildSciFiGridSprite(WIDTH, HEIGHT)    // radar-grid एक बार pre-render
 drawRingTicks(cx, cy, radius, count, color)           // compass tick-marks
 drawYantraPolygon(cx, cy, radius, sides, rotation, …) // यंत्र-बहुभुज
-getMayaSprite(type, bScale)     // shuvha/rikta sprite cache
+getMayaSprite(type, bScale)     // shuvha/ashuvha sprite cache
 getEmojiSprite(emoji, fontSize) // orbit/innerOrbit emoji cache (नई)
 ```
 
@@ -484,7 +484,7 @@ AM.updateAmbientVolumes();
 ## 6. परफ़ॉर्मेंस पैटर्न
 
 1. **Pool pattern** (§2.3) — 4 pools, push/splice कभी नहीं
-2. **Sprite caches** — `mayaSpriteCache` (shuvha/rikta), `emojiSpriteCache` (सभी orbits/innerOrbit, नई), `cachedPankhudiConsumed/Active/Inactive` (3 states, नई), `sciFiGridSprite`, `cachedBuddhiSprite`, `cachedAtmanSprite`
+2. **Sprite caches** — `mayaSpriteCache` (shuvha/ashuvha), `emojiSpriteCache` (सभी orbits/innerOrbit, नई), `cachedPankhudiConsumed/Active/Inactive` (3 states, नई), `sciFiGridSprite`, `cachedBuddhiSprite`, `cachedAtmanSprite`
 3. **Bucket-cached gradients** — `cachedBreathGrad` / `cachedTunnelGrad`
 4. **DOM throttle** — `lastPunyaAlertSecond` जैसे guards
 5. **`_updateStatWithPulse()`** — बदलाव पर ही UI update (`_oldStats` compare)

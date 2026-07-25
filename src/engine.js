@@ -74,7 +74,7 @@ export const MAYA_SIZE_TABLE = {
     cyclone: { width: 32, height: 32 },
     shankha: { width: 32, height: 32 },
     jyoti:   { width: 32, height: 32 },
-    default: { width: 20, height: 24 },   // shuvha / rikta
+    default: { width: 20, height: 24 },   // shuvha / ashuvha
 };
 
 /**
@@ -183,7 +183,7 @@ export class KarmaEngine {
         ];
 
         // ── Pre-allocated Object Pools (§2.3) ───────────────
-        /** 50 maya entities (shuvha/rikta/naama/cyclone/kripa/shankha/jyoti) */
+        /** 50 maya entities (shuvha/ashuvha/naama/cyclone/kripa/shankha/jyoti) */
         this.mayaPool       = [];
         /** 50 explosion particles */
         this.particlePool   = [];
@@ -309,7 +309,7 @@ export class KarmaEngine {
         // ── Pre-allocate pools (§2.3) — push/splice कभी नहीं ──
         for (let i = 0; i < 50; i++) {
             this.mayaPool.push({ active:false, x:0, y:0, width:20, height:24,
-                                  type:"rikta", isPulling:false });
+                                  type:"ashuvha", isPulling:false });
         }
         for (let i = 0; i < 50; i++) {
             this.particlePool.push({ active:false, x:0, y:0,
@@ -487,7 +487,7 @@ export class KarmaEngine {
             for (let mi = 0; mi < this.mayaPool.length; mi++) {
                 let m2 = this.mayaPool[mi];
                 if (!m2.active || m2 === cy0) continue;
-                if (m2.type !== "shuvha" && m2.type !== "rikta") continue;
+                if (m2.type !== "shuvha" && m2.type !== "ashuvha") continue;
                 m2.x += (cyCx - (m2.x + m2.width / 2)) * 0.05 * CYCLONE_FORCE * dt;
             }
         }
@@ -502,7 +502,7 @@ export class KarmaEngine {
                 let m = this.mayaPool[i]; if (!m.active) continue;
                 let mCx = m.x + m.width / 2; let mCy = m.y + m.height / 2;
                 let dist = Math.hypot(mCx - cx, mCy - cy);
-                let explColor = m.type === 'shuvha' ? '#32ff32' : m.type === 'rikta' ? '#ff3232' : '#ffffff';
+                let explColor = m.type === 'shuvha' ? '#32ff32' : m.type === 'ashuvha' ? '#ff3232' : '#ffffff';
 
                 if (dist <= this.naamaGhera) {
                     // cyclone — naam-ring से प्रभावित नहीं (शास्त्र-संगत)
@@ -529,7 +529,7 @@ export class KarmaEngine {
                         this._createExplosion(mCx, mCy, explColor);
                         this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
                         this.samarpita++; takraavaMaya = true; m.active = false; continue;
-                    } else if (m.type === 'rikta') {
+                    } else if (m.type === 'ashuvha') {
                             this._createExplosion(mCx, mCy, explColor);
                             this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
                             this.samarpita++; takraavaMaya = true; m.active = false; continue;
@@ -596,11 +596,11 @@ export class KarmaEngine {
         }
 
         // ── 15. Time / Samaya ─────────────────────────────────
-        const riktaTimeModifier = Math.pow(0.7, this.ashuvhaKarma);
+        const ashuvhaTimeModifier = Math.pow(0.7, this.ashuvhaKarma);
         const shuvhaTimeModifier = Math.pow(0.8, this.shuvhaKarma);
 
         if (!this.swaansaSamapta) {
-            this.samaya -= 0.8 * riktaTimeModifier * shuvhaTimeModifier * dt;
+            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * dt;
             this.swaansaTimer += dt;
             if (this.swaansaTimer >= 360) {
                 this.swaansaTimer -= 360;
@@ -617,7 +617,7 @@ export class KarmaEngine {
                 if (this._UI?.swaansaVal) this._UI.swaansaVal.innerText = swaansaDisplay;
             }
 
-            const currentWarpVal = (riktaTimeModifier * shuvhaTimeModifier * 100).toFixed(0);
+            const currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * 100).toFixed(0);
             this._updateStatWithPulse(this._UI?.gatee, 'gatee', currentWarpVal, '⚡', '%');
 
             if (this.samaya <= 0) {
@@ -649,13 +649,13 @@ export class KarmaEngine {
         // ── 18. Stars & sparkles movement ─────────────────────
         this.stars.forEach(star => {
             if (!this.swaansaSamapta) {
-                star.y += star.speed * (riktaTimeModifier * shuvhaTimeModifier + 0.1) * dt;
+                star.y += star.speed * (ashuvhaTimeModifier * shuvhaTimeModifier + 0.1) * dt;
                 if (star.y > this.HEIGHT) { star.y = 0; star.x = Math.random() * this.WIDTH; }
             }
         });
         this.tunnelSparkles.forEach(sparkle => {
             if (!this.swaansaSamapta) {
-                sparkle.y -= sparkle.speed * (riktaTimeModifier * shuvhaTimeModifier + 0.2) * dt;
+                sparkle.y -= sparkle.speed * (ashuvhaTimeModifier * shuvhaTimeModifier + 0.2) * dt;
                 sparkle.alpha += sparkle.fadeSpeed * dt;
                 if (sparkle.alpha > 0.9 || sparkle.alpha < 0.2) sparkle.fadeSpeed = -sparkle.fadeSpeed;
                 if (sparkle.y < 0) { sparkle.y = this.HEIGHT; sparkle.x = this.TUNNEL_X + Math.random() * this.TUNNEL_WIDTH; sparkle.alpha = Math.random() * 0.5 + 0.2; }
@@ -688,7 +688,7 @@ export class KarmaEngine {
         }
 
         // ── 21. Maya movement & player collision ───────────────
-        const mayaSpeed = Math.max(1.2, 4 * riktaTimeModifier * shuvhaTimeModifier);
+        const mayaSpeed = Math.max(1.2, 4 * ashuvhaTimeModifier * shuvhaTimeModifier);
         for (let i = 0; i < this.mayaPool.length; i++) {
             let m = this.mayaPool[i]; if (!m.active) continue;
             m.y += mayaSpeed * dt;
@@ -739,7 +739,7 @@ export class KarmaEngine {
             this._addFloatingText(this.jaapaNaama, "#ffff00", { yOffset:-10, alpha:1.5, vy:-2, isBigName:true });
         } else if (this.activeNaam === 0 && !this.isNaamaJaapa) {
             this._updateAlert("❌ नाम जाप के लिए नाम की आवश्यकता है!", "#ff3232");
-            this._cb.playSound?.('rikta');
+            this._cb.playSound?.('ashuvha');
         }
     }
 
@@ -755,7 +755,7 @@ export class KarmaEngine {
             this._updateAlert("🐚 शंख-ध्वनि: श्वेत प्रकाश फैल रहा है...", "#ffffff");
         } else {
             this._updateAlert("❌ शंख-शक्ति समाप्त — पहले शंख संग्रह करें।", "#ff3232");
-            this._cb.playSound?.('rikta');
+            this._cb.playSound?.('ashuvha');
         }
     }
 
@@ -771,7 +771,7 @@ export class KarmaEngine {
             this._updateAlert("🪔 ज्योति जली: पाप-अंधकार में प्रकाश फैल रहा है...", "#ffe932");
         } else {
             this._updateAlert("❌ ज्योति-शक्ति समाप्त — पहले ज्योति संग्रह करें।", "#ff3232");
-            this._cb.playSound?.('rikta');
+            this._cb.playSound?.('ashuvha');
         }
     }
 
@@ -782,15 +782,15 @@ export class KarmaEngine {
         if (this.gameOver || this.isPaused) return;
         if (this.samaya >= 100) {
             this._updateAlert("❌ नाम समर्पण केवल 'अंतिम चरण' में संभव है।", "#ff3232");
-            this._cb.playSound?.('rikta'); return;
+            this._cb.playSound?.('ashuvha'); return;
         }
         if (this.activeNaam === 0) {
             this._updateAlert("❌ समर्पण हेतु नाम शेष नहीं है।", "#ff3232");
-            this._cb.playSound?.('rikta'); return;
+            this._cb.playSound?.('ashuvha'); return;
         }
         if (!this.playerInTunnel) {
             this._updateAlert("❌ नाम समर्पण करने के लिए आपको भक्ति-मार्ग के अंदर होना चाहिए।", "#ff3232");
-            this._cb.playSound?.('rikta'); return;
+            this._cb.playSound?.('ashuvha'); return;
         }
         let gained = (this.activeNaam * 3) + (this.kripa + this.shankha + this.jyoti);
         this.samarpita += gained;
@@ -815,7 +815,7 @@ export class KarmaEngine {
             this._cb.playSound?.('samarpita');
             this._updateAlert("🛑 वैराग्य: सारथी ने पुण्य का प्रलोभन ठुकराया।", "#ff3232");
         } else {
-            this._cb.playSound?.('rikta');
+            this._cb.playSound?.('ashuvha');
         }
     }
 
@@ -834,7 +834,7 @@ export class KarmaEngine {
      * @returns {boolean} क्या pause हुआ?
      */
     actionPause() {
-        if (this.gameOver || this.won) { this._cb.playSound?.('rikta'); return false; }
+        if (this.gameOver || this.won) { this._cb.playSound?.('ashuvha'); return false; }
         this.isPaused = !this.isPaused;
         if (this._UI?.viraamaOverlay) {
             this._UI.viraamaOverlay.style.display = this.isPaused ? 'flex' : 'none';
@@ -1160,7 +1160,7 @@ export class KarmaEngine {
      */
     _spawnMaya() {
         const rand = Math.random();
-        let type = "rikta"; let xPos;
+        let type = "ashuvha"; let xPos;
 
         // कृपा-factor: प्रति-कृपा 5% माया-अनुपात बदलाव
         const kripaFactor    = this.kripa * 0.05;
@@ -1175,7 +1175,7 @@ export class KarmaEngine {
         else if (rand > 0.92)  { type = "jyoti";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
         else if (rand > naamaThreshold) { type = "naama"; xPos = this.TUNNEL_X + Math.random() * (this.TUNNEL_WIDTH - 20); }
         else if (rand > shuvhaThreshold) { type = "shuvha"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else { type = "rikta"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
+        else { type = "ashuvha"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
 
         for (let i = 0; i < this.mayaPool.length; i++) {
             if (!this.mayaPool[i].active) {
@@ -1231,7 +1231,7 @@ export class KarmaEngine {
             this._pendingGoodKarmaCount++;
             this._cb.playSound?.('shuvha');
         } else {
-            // rikta (पाप)
+            // ashuvha (पाप)
             this.ashuvhaKarma++;
             this._addFloatingText("🥀", "#ff3232"); this._triggerBlast("#ff3232");
             this._cb.playSound?.('ashuvha');

@@ -136,7 +136,7 @@ export const KarmaMixin = {
      */
     _spawnMaya() {
         const rand = Math.random();
-        let type = "rikta"; let xPos;
+        let type = "ashuvha"; let xPos;
 
         // कृपा-factor: प्रति-कृपा 5% माया-अनुपात बदलाव
         const kripaFactor     = this.kripa * 0.05;
@@ -151,7 +151,7 @@ export const KarmaMixin = {
         else if (rand > 0.92)            { type = "jyoti";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
         else if (rand > naamaThreshold)  { type = "naama";   xPos = this.TUNNEL_X + Math.random() * (this.TUNNEL_WIDTH - 20); }
         else if (rand > shuvhaThreshold) { type = "shuvha";  xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else                             { type = "rikta";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
+        else                             { type = "ashuvha";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
 
         for (let i = 0; i < this.mayaPool.length; i++) {
             if (!this.mayaPool[i].active) {
@@ -227,7 +227,7 @@ export const KarmaMixin = {
             this._pendingGoodKarmaCount++;
             this._cb.playSound?.('shuvha');
         } else {
-            // rikta (पाप)
+            // ashuvha (पाप)
             this.ashuvhaKarma++;
             this._addFloatingText("🥀", "#ff3232");
             this._triggerBlast("#ff3232");
@@ -323,7 +323,7 @@ export const KarmaMixin = {
             this._addFloatingText(this.jaapaNaama, "#ffff00", { yOffset:-10, alpha:1.5, vy:-2, isBigName:true });
         } else if (this.activeNaam === 0 && !this.isNaamaJaapa) {
             this._updateAlert("❌ नाम जाप के लिए नाम की आवश्यकता है!", "#ff3232");
-            this._cb.playSound?.('rikta');
+            this._cb.playSound?.('ashuvha');
         }
     },
 
@@ -340,7 +340,7 @@ export const KarmaMixin = {
             this._updateAlert("🐚 शंख-ध्वनि: श्वेत प्रकाश फैल रहा है...", "#ffffff");
         } else {
             this._updateAlert("❌ शंख-शक्ति समाप्त — पहले शंख संग्रह करें।", "#ff3232");
-            this._cb.playSound?.('rikta');
+            this._cb.playSound?.('ashuvha');
         }
     },
 
@@ -357,7 +357,7 @@ export const KarmaMixin = {
             this._updateAlert("🪔 ज्योति जली: पाप-अंधकार में प्रकाश फैल रहा है...", "#ffe932");
         } else {
             this._updateAlert("❌ ज्योति-शक्ति समाप्त — पहले ज्योति संग्रह करें।", "#ff3232");
-            this._cb.playSound?.('rikta');
+            this._cb.playSound?.('ashuvha');
         }
     },
 
@@ -368,15 +368,15 @@ export const KarmaMixin = {
         if (this.gameOver || this.isPaused) return;
         if (this.samaya >= 100) {
             this._updateAlert("❌ नाम समर्पण केवल 'अंतिम चरण' में संभव है।", "#ff3232");
-            this._cb.playSound?.('rikta'); return;
+            this._cb.playSound?.('ashuvha'); return;
         }
         if (this.activeNaam === 0) {
             this._updateAlert("❌ समर्पण हेतु नाम शेष नहीं है।", "#ff3232");
-            this._cb.playSound?.('rikta'); return;
+            this._cb.playSound?.('ashuvha'); return;
         }
         if (!this.playerInTunnel) {
             this._updateAlert("❌ नाम समर्पण करने के लिए आपको भक्ति-मार्ग के अंदर होना चाहिए।", "#ff3232");
-            this._cb.playSound?.('rikta'); return;
+            this._cb.playSound?.('ashuvha'); return;
         }
         let gained = (this.activeNaam * 3) + (this.kripa + this.shankha + this.jyoti);
         this.samarpita      += gained;
@@ -407,7 +407,7 @@ export const KarmaMixin = {
             this._cb.playSound?.('samarpita');
             this._updateAlert("🛑 वैराग्य: सारथी ने पुण्य का प्रलोभन ठुकराया।", "#ff3232");
         } else {
-            this._cb.playSound?.('rikta');
+            this._cb.playSound?.('ashuvha');
         }
     },
 
@@ -427,7 +427,7 @@ export const KarmaMixin = {
      * @returns {boolean} क्या pause हुआ?
      */
     actionPause() {
-        if (this.gameOver || this.won) { this._cb.playSound?.('rikta'); return false; }
+        if (this.gameOver || this.won) { this._cb.playSound?.('ashuvha'); return false; }
         this.isPaused = !this.isPaused;
         if (this._UI?.viraamaOverlay) {
             this._UI.viraamaOverlay.style.display = this.isPaused ? 'flex' : 'none';

@@ -396,10 +396,10 @@ export const Renderer = {
         for (let i = 0; i < horseCount; i++) {
             let hx = finalHorsePositions[i].x; let hy = finalHorsePositions[i].y;
             if (totalKarma > 0) {
-                let riktaRatio = ashuvhaKarma / totalKarma; let reinGrad = ctx.createLinearGradient(hx, hy, cx, sCy);
-                if (riktaRatio === 0) { ctx.strokeStyle = "rgba(50, 255, 50, 0.65)"; } 
-                else if (riktaRatio === 1) { ctx.strokeStyle = "rgba(255, 50, 50, 0.65)"; } 
-                else { let splitPoint = 1 - riktaRatio; reinGrad.addColorStop(0, "rgba(50, 255, 50, 0.65)"); reinGrad.addColorStop(splitPoint, "rgba(50, 255, 50, 0.65)"); reinGrad.addColorStop(splitPoint, "rgba(255, 50, 50, 0.65)"); reinGrad.addColorStop(1, "rgba(255, 50, 50, 0.65)"); ctx.strokeStyle = reinGrad; }
+                let ashuvhaRatio = ashuvhaKarma / totalKarma; let reinGrad = ctx.createLinearGradient(hx, hy, cx, sCy);
+                if (ashuvhaRatio === 0) { ctx.strokeStyle = "rgba(50, 255, 50, 0.65)"; } 
+                else if (ashuvhaRatio === 1) { ctx.strokeStyle = "rgba(255, 50, 50, 0.65)"; } 
+                else { let splitPoint = 1 - ashuvhaRatio; reinGrad.addColorStop(0, "rgba(50, 255, 50, 0.65)"); reinGrad.addColorStop(splitPoint, "rgba(50, 255, 50, 0.65)"); reinGrad.addColorStop(splitPoint, "rgba(255, 50, 50, 0.65)"); reinGrad.addColorStop(1, "rgba(255, 50, 50, 0.65)"); ctx.strokeStyle = reinGrad; }
             } else { ctx.strokeStyle = (i === pulledHorseIndex) ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.4)"; }
             ctx.lineWidth = (i === pulledHorseIndex) ? 1.6 : 1.1; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(cx, sCy - sRadius); ctx.stroke();
         }
@@ -409,8 +409,8 @@ export const Renderer = {
             if (!m.active) return;
             let boxInside = (m.x >= TUNNEL_X && (m.x + m.width) <= (TUNNEL_X + TUNNEL_WIDTH)); let bScale = boxInside ? 0.5 : 1; let bw = m.width * bScale; let bh = m.height * bScale; let bx = m.x + (m.width - bw) / 2; let by = m.y + (m.height - bh) / 2;
             if (m.isPulling && pulledHorseIndex !== -1) { ctx.save(); ctx.beginPath(); ctx.moveTo(bx + bw / 2, by + bh); ctx.lineTo(pulledHorseX, pulledHorseY); ctx.strokeStyle = m.type === "shuvha" ? "rgba(50, 255, 50, 0.3)" : "rgba(255, 50, 50, 0.3)"; ctx.stroke(); ctx.restore(); }
-            if (m.type === "shuvha" || m.type === "rikta") {
-                if (m.type === "rikta" && ashuvhaKarma >= 3) {
+            if (m.type === "shuvha" || m.type === "ashuvha") {
+                if (m.type === "ashuvha" && ashuvhaKarma >= 3) {
                     let aCx = m.x + m.width / 2; let aCy = m.y + m.height / 2;
                     let aDist = Math.hypot(aCx - cx, aCy - cy);
                     let inGlow = (glowRings.jyoti.active && aDist <= glowRings.jyoti.radius);
@@ -553,9 +553,9 @@ export const Renderer = {
         ctx.globalAlpha = 0.75; ctx.stroke();
         ctx.restore();    
 
-        let riktaMod = Math.pow(0.7, ashuvhaKarma);
+        let ashuvhaMod = Math.pow(0.7, ashuvhaKarma);
         let shuvhaMod = Math.pow(0.8, shuvhaKarma);
-        let gatiRatio = riktaMod * shuvhaMod; 
+        let gatiRatio = ashuvhaMod * shuvhaMod; 
 
         ctx.save();
         ctx.lineWidth = 1; 

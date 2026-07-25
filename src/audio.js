@@ -102,7 +102,7 @@ const DUCK_STRENGTH = new Map([
     ['drishti',           0.35],
     ['andhakaara',        0.40],
     ['shuvha',            0.50],
-    ['rikta',             0.55],
+    ['ashuvha',             0.55],
     ['jaapa',             0.55],
     ['samarpita',         0.45],
     ['naamaSamarpita',    0.55],
@@ -426,7 +426,7 @@ class AudioManager {
                 this._vibrate?.(0.15, 0.10, 90);
                 break;
 
-            case 'rikta':
+            case 'ashuvha':
                 // अशुभ-अवरुद्ध UI feedback — कर्कश sawtooth
                 this._playTone(155.56, 0.10, 'sawtooth', 0.03, 92.5);
                 this._vibrate?.(0.50, 0.70, 160);
