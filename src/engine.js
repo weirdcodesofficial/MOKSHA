@@ -1,20 +1,16 @@
 /**
  * ============================================================
- * src/engine.js — मोक्ष KarmaEngine (ES6 Module)
+ * src/engine.js — मोक्ष KarmaEngine (ES6 Module, Slim Orchestrator)
  * ============================================================
  *
- * सम्पूर्ण Vedic Karma तर्क, physics, object-pooling, और
- * game-state transition rules यहाँ encapsulate हैं।
+ * सम्पूर्ण Vedic Karma state और game-flow orchestration यहाँ है।
+ * Physics helpers → physics.js (PhysicsMixin)
+ * Karma logic     → karma.js   (KarmaMixin)
  *
- * ── निकाली गई चीज़ें (index.html से) ──────────────────────
- *  • सभी कर्म/मोक्ष state variables
- *  • चार pre-allocated object pools (mayaPool, particlePool,
- *    glowEffectPool, floatingTextPool) — GC-pressure शून्य
- *  • update(dt, keys, frameNow)  — मुख्य game-logic tick
- *  • reset()  — punahaPrarambha (पवित्र/R-key पुनर्जन्म)
- *  • showEndScreen(reason)  — end-game UI
- *  • getState()  — renderer/main के लिए सम्पूर्ण state snapshot
- *  • सभी Vedic helper functions (grantKripa, collectResource, etc.)
+ * ── Module graph ────────────────────────────────────────────
+ *  engine.js  ← imports ← karma.js   (KarmaMixin)
+ *  engine.js  ← imports ← physics.js (PhysicsMixin)
+ *  karma.js   ← imports ← engine.js  (constants only — safe circular)
  *
  * ── बाहरी निर्भरताएँ (injected callbacks) ─────────────────
  *  engine.setCallbacks({
@@ -37,9 +33,12 @@
  *
  *  // gameLoop में:
  *  engine.update(dt, keys, frameNow);
- *  // draw() में: engine.* से state पढ़ें (public properties)
+ *  // draw() में: engine.getState() से snapshot लें
  * ============================================================
  */
+
+import { KarmaMixin   } from './karma.js';
+import { PhysicsMixin } from './physics.js';
 
 // ====================== शास्त्रीय स्थिरांक (VEDIC CONSTANTS) ======================
 
@@ -63,12 +62,6 @@ export const KRIPA_NAAM_MILESTONE = 20;
 
 /** हर 30 नए समर्पित-अर्जन पर कृपा++ */
 export const KRIPA_SAMARPITA_MILESTONE = 30;
-
-/** cyclone का player-आकर्षण दायरा (px) */
-export const CYCLONE_PLAYER_PULL_RANGE = 220;
-
-/** cyclone का player पर आकर्षण-बल गुणक */
-export const CYCLONE_PLAYER_PULL_FORCE = 1.4;
 
 /**
  * माया-size lookup-table (DRY: nested-ternary का स्थान)।
@@ -137,9 +130,9 @@ export class KarmaEngine {
         this.swaansaSamapta  = false;  // क्या ब्रह्मांडीय क्षितिज आ गया?
 
         // ── Game Flow Flags ──────────────────────────────────
-        this.gameOver        = false;
-        this.isPaused        = false;
-        this.won             = false;
+        this.gameOver         = false;
+        this.isPaused         = false;
+        this.won              = false;
         this.isShastraVisible = false;
         this.wasAlreadyPaused = false; // shastra खुलने से पहले का pause-state
 
@@ -154,11 +147,7 @@ export class KarmaEngine {
         this.notifyText      = "♻️ पवित्र पुनर्जन्म";
         this.currentBorderColor = "";
 
-        // ── Glow Ring System (DRY) ───────────────────────────
-        /**
-         * तीनों expanding-ring वलयें — engine state में हैं,
-         * draw() इन्हें पढ़कर render करता है।
-         */
+        // ── Glow Ring System (DRY — §2.4) ───────────────────
         this.glowRings = {
             jyoti:  { active: false, radius: 0, speed: 18, maxRadius: 420,
                       strokeColor: "rgba(255, 233, 50, 0.85)",   lineWidthMul: 0.004,
@@ -171,11 +160,7 @@ export class KarmaEngine {
                       shadowBlur: 22, glowColor: "#ffd700", fillColor: "rgba(255, 215, 0, 0.06)" },
         };
 
-        // ── Outer Orbits (karma emoji rings) ────────────────
-        /**
-         * 9 कक्षाएँ — count>0 वाली ही draw होती हैं।
-         * glowTimer: temporary pulse (नाम/समर्पित milestone पर)
-         */
+        // ── Outer Orbits (karma emoji rings — §2.7) ─────────
         this.outerOrbits = [
             { count: 0, color: "#32ff32", speed:  0.8, emoji: "🌿" },  // 0 पुण्य
             { count: 0, color: "#ff3232", speed: -0.9, emoji: "🥀" },  // 1 पाप
@@ -189,27 +174,21 @@ export class KarmaEngine {
         ];
 
         // ── Pre-allocated Object Pools (§2.3) ───────────────
-        /** 50 maya entities (shuvha/ashuvha/naama/cyclone/kripa/shankha/jyoti) */
-        this.mayaPool       = [];
-        /** 50 explosion particles */
-        this.particlePool   = [];
-        /** 20 gained-glow rings (प्राप्ति-आभा) */
-        this.glowEffectPool = [];
-        /** 25 floating text labels (ॐ/🙏/+N etc.) */
-        this.floatingTextPool = [];
+        this.mayaPool       = [];   // 50 maya entities
+        this.particlePool   = [];   // 50 explosion particles
+        this.glowEffectPool = [];   // 20 gained-glow rings
+        this.floatingTextPool = []; // 25 floating text labels
 
         // ── Stars & Tunnel Sparkles ──────────────────────────
-        this.stars           = [];
-        this.tunnelSparkles  = [];
+        this.stars          = [];
+        this.tunnelSparkles = [];
 
         // ── Horse pull system ────────────────────────────────
-        /** 6 घोड़ों की chain-slot state (draw में प्रयुक्त) */
         this.chainSlots = [
             { active: false, color: "", strength: 0, isHeavy: false },
             { active: false, color: "", strength: 0, isHeavy: false },
             { active: false, color: "", strength: 0, isHeavy: false },
         ];
-        /** 6 घोड़ों की X/Y positions (draw में प्रयुक्त) */
         this.finalHorsePositions = [
             {x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},
         ];
@@ -226,12 +205,12 @@ export class KarmaEngine {
         this._spawnTimer = 0;
 
         // ── Audio/sound edge-detection flags ─────────────────
-        this._prevGoodKarmaForSound  = 0;
-        this._prevBadKarmaForSound   = 0;
-        this._prevPrarabdhaForSound  = 0;
-        this._prevPurnaSamarpana     = false;
-        this._prevDrishtiClear       = true;
-        this._prevPulledHorseIndex   = -1;
+        this._prevGoodKarmaForSound    = 0;
+        this._prevBadKarmaForSound     = 0;
+        this._prevPrarabdhaForSound    = 0;
+        this._prevPurnaSamarpana       = false;
+        this._prevDrishtiClear         = true;
+        this._prevPulledHorseIndex     = -1;
         this._mayaConsumedWhilePulling = false;
 
         // ── Kripa milestone tracking ─────────────────────────
@@ -265,8 +244,6 @@ export class KarmaEngine {
 
     /**
      * Audio + haptic callbacks inject करें।
-     * circular dependency को callback-pattern से हल करते हैं।
-     *
      * @param {{
      *   playSound: function,
      *   vibrateGamepad: function,
@@ -283,8 +260,6 @@ export class KarmaEngine {
 
     /**
      * DOM element references inject करें।
-     * main.js में बनाए गए UI object को यहाँ pass करें।
-     *
      * @param {Object} UI — { naama, punya, paap, prarabdha, samarpita,
      *                         punaraJanma, kripa, shankha, jyoti, drishti,
      *                         purnaSamarpana, chetana, samayaVal, swaansaVal,
@@ -301,6 +276,11 @@ export class KarmaEngine {
     /**
      * Pools, stars, sparkles initialize करें।
      * scaleGame() के बाद एक बार बुलाएँ।
+     *
+     * @param {number} WIDTH
+     * @param {number} HEIGHT
+     * @param {number} TUNNEL_X
+     * @param {number} TUNNEL_WIDTH
      */
     init(WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH) {
         this.WIDTH        = WIDTH;
@@ -308,7 +288,7 @@ export class KarmaEngine {
         this.TUNNEL_X     = TUNNEL_X;
         this.TUNNEL_WIDTH = TUNNEL_WIDTH;
 
-        // reset player position
+        // player प्रारंभिक position
         this.player.x = WIDTH / 2 - 30;
         this.player.y = HEIGHT - 250;
 
@@ -335,14 +315,19 @@ export class KarmaEngine {
         // ── Background stars ──
         for (let i = 0; i < 35; i++) {
             this.stars.push({ x: Math.random() * WIDTH, y: Math.random() * HEIGHT,
-                               speed: Math.random() * 1.5 + 0.5, size: Math.random() * 1.0 + 0.3 });
+                               speed: Math.random() * 1.5 + 0.5,
+                               size:  Math.random() * 1.0 + 0.3 });
         }
+
         // ── Tunnel sparkles ──
         for (let i = 0; i < 20; i++) {
             this.tunnelSparkles.push({
-                x: TUNNEL_X + Math.random() * TUNNEL_WIDTH, y: Math.random() * HEIGHT,
-                speed: Math.random() * 1.2 + 0.6, size: Math.random() * 1.5 + 0.5,
-                alpha: Math.random() * 0.7 + 0.3, fadeSpeed: 0.01 + Math.random() * 0.02,
+                x: TUNNEL_X + Math.random() * TUNNEL_WIDTH,
+                y: Math.random() * HEIGHT,
+                speed: Math.random() * 1.2 + 0.6,
+                size:  Math.random() * 1.5 + 0.5,
+                alpha: Math.random() * 0.7 + 0.3,
+                fadeSpeed: 0.01 + Math.random() * 0.02,
             });
         }
     }
@@ -355,35 +340,41 @@ export class KarmaEngine {
      *
      * @param {number} dt       — frame delta (60fps-normalised, max 2)
      * @param {Object} keys     — keyboard state { 'a':true, ' ':true, ... }
-     * @param {number} frameNow — performance.now() timestamp (render animations हेतु)
+     * @param {number} frameNow — performance.now() timestamp
      */
     update(dt, keys, frameNow) {
         if (this.gameOver || this.isPaused || this.isShastraVisible) return;
 
-        // ── 1. Outer-orbit counts sync ───────────────────────
+        // ── 1. Outer-orbit counts sync (karma.js) ────────────
         this._syncOrbitCounts();
 
-
-
-        // ── 3. चेतना-जागृति (chetanaaJagrita) transition ───
-        if (!this.gameOver && !this.chetanaaJagrita && this.samarpita >= CHETANA_JAGRITI_THRESHOLD) {
+        // ── 3. चेतना-जागृति transition ───────────────────────
+        if (!this.gameOver && !this.chetanaaJagrita &&
+            this.samarpita >= CHETANA_JAGRITI_THRESHOLD) {
             this.chetanaaJagrita = true;
             this._cb.playSound?.('chetana');
             this._cb.stopSushuptiBreathLayer?.();
             this._cb.startJagritaBreathLayer?.();
-            this._addFloatingText("👁️", "#ffffff", { yOffset:-10, alpha:1.5, vy:-3, isBigName:true });
+            this._addFloatingText("👁️", "#ffffff",
+                { yOffset:-10, alpha:1.5, vy:-3, isBigName:true });
         }
 
         // ── 4. कर्म-बंधन ध्वनि edge-detection ──────────────
-        if (this.shuvhaKarma > 0 && this._prevGoodKarmaForSound === 0) this._cb.playSound?.('punyaBandhana');
-        if (this.ashuvhaKarma > 0 && this._prevBadKarmaForSound === 0) this._cb.playSound?.('paapaBandhana');
-        if (this.shuvhaKarma === 0 && this._prevGoodKarmaForSound > 0) this._cb.playSound?.('bandhanaMukta');
-        if (this.ashuvhaKarma === 0 && this._prevBadKarmaForSound > 0) this._cb.playSound?.('bandhanaMukta');
+        if (this.shuvhaKarma > 0 && this._prevGoodKarmaForSound === 0)
+            this._cb.playSound?.('punyaBandhana');
+        if (this.ashuvhaKarma > 0 && this._prevBadKarmaForSound === 0)
+            this._cb.playSound?.('paapaBandhana');
+        if (this.shuvhaKarma === 0 && this._prevGoodKarmaForSound > 0)
+            this._cb.playSound?.('bandhanaMukta');
+        if (this.ashuvhaKarma === 0 && this._prevBadKarmaForSound > 0)
+            this._cb.playSound?.('bandhanaMukta');
         this._prevGoodKarmaForSound = this.shuvhaKarma;
         this._prevBadKarmaForSound  = this.ashuvhaKarma;
 
-        if (this.prarabdha > 0 && this._prevPrarabdhaForSound === 0) this._cb.playSound?.('prarabdhaBandhana');
-        if (this.prarabdha === 0 && this._prevPrarabdhaForSound > 0) this._cb.playSound?.('bandhanaMukta');
+        if (this.prarabdha > 0 && this._prevPrarabdhaForSound === 0)
+            this._cb.playSound?.('prarabdhaBandhana');
+        if (this.prarabdha === 0 && this._prevPrarabdhaForSound > 0)
+            this._cb.playSound?.('bandhanaMukta');
         this._prevPrarabdhaForSound = this.prarabdha;
 
         // ── 5. कृपा-माइलस्टोन edge-detection ────────────────
@@ -410,7 +401,8 @@ export class KarmaEngine {
         // ── 6. पूर्ण-समर्पण edge-detection ──────────────────
         if (this.purnaSamarpana && !this._prevPurnaSamarpana) {
             this._cb.playSound?.('purnaSamarpana');
-            this._addFloatingText("🙌", "#ffe9a8", { alpha:1.5, vy:-3, isBigName:true });
+            this._addFloatingText("🙌", "#ffe9a8",
+                { alpha:1.5, vy:-3, isBigName:true });
         }
         this._prevPurnaSamarpana = this.purnaSamarpana;
 
@@ -426,20 +418,25 @@ export class KarmaEngine {
         }
         this._prevDrishtiClear = isDrishtiClear;
 
-        if (this.notifyTimer > 0) { this.notifyTimer -= dt; if (this.notifyTimer < 0) this.notifyTimer = 0; }
+        if (this.notifyTimer > 0) {
+            this.notifyTimer -= dt;
+            if (this.notifyTimer < 0) this.notifyTimer = 0;
+        }
 
         // ── 8. Player movement ───────────────────────────────
         const currentSpeed = this.player.baseSpeed * dt;
-        if (keys['arrowleft'] || keys['a']) this.player.x -= currentSpeed;
+        if (keys['arrowleft']  || keys['a']) this.player.x -= currentSpeed;
         if (keys['arrowright'] || keys['d']) this.player.x += currentSpeed;
-        this.player.x = Math.max(0, Math.min(this.WIDTH - this.player.width, this.player.x));
+        this.player.x = Math.max(
+            0, Math.min(this.WIDTH - this.player.width, this.player.x)
+        );
 
         this.playerInTunnel = this._isPlayerInsideTunnel();
 
-        // ── 9. Body metrics (computed for collision & draw) ──
-        let bodyRadius = this.smoothSize / 2;
-        let cx = this.player.x + bodyRadius;
-        let cy = this.player.y + bodyRadius;
+        // ── 9. Body metrics (collision & draw) ───────────────
+        const bodyRadius = this.smoothSize / 2;
+        const cx = this.player.x + bodyRadius;
+        const cy = this.player.y + bodyRadius;
 
         // ── 10. Horse pull system ─────────────────────────────
         let isAlreadyPulled = false;
@@ -458,14 +455,19 @@ export class KarmaEngine {
                 let closestIdx = -1; let minDistance = Infinity;
                 let targetHx = 0; let targetHy = 0;
                 for (let h = 0; h < horseCount; h++) {
-                    let hx = startX + h * horseSpacing;
+                    let hx   = startX + h * horseSpacing;
                     let wave = Math.sin((frameNow / 70) + h) * 3;
-                    let hy = cy - bodyRadius - 45 + wave;
-                    let d = Math.hypot(hx - mCx, hy - mCy);
-                    if (d < minDistance) { minDistance = d; closestIdx = h; targetHx = hx; targetHy = hy; }
+                    let hy   = cy - bodyRadius - 45 + wave;
+                    let d    = Math.hypot(hx - mCx, hy - mCy);
+                    if (d < minDistance) {
+                        minDistance = d; closestIdx = h;
+                        targetHx = hx; targetHy = hy;
+                    }
+                    this.finalHorsePositions[h] = { x: hx, y: hy };
                 }
                 if (minDistance < HORSE_PULL_RANGE) {
-                    isAlreadyPulled = true; m.isPulling = true; this.pulledHorseIndex = closestIdx;
+                    isAlreadyPulled = true; m.isPulling = true;
+                    this.pulledHorseIndex = closestIdx;
                     let tx = targetHx + (mCx - targetHx) * 0.45;
                     let ty = targetHy + (mCy - targetHy) * 0.45;
                     this._pulledHorseX += (tx - this._pulledHorseX) * 0.3 * dt;
@@ -477,9 +479,9 @@ export class KarmaEngine {
         }
 
         // आकर्षण/त्याग ध्वनि edge-detection
-        if (this.pulledHorseIndex !== -1 && this._prevPulledHorseIndex === -1) {
+        if (this.pulledHorseIndex !== -1 && this._prevPulledHorseIndex === -1)
             this._cb.playSound?.('aakarshana');
-        } else if (this.pulledHorseIndex === -1 && this._prevPulledHorseIndex !== -1) {
+        else if (this.pulledHorseIndex === -1 && this._prevPulledHorseIndex !== -1) {
             if (!this._mayaConsumedWhilePulling) this._cb.playSound?.('tyaaga');
             this._mayaConsumedWhilePulling = false;
         }
@@ -488,34 +490,31 @@ export class KarmaEngine {
         // ── 11. Cyclone — माया-विक्षेप-बल ────────────────────
         const CYCLONE_FORCE = 2.2;
         for (let ci = 0; ci < this.mayaPool.length; ci++) {
-            let cy0 = this.mayaPool[ci]; if (!cy0.active || cy0.type !== "cyclone") continue;
+            let cy0 = this.mayaPool[ci];
+            if (!cy0.active || cy0.type !== "cyclone") continue;
             let cyCx = cy0.x + cy0.width / 2;
-            let cyCy = cy0.y + cy0.height / 2;
             for (let mi = 0; mi < this.mayaPool.length; mi++) {
                 let m2 = this.mayaPool[mi];
                 if (!m2.active || m2 === cy0) continue;
                 if (m2.type !== "shuvha" && m2.type !== "ashuvha") continue;
                 m2.x += (cyCx - (m2.x + m2.width / 2)) * 0.05 * CYCLONE_FORCE * dt;
             }
-            // player को भी खींचे — माया का भय-रूप, नाम या शंख से ही मुक्ति
-            const playerDist = Math.hypot(cx - cyCx, cy - cyCy);
-            if (playerDist < CYCLONE_PLAYER_PULL_RANGE && playerDist > 0) {
-                const pullStr = (1 - playerDist / CYCLONE_PLAYER_PULL_RANGE) * CYCLONE_PLAYER_PULL_FORCE;
-                this.player.x += (cyCx - cx) * pullStr * dt;
-            }
         }
-        this.player.x = Math.max(0, Math.min(this.WIDTH - this.player.width, this.player.x));
+        this.player.x = Math.max(
+            0, Math.min(this.WIDTH - this.player.width, this.player.x)
+        );
 
-        // ── 12. नाम-जाप-वलय (naam-jaap ring) logic ───────────
+        // ── 12. नाम-जाप-वलय ──────────────────────────────────
         if (this.isNaamaJaapa) {
             this.naamaGhera += NAAMA_JAAP_GROWTH_SPEED * dt;
 
             let takraavaMaya = false;
             for (let i = 0; i < this.mayaPool.length; i++) {
                 let m = this.mayaPool[i]; if (!m.active) continue;
-                let mCx = m.x + m.width / 2; let mCy = m.y + m.height / 2;
+                let mCx  = m.x + m.width  / 2; let mCy = m.y + m.height / 2;
                 let dist = Math.hypot(mCx - cx, mCy - cy);
-                let explColor = m.type === 'shuvha' ? '#32ff32' : m.type === 'ashuvha' ? '#ff3232' : '#ffffff';
+                let explColor = m.type === 'shuvha'  ? '#32ff32'
+                              : m.type === 'ashuvha' ? '#ff3232' : '#ffffff';
 
                 if (dist <= this.naamaGhera) {
                     if (m.isPulling) this._mayaConsumedWhilePulling = true;
@@ -528,26 +527,21 @@ export class KarmaEngine {
                         this._cb.playSound?.('naama');
                         m.active = false; continue;
                     } else if (m.type === 'shankha') {
-                        this._collectResource('shankha', mCx, mCy, { withGainedGlow:true, alert:false });
+                        this._collectResource('shankha', mCx, mCy,
+                            { withGainedGlow:true, alert:false });
                         m.active = false; continue;
                     } else if (m.type === 'jyoti') {
-                        this._collectResource('jyoti', mCx, mCy, { withGainedGlow:true, alert:false });
+                        this._collectResource('jyoti', mCx, mCy,
+                            { withGainedGlow:true, alert:false });
                         m.active = false; continue;
                     } else if (m.type === 'kripa') {
                         this._grantKripa(mCx, mCy);
                         takraavaMaya = true; m.active = false; continue;
-                    } else if (m.type === 'shuvha') {
+                    } else if (m.type === 'shuvha' || m.type === 'ashuvha' || m.type === 'cyclone') {
                         this._createExplosion(mCx, mCy, explColor);
                         this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
-                        this.samarpita++; takraavaMaya = true; m.active = false; continue;
-                    } else if (m.type === 'ashuvha') {
-                            this._createExplosion(mCx, mCy, explColor);
-                            this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
-                            this.samarpita++; takraavaMaya = true; m.active = false; continue;
-                    } else if (m.type === 'cyclone') {
-                        this._createExplosion(mCx, mCy, explColor);
-                        this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
-                        this.samarpita++; takraavaMaya = true; m.active = false; continue;
+                        this.samarpita++; takraavaMaya = true;
+                        m.active = false; continue;
                     }
                 }
             }
@@ -568,7 +562,7 @@ export class KarmaEngine {
             }
         }
 
-        // ── 13. Glow-ring updates (DRY helper) ───────────────
+        // ── 13. Glow-ring updates (DRY — §2.4) ───────────────
         // ज्योति — सिर्फ़ दृश्य
         this._updateGlowRing(this.glowRings.jyoti, dt);
 
@@ -576,7 +570,8 @@ export class KarmaEngine {
         this._updateGlowRing(this.glowRings.shankha, dt, (ring) => {
             let shankhaHit = false;
             for (let si = 0; si < this.mayaPool.length; si++) {
-                let sm = this.mayaPool[si]; if (!sm.active || sm.type !== "cyclone") continue;
+                let sm = this.mayaPool[si];
+                if (!sm.active || sm.type !== "cyclone") continue;
                 let smCx = sm.x + sm.width / 2; let smCy = sm.y + sm.height / 2;
                 if (Math.hypot(smCx - cx, smCy - cy) <= ring.radius) {
                     sm.active = false; this.samarpita++;
@@ -585,7 +580,10 @@ export class KarmaEngine {
                     shankhaHit = true;
                 }
             }
-            if (shankhaHit) { this._cb.playSound?.('samarpita'); this._updateAlert("🐚 शंख-ध्वनि: चक्रवात समर्पित हुआ।", "#7dd3fc"); }
+            if (shankhaHit) {
+                this._cb.playSound?.('samarpita');
+                this._updateAlert("🐚 शंख-ध्वनि: चक्रवात समर्पित हुआ।", "#7dd3fc");
+            }
         });
 
         // कृपा — सिर्फ़ दृश्य (माया-भस्म नहीं — शास्त्र-संगत)
@@ -597,13 +595,17 @@ export class KarmaEngine {
             let secondsLeft = Math.ceil(this._punyaTimer / 60);
             if (secondsLeft !== this._lastPunyaAlertSecond) {
                 this._lastPunyaAlertSecond = secondsLeft;
-                this._updateAlert("⚠️ पुण्य प्रभाव (+" + this._pendingGoodKarmaCount + ")! समय: " + secondsLeft + "s | ⬇️ या S: वैराग्य ⚠️", "#ffd700");
+                this._updateAlert(
+                    "⚠️ पुण्य प्रभाव (+" + this._pendingGoodKarmaCount +
+                    ")! समय: " + secondsLeft + "s | ⬇️ या S: वैराग्य ⚠️", "#ffd700"
+                );
             }
             if (this._punyaTimer <= 0) {
-                this._lastPunyaAlertSecond = -1;
-                let gained = this._pendingGoodKarmaCount;
-                this._pendingGoodKarma = false;
-                this.shuvhaKarma += gained; this._pendingGoodKarmaCount = 0;
+                this._lastPunyaAlertSecond    = -1;
+                let gained                    = this._pendingGoodKarmaCount;
+                this._pendingGoodKarma        = false;
+                this.shuvhaKarma              += gained;
+                this._pendingGoodKarmaCount   = 0;
                 this._addFloatingText(`+${gained} 🌿`, "#32ff32");
                 this._triggerBlast("#32ff32");
                 this._updateAlert("🔥 पुण्य अवशोषित: सारथी के मन ने अच्छे कर्म स्वीकार किए।", "#32ff32");
@@ -612,7 +614,7 @@ export class KarmaEngine {
 
         // ── 15. Time / Samaya ─────────────────────────────────
         const ashuvhaTimeModifier = Math.pow(0.7, this.ashuvhaKarma);
-        const shuvhaTimeModifier = Math.pow(0.8, this.shuvhaKarma);
+        const shuvhaTimeModifier  = Math.pow(0.8, this.shuvhaKarma);
 
         if (!this.swaansaSamapta) {
             this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * dt;
@@ -622,15 +624,13 @@ export class KarmaEngine {
                 if (this.swaansa > 0) this.swaansa--;
             }
 
-            // DOM updates (guarded)
-            const samayaDisplay = `${Math.max(0, Math.ceil(this.samaya))}s`;
+            // DOM updates (dirty-check)
+            const samayaDisplay  = `${Math.max(0, Math.ceil(this.samaya))}s`;
             const swaansaDisplay = `${Math.max(0, Math.ceil(this.swaansa))}`;
-            if (this._UI?.samayaVal?.innerText !== samayaDisplay) {
-                if (this._UI?.samayaVal) this._UI.samayaVal.innerText = samayaDisplay;
-            }
-            if (this._UI?.swaansaVal?.innerText !== swaansaDisplay) {
-                if (this._UI?.swaansaVal) this._UI.swaansaVal.innerText = swaansaDisplay;
-            }
+            if (this._UI?.samayaVal?.innerText !== samayaDisplay && this._UI?.samayaVal)
+                this._UI.samayaVal.innerText = samayaDisplay;
+            if (this._UI?.swaansaVal?.innerText !== swaansaDisplay && this._UI?.swaansaVal)
+                this._UI.swaansaVal.innerText = swaansaDisplay;
 
             const currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * 100).toFixed(0);
             this._updateStatWithPulse(this._UI?.gatee, 'gatee', currentWarpVal, '⚡', '%');
@@ -640,16 +640,16 @@ export class KarmaEngine {
                 this._updateAlert("ब्रह्मांडीय क्षितिज पर पहुंचे। समय स्थिर है।", "#ffffff");
             }
         } else {
-            // ── 16. ब्रह्मांडीय क्षितिज (Brahmaandiya Kshitij) — निर्णय ──
+            // ── 16. ब्रह्मांडीय क्षितिज — मोक्ष-निर्णय (karma.js) ──
             this._checkMokhsha();
         }
 
         // ── 17. अंतिम-चरण टाइमर-ध्वनि ───────────────────────
         const samayaAntimaCharana = (this.samaya < 100 && this.samaya > 0 && !this.swaansaSamapta);
-        const antimaCharana = samayaAntimaCharana || this._pendingGoodKarma;
+        const antimaCharana       = samayaAntimaCharana || this._pendingGoodKarma;
         if (samayaAntimaCharana && !this._timerSoundPlayed) {
             this._timerSoundPlayed = true;
-            this._cb.playSound?.('antimaCharana');
+            this._cb.playSound?.('antimCharana');
         }
         if (antimaCharana) {
             this._timerTickAccumulator += dt;
@@ -673,7 +673,11 @@ export class KarmaEngine {
                 sparkle.y -= sparkle.speed * (ashuvhaTimeModifier * shuvhaTimeModifier + 0.2) * dt;
                 sparkle.alpha += sparkle.fadeSpeed * dt;
                 if (sparkle.alpha > 0.9 || sparkle.alpha < 0.2) sparkle.fadeSpeed = -sparkle.fadeSpeed;
-                if (sparkle.y < 0) { sparkle.y = this.HEIGHT; sparkle.x = this.TUNNEL_X + Math.random() * this.TUNNEL_WIDTH; sparkle.alpha = Math.random() * 0.5 + 0.2; }
+                if (sparkle.y < 0) {
+                    sparkle.y     = this.HEIGHT;
+                    sparkle.x     = this.TUNNEL_X + Math.random() * this.TUNNEL_WIDTH;
+                    sparkle.alpha = Math.random() * 0.5 + 0.2;
+                }
             }
         });
 
@@ -699,7 +703,7 @@ export class KarmaEngine {
         const spawnRate = this.swaansaSamapta ? 35 : 45;
         if (this._spawnTimer > spawnRate) {
             this._spawnTimer = 0;
-            this._spawnMaya();
+            this._spawnMaya();   // karma.js
         }
 
         // ── 21. Maya movement & player collision ───────────────
@@ -709,22 +713,23 @@ export class KarmaEngine {
             m.y += mayaSpeed * dt;
             if (m.y > this.HEIGHT) { m.active = false; continue; }
 
-            const hitX = m.x < this.player.x + this.player.width && m.x + m.width > this.player.x;
+            const hitX = m.x < this.player.x + this.player.width  && m.x + m.width  > this.player.x;
             const hitY = m.y < this.player.y + this.player.height && m.y + m.height > this.player.y;
             if (hitX && hitY) {
                 if (m.isPulling) this._mayaConsumedWhilePulling = true;
                 if (this.isKarmaImmune) {
-                    this._createExplosion(m.x, m.y, "#ffffff"); m.active = false; continue;
+                    this._createExplosion(m.x, m.y, "#ffffff");
+                    m.active = false; continue;
                 }
                 this.shakeTimer = 8;
-                this._handlePlayerMayaCollision(m, cx);
+                this._handlePlayerMayaCollision(m, cx);  // karma.js
             }
         }
 
         // ── 22. Timer decays ──────────────────────────────────
-        if (this.shakeTimer > 0) this.shakeTimer -= dt;
+        if (this.shakeTimer    > 0) this.shakeTimer    -= dt;
         if (this.naamaGlowTimer > 0) this.naamaGlowTimer -= dt;
-        if (this.bodyGlowTimer > 0) this.bodyGlowTimer -= dt;
+        if (this.bodyGlowTimer  > 0) this.bodyGlowTimer  -= dt;
         if (this.outerOrbits[3]?.glowTimer > 0) this.outerOrbits[3].glowTimer -= dt;
         if (this.outerOrbits[7]?.glowTimer > 0) this.outerOrbits[7].glowTimer -= dt;
 
@@ -732,154 +737,16 @@ export class KarmaEngine {
 
         // ── 23. HUD scale/glow animations ────────────────────
         this._updateHUDAnimations(dt);
-        // ── 2. HUD update ────────────────────────────────────
         this._updateUIStats();
-    }
-
-    // ====================== KEYBOARD ACTIONS ======================
-    // (main.js के keydown handler से बुलाए जाते हैं)
-
-    /**
-     * SPACE / RT — नाम-जाप शुरू करें
-     */
-    actionNaamaJaapa() {
-        if (this.gameOver || this.isPaused) return;
-        if (this.activeNaam >= 1 && !this.isNaamaJaapa) {
-            this.naamaJaapaPower = this.activeNaam;
-            this.activeNaam--;
-            this.isNaamaJaapa = true;
-            this.naamaGhera = this.smoothSize / 2;
-            this._cb.playSound?.('jaapa');
-            this._updateAlert("🌿 नाम जपते मंगल दिसि दसहूँ 🌿", "#ffff00");
-            this._addFloatingText(this.jaapaNaama, "#ffff00", { yOffset:-10, alpha:1.5, vy:-2, isBigName:true });
-        } else if (this.activeNaam === 0 && !this.isNaamaJaapa) {
-            this._updateAlert("❌ नाम जाप के लिए नाम की आवश्यकता है!", "#ff3232");
-            this._cb.playSound?.('ashuvha');
-        }
-    }
-
-    /**
-     * Y / Gamepad-Y — शंख-वलय शुरू करें
-     */
-    actionShankha() {
-        if (this.gameOver || this.isPaused) return;
-        if (this.shankha > 0) {
-            this.shankha--;
-            this.glowRings.shankha.active = true; this.glowRings.shankha.radius = 0;
-            this._cb.playSound?.('shankhaDhwani');
-            this._updateAlert("🐚 शंख-ध्वनि: श्वेत प्रकाश फैल रहा है...", "#ffffff");
-        } else {
-            this._updateAlert("❌ शंख-शक्ति समाप्त — पहले शंख संग्रह करें।", "#ff3232");
-            this._cb.playSound?.('ashuvha');
-        }
-    }
-
-    /**
-     * B / Gamepad-B — ज्योति-वलय शुरू करें
-     */
-    actionJyoti() {
-        if (this.gameOver || this.isPaused) return;
-        if (this.jyoti > 0) {
-            this.jyoti--;
-            this.glowRings.jyoti.active = true; this.glowRings.jyoti.radius = 0;
-            this._cb.playSound?.('jyotiDhwani');
-            this._updateAlert("🪔 ज्योति जली: पाप-अंधकार में प्रकाश फैल रहा है...", "#ffe932");
-        } else {
-            this._updateAlert("❌ ज्योति-शक्ति समाप्त — पहले ज्योति संग्रह करें।", "#ff3232");
-            this._cb.playSound?.('ashuvha');
-        }
-    }
-
-    /**
-     * W / ↑ / RB — अंतिम-चरण में नाम-समर्पण
-     */
-    actionNaamaSamarpan() {
-        if (this.gameOver || this.isPaused) return;
-        if (this.samaya >= 100) {
-            this._updateAlert("❌ नाम समर्पण केवल 'अंतिम चरण' में संभव है।", "#ff3232");
-            this._cb.playSound?.('ashuvha'); return;
-        }
-        if (this.activeNaam === 0) {
-            this._updateAlert("❌ समर्पण हेतु नाम शेष नहीं है।", "#ff3232");
-            this._cb.playSound?.('ashuvha'); return;
-        }
-        if (!this.playerInTunnel) {
-            this._updateAlert("❌ नाम समर्पण करने के लिए आपको भक्ति-मार्ग के अंदर होना चाहिए।", "#ff3232");
-            this._cb.playSound?.('ashuvha'); return;
-        }
-        let gained = (this.activeNaam * 3) + (this.kripa + this.shankha + this.jyoti);
-        this.samarpita += gained;
-        this.activeNaam = 0; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
-        this.purnaSamarpana = true; this.isKarmaImmune = true;
-        this._addFloatingText(`+${gained} ॐ🙏`, "#ffff00", { alpha:1.5, vy:-2, isBigName:true, yOffset:-10 });
-        this._updateAlert("🌿 नाम समर्पित: +" + gained + " मिले।", "#ffff00");
-        this._cb.playSound?.('naamaSamarpita');
-    }
-
-    /**
-     * S / ↓ / X — वैराग्य (पुण्य-प्रलोभन त्यागें)
-     */
-    actionVairaagya() {
-        if (this.gameOver || this.isPaused) return;
-        if (this._pendingGoodKarma) {
-            let gained = this._pendingGoodKarmaCount;
-            this.samarpita += gained;
-            this._pendingGoodKarma = false; this._punyaTimer = 0; this._pendingGoodKarmaCount = 0;
-            this._addFloatingText(`+${gained} 🙏`, "#fb923c");
-            this._triggerBlast("#32ff32");
-            this._cb.playSound?.('samarpita');
-            this._updateAlert("🛑 वैराग्य: सारथी ने पुण्य का प्रलोभन ठुकराया।", "#ff3232");
-        } else {
-            this._cb.playSound?.('ashuvha');
-        }
-    }
-
-    /**
-     * Q / LB — प्रलय (FORCE STOP)
-     */
-    actionPralaya() {
-        if (this.gameOver) return;
-        this.gameOver = true; this.won = false;
-        this.showEndScreen("FORCE STOPPED");
-        this._cb.playSound?.('takraava');
-    }
-
-    /**
-     * F / START — स्तम्भन (Pause toggle)
-     * @returns {boolean} क्या pause हुआ?
-     */
-    actionPause() {
-        if (this.gameOver || this.won) { this._cb.playSound?.('ashuvha'); return false; }
-        this.isPaused = !this.isPaused;
-        if (this._UI?.viraamaOverlay) {
-            this._UI.viraamaOverlay.style.display = this.isPaused ? 'flex' : 'none';
-        }
-        if (this.isPaused) {
-            this._cb.playSound?.('viraama');
-        } else {
-            this._cb.playSound?.('resume');
-        }
-        this._cb.updateAmbientVolumes?.();
-        return this.isPaused;
-    }
-
-    /**
-     * Resume (resume-btn click)
-     */
-    actionResume() {
-        this.isPaused = false;
-        if (this._UI?.viraamaOverlay) this._UI.viraamaOverlay.style.display = 'none';
-        this._cb.playSound?.('resume');
     }
 
     // ====================== GAME STATE TRANSITIONS ======================
 
     /**
-     * शास्त्र overlay toggle — engine का internal state update।
+     * शास्त्र overlay toggle।
      * main.js से toggleShastra() में बुलाएँ।
      */
     toggleShastra() {
-        // viraama मेनू खुला हो तो पहले छिपाएँ
         if (this._UI?.viraamaOverlay?.style.display === 'flex') {
             this._UI.viraamaOverlay.style.display = 'none';
         }
@@ -889,7 +756,7 @@ export class KarmaEngine {
         }
         if (this.isShastraVisible) {
             this.wasAlreadyPaused = this.isPaused;
-            this.isPaused = true;
+            this.isPaused         = true;
             this._cb.playSound?.('viraama');
         } else {
             if (this.wasAlreadyPaused) {
@@ -907,17 +774,17 @@ export class KarmaEngine {
 
     /**
      * showEndScreen — game-over / moksha / rebirth overlay।
-     * update() से internally बुलाया जाता है; main.js से भी बुला सकते हैं।
+     * karma.js _checkMokhsha() और actionPralaya() से बुलाया जाता है।
      *
      * @param {string} reason — "FORCE STOPPED" | "EVALUATING" (default)
      */
     showEndScreen(reason = "EVALUATING") {
         if (this._UI?.viraamaOverlay) this._UI.viraamaOverlay.style.display = 'none';
-        if (this._UI?.overlay) this._UI.overlay.style.display = 'flex';
+        if (this._UI?.overlay)        this._UI.overlay.style.display        = 'flex';
 
         if (reason === "FORCE STOPPED") {
             if (this._UI?.overlayTitle) {
-                this._UI.overlayTitle.innerText = "🛑 प्रलय 🛑";
+                this._UI.overlayTitle.innerText   = "🛑 प्रलय 🛑";
                 this._UI.overlayTitle.style.fontFamily = "'Noto Sans Devanagari', sans-serif";
                 this._UI.overlayTitle.style.color = "#ff3232";
             }
@@ -933,30 +800,34 @@ export class KarmaEngine {
             }
         } else if (this.won) {
             if (this._UI?.overlayTitle) {
-                this._UI.overlayTitle.innerText = "💥 मोक्ष 💥";
+                this._UI.overlayTitle.innerText   = "💥 मोक्ष 💥";
                 this._UI.overlayTitle.style.color = "#ffffff";
             }
             if (this._UI?.overlaySubtitle) {
                 this._UI.overlaySubtitle.innerHTML =
-                    "<div style='color:#ffa600;font-family:\"Orbitron\",sans-serif;font-size:15px;font-weight:700;margin-bottom:8px;'>" +
-                    "आपको पुनः जन्म लेने की आवश्यकता नहीं है। यह संसार एक माया जाल है, जिससे आपने अंततः मुक्ति पा ली है।</div>" +
-                    "<div style='color:#a78bfa;font-family:\"Orbitron\",sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;margin-bottom:20px;'>" +
+                    "<div style='color:#ffa600;font-family:\"Orbitron\",sans-serif;font-size:15px;" +
+                    "font-weight:700;margin-bottom:8px;'>आपको पुनः जन्म लेने की आवश्यकता नहीं है।" +
+                    " यह संसार एक माया जाल है, जिससे आपने अंततः मुक्ति पा ली है।</div>" +
+                    "<div style='color:#a78bfa;font-family:\"Orbitron\",sans-serif;font-size:11px;" +
+                    "font-weight:600;letter-spacing:1.5px;margin-bottom:20px;'>" +
                     "आपने जन्म-मरण के इस खेल पर विजय प्राप्त कर ली है।</div>" +
-                    "<span style='color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;display:block;max-width:90%;margin:0 auto;'>" +
-                    "<b>गुणों और कर्मों से परे</b><br>अद्भुत अनुभूति! सारथी ने इंद्रियों रूपी घोड़ों को स्थिर रखा और मन को पूर्णतः आसक्ति मुक्त कर दिया।</span>" +
+                    "<span style='color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;" +
+                    "display:block;max-width:90%;margin:0 auto;'>" +
+                    "<b>गुणों और कर्मों से परे</b><br>अद्भुत अनुभूति! सारथी ने इंद्रियों रूपी" +
+                    " घोड़ों को स्थिर रखा और मन को पूर्णतः आसक्ति मुक्त कर दिया।</span>" +
                     `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weired Codes</div>`;
             }
             this._cb.playSound?.('vijaya');
         } else {
             if (this._UI?.overlayTitle) {
-                this._UI.overlayTitle.innerText = "संसार में पुनर्जन्म";
+                this._UI.overlayTitle.innerText   = "संसार में पुनर्जन्म";
                 this._UI.overlayTitle.style.color = "#ff3232";
             }
             if (this._UI?.overlaySubtitle) {
                 this._UI.overlaySubtitle.innerHTML =
                     `<b>मोह की लगाम:</b><br>` +
                     (this.ashuvhaKarma > 0 ? `आपके (${this.ashuvhaKarma}) पापों ने सारथी को अंधा कर दिया।<br>` : '') +
-                    (this.shuvhaKarma > 0 ? `आपके (${this.shuvhaKarma}) पुण्यों में मन आसक्त हो गया।<br>` : '') +
+                    (this.shuvhaKarma  > 0 ? `आपके (${this.shuvhaKarma}) पुण्यों में मन आसक्त हो गया।<br>` : '') +
                     `<br>घोड़े आत्मा को नए शरीर की ओर ले जाते हैं।<br><br>` +
                     `<span style="font-family:'Noto Sans Devanagari',sans-serif;color:#f87171;font-size:14px;">` +
                     `♻️ पुनर्जन्म: <b>${this.punaraJanmaCount}</b></span>` +
@@ -967,7 +838,6 @@ export class KarmaEngine {
 
     /**
      * punahaPrarambha (R-key / restart-btn) — सम्पूर्ण reset।
-     * पवित्र (voluntary) पुनर्जन्म — सभी counters शून्य।
      */
     reset() {
         // ── Karma reset ──
@@ -977,7 +847,7 @@ export class KarmaEngine {
 
         // ── Time reset ──
         this.samaya = SAMAYA_PRAARAMBHIKA; this.swaansa = 10;
-        if (this._UI?.samayaVal) this._UI.samayaVal.innerText = `${SAMAYA_PRAARAMBHIKA}s`;
+        if (this._UI?.samayaVal)  this._UI.samayaVal.innerText  = `${SAMAYA_PRAARAMBHIKA}s`;
         if (this._UI?.swaansaVal) this._UI.swaansaVal.innerText = `10`;
 
         // ── Spiritual state reset ──
@@ -1006,13 +876,13 @@ export class KarmaEngine {
         // ── Orbit glow reset ──
         if (this.outerOrbits[3]) this.outerOrbits[3].glowTimer = 0;
         if (this.outerOrbits[7]) this.outerOrbits[7].glowTimer = 0;
-        this._resetAllGlowRings();
+        this._resetAllGlowRings();  // physics.js
 
         // ── Pool reset (pool-pattern: splice नहीं) ──
-        for (let i = 0; i < this.glowEffectPool.length; i++) this.glowEffectPool[i].active = false;
-        for (let i = 0; i < this.particlePool.length; i++) this.particlePool[i].active = false;
+        for (let i = 0; i < this.glowEffectPool.length;  i++) this.glowEffectPool[i].active  = false;
+        for (let i = 0; i < this.particlePool.length;    i++) this.particlePool[i].active    = false;
         for (let i = 0; i < this.floatingTextPool.length; i++) this.floatingTextPool[i].active = false;
-        for (let i = 0; i < this.mayaPool.length; i++) this.mayaPool[i].active = false;
+        for (let i = 0; i < this.mayaPool.length;         i++) this.mayaPool[i].active         = false;
 
         // ── Audio layers reset ──
         this._cb.stopJagritaBreathLayer?.();
@@ -1024,7 +894,7 @@ export class KarmaEngine {
                            gatee:"-1", kripa:-1, chetana:"", shankha:-1, drishti:"", jyoti:-1 };
 
         // ── UI reset ──
-        if (this._UI?.overlay) this._UI.overlay.style.display = 'none';
+        if (this._UI?.overlay)        this._UI.overlay.style.display        = 'none';
         if (this._UI?.viraamaOverlay) this._UI.viraamaOverlay.style.display = 'none';
         this._updateUIStats();
         this._cb.playSound?.('punaha');
@@ -1037,396 +907,100 @@ export class KarmaEngine {
     }
 
     /**
-     * draw() के लिए complete state snapshot।
-     * renderer इसे destructure करके सब कुछ render करता है।
-     *
-     * @returns {Object} — सभी visual state properties
+     * Renderer/main.js के लिए complete state snapshot।
+     * @returns {Object}
      */
     getState() {
         return {
             // Karma
-            shuvhaKarma:      this.shuvhaKarma,
-            ashuvhaKarma:     this.ashuvhaKarma,
-            activeNaam:       this.activeNaam,
-            prarabdha:        this.prarabdha,
-            samarpita:        this.samarpita,
-            punaraJanmaCount: this.punaraJanmaCount,
-            kripa:            this.kripa,
-            shankha:          this.shankha,
-            jyoti:            this.jyoti,
+            shuvhaKarma:         this.shuvhaKarma,
+            ashuvhaKarma:        this.ashuvhaKarma,
+            activeNaam:          this.activeNaam,
+            prarabdha:           this.prarabdha,
+            samarpita:           this.samarpita,
+            punaraJanmaCount:    this.punaraJanmaCount,
+            kripa:               this.kripa,
+            shankha:             this.shankha,
+            jyoti:               this.jyoti,
             // Spiritual
-            chetanaaJagrita:  this.chetanaaJagrita,
-            purnaSamarpana:   this.purnaSamarpana,
+            chetanaaJagrita:     this.chetanaaJagrita,
+            purnaSamarpana:      this.purnaSamarpana,
             // Time
-            samaya:           this.samaya,
-            swaansa:          this.swaansa,
-            swaansaTimer:     this.swaansaTimer,
-            swaansaSamapta:   this.swaansaSamapta,
+            samaya:              this.samaya,
+            swaansa:             this.swaansa,
+            swaansaTimer:        this.swaansaTimer,
+            swaansaSamapta:      this.swaansaSamapta,
             // Game flow
-            gameOver:         this.gameOver,
-            isPaused:         this.isPaused,
-            won:              this.won,
-            isShastraVisible: this.isShastraVisible,
+            gameOver:            this.gameOver,
+            isPaused:            this.isPaused,
+            won:                 this.won,
+            isShastraVisible:    this.isShastraVisible,
             // Visual
-            player:           this.player,
-            smoothSize:       this.smoothSize,
-            shakeTimer:       this.shakeTimer,
-            bodyGlowTimer:    this.bodyGlowTimer,
-            bodyGlowColor:    this.bodyGlowColor,
-            naamaGlowTimer:   this.naamaGlowTimer,
-            playerInTunnel:   this.playerInTunnel,
-            notifyTimer:      this.notifyTimer,
-            notifyText:       this.notifyText,
-            isNaamaJaapa:     this.isNaamaJaapa,
-            naamaGhera:       this.naamaGhera,
+            player:              this.player,
+            smoothSize:          this.smoothSize,
+            shakeTimer:          this.shakeTimer,
+            bodyGlowTimer:       this.bodyGlowTimer,
+            bodyGlowColor:       this.bodyGlowColor,
+            naamaGlowTimer:      this.naamaGlowTimer,
+            playerInTunnel:      this.playerInTunnel,
+            notifyTimer:         this.notifyTimer,
+            notifyText:          this.notifyText,
+            isNaamaJaapa:        this.isNaamaJaapa,
+            naamaGhera:          this.naamaGhera,
             // Pools (references — draw reads directly)
-            mayaPool:           this.mayaPool,
-            particlePool:       this.particlePool,
-            glowEffectPool:     this.glowEffectPool,
-            floatingTextPool:   this.floatingTextPool,
-            stars:              this.stars,
-            tunnelSparkles:     this.tunnelSparkles,
+            mayaPool:            this.mayaPool,
+            particlePool:        this.particlePool,
+            glowEffectPool:      this.glowEffectPool,
+            floatingTextPool:    this.floatingTextPool,
+            stars:               this.stars,
+            tunnelSparkles:      this.tunnelSparkles,
             // Orbits & rings
-            outerOrbits:      this.outerOrbits,
-            glowRings:        this.glowRings,
-            chainSlots:       this.chainSlots,
+            outerOrbits:         this.outerOrbits,
+            glowRings:           this.glowRings,
+            chainSlots:          this.chainSlots,
             finalHorsePositions: this.finalHorsePositions,
-            pulledHorseIndex: this.pulledHorseIndex,
-            _pulledHorseX:    this._pulledHorseX,
-            _pulledHorseY:    this._pulledHorseY,
+            pulledHorseIndex:    this.pulledHorseIndex,
+            _pulledHorseX:       this._pulledHorseX,
+            _pulledHorseY:       this._pulledHorseY,
         };
     }
 
-    // ====================== PRIVATE METHODS ======================
-
-    /** Outer-orbit counts को current state के साथ sync करें */
-    _syncOrbitCounts() {
-        this.outerOrbits[0].count = this.shuvhaKarma;
-        this.outerOrbits[1].count = this.ashuvhaKarma;
-        this.outerOrbits[2].count = this.prarabdha;
-        this.outerOrbits[3].count = this.activeNaam;
-        this.outerOrbits[4].count = this.kripa;
-        this.outerOrbits[5].count = this.shankha;
-        this.outerOrbits[6].count = this.jyoti;
-        this.outerOrbits[7].count = this.samarpita;
-        this.outerOrbits[8].count = this.punaraJanmaCount;
-    }
-
-    /**
-     * ब्रह्मांडीय क्षितिज पर मोक्ष-शर्त जाँचे।
-     * swaansaSamapta === true होने पर हर frame चलता है।
-     */
-    _checkMokhsha() {
-        // ── मोक्ष-शर्त (§1.2) ──
-        if (this.shuvhaKarma === 0 && this.ashuvhaKarma === 0 &&
-            !this._pendingGoodKarma && this.prarabdha === 0 &&
-            this.chetanaaJagrita && this.purnaSamarpana) {
-            if (this._UI?.samayaVal) this._UI.samayaVal.innerText = `मोक्ष 🌿`;
-            if (this._UI?.swaansaVal) this._UI.swaansaVal.innerText = `0`;
-            if (!this.gameOver) { this.gameOver = true; this.won = true; this.showEndScreen(); }
-            return;
-        }
-
-        // ── पुनर्जन्म (अपवित्र/पवित्र) ──
-        const isApavitra = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0 || this.prarabdha > 0);
-        const earnsKripaOnRebirth = (this.activeNaam >= 20 || this.samarpita >= 30 || this.chetanaaJagrita);
-        const gainedPrarabdha = (this.shuvhaKarma + this.ashuvhaKarma) +
-                                 (this._pendingGoodKarma ? this._pendingGoodKarmaCount : 0);
-
-        if (this._pendingGoodKarma) {
-            this.prarabdha += this._pendingGoodKarmaCount;
-            this._pendingGoodKarma = false; this._punyaTimer = 0; this._pendingGoodKarmaCount = 0;
-        }
-        this.prarabdha += (this.shuvhaKarma + this.ashuvhaKarma);
-        if (gainedPrarabdha > 0) this._addFloatingText(`+${gainedPrarabdha} 📜`, "#a78bfa");
-
-        this.ashuvhaKarma = 0; this.shuvhaKarma = 0;
-        this.punaraJanmaCount++;
-        this._triggerBlast("#f87171");
-        this.samaya = SAMAYA_PRAARAMBHIKA; this.swaansa = 10; this.swaansaSamapta = false;
-        this._timerTickAccumulator = 0; this._timerSoundPlayed = false;
-
-        if (isApavitra) {
-            this._updateAlert("♻️ अपवित्र पुनर्जन्म: कर्म असंतुलित रह गया, चक्र जारी है...", "#ff3232");
-            this.notifyText = "♻️ अपवित्र पुनर्जन्म";
-        } else {
-            this._updateAlert("♻️ पवित्र पुनर्जन्म: कर्म शुद्ध था, परंतु यात्रा अधूरी रही।", "#ffd700");
-            this.notifyText = "♻️ पवित्र पुनर्जन्म";
-        }
-        this.notifyTimer = 100;
-
-        // कृपा-जन्म-बोनस (शास्त्र-संगत)
-        if (earnsKripaOnRebirth) {
-            this.kripa++;
-            this._createGainedGlow(this.player.x + this.player.width / 2,
-                                    this.player.y + this.player.height / 2, "#ffe9a8");
-            this._addFloatingText("✋", "#ffe9a8", { alpha:1.3, vy:-1.6, isBigName:true });
-            if (this.activeNaam >= 20) this._addFloatingText("ॐ", "#ffffff", { alpha:1.5, vy:-2.2, isBigName:true });
-            if (this.samarpita >= 30) this._addFloatingText("🙏", "#fb923c", { alpha:1.5, vy:-2.2, isBigName:true });
-            this._updateAlert("🙏 अतिरिक्त कृपा लेकर नए जीवन में प्रवेश!", "#ffe9a8");
-            this._triggerGlow("#ffe9a8");
-            this._cb.playSound?.('kripa');
-        }
-        this._cb.playSound?.('punaha');
-    }
-
-    /**
-     * Maya spawn logic — spawnTimer overflow पर एक entity spawn।
-     */
-    _spawnMaya() {
-        const rand = Math.random();
-        let type = "ashuvha"; let xPos;
-
-        // कृपा-factor: प्रति-कृपा 5% माया-अनुपात बदलाव
-        const kripaFactor    = this.kripa * 0.05;
-        const shuvhaThreshold = Math.max(0.10, 0.425 - (kripaFactor * 1.5));
-        const freedFromPaapa  = 0.425 - shuvhaThreshold;
-        const punyaProb       = 0.425 + freedFromPaapa * 0.4;
-        const naamaThreshold  = shuvhaThreshold + punyaProb;
-
-        if      (rand > 0.985) { type = "kripa";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > 0.97)  { type = "cyclone"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > 0.945) { type = "shankha"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > 0.92)  { type = "jyoti";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > naamaThreshold) { type = "naama"; xPos = this.TUNNEL_X + Math.random() * (this.TUNNEL_WIDTH - 20); }
-        else if (rand > shuvhaThreshold) { type = "shuvha"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else { type = "ashuvha"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
-
-        for (let i = 0; i < this.mayaPool.length; i++) {
-            if (!this.mayaPool[i].active) {
-                const sizeInfo = MAYA_SIZE_TABLE[type] || MAYA_SIZE_TABLE.default;
-                this.mayaPool[i].active = true; this.mayaPool[i].x = xPos; this.mayaPool[i].y = -30;
-                this.mayaPool[i].width = sizeInfo.width; this.mayaPool[i].height = sizeInfo.height;
-                this.mayaPool[i].type = type; this.mayaPool[i].isPulling = false;
-                break;
-            }
-        }
-    }
-
-    /**
-     * Player-Maya direct collision handler।
-     * उपयुक्त Vedic logic apply करता है।
-     */
-    _handlePlayerMayaCollision(m, cx) {
-        if (m.type === "naama") {
-            this.activeNaam++;
-            this._addFloatingText("ॐ", "#ffffff");
-            this.naamaGlowTimer = 40; this._triggerGlow("#ffffff");
-            this._cb.playSound?.('naama');
-            this._updateAlert("🌿 नाम सुमिरन: शुद्धिकरण...", "#ffff00");
-            if (this.playerInTunnel) {
-                // शास्त्र-संगत क्रम: पुण्य → पाप → प्रारब्ध (एक बार में एक इकाई)
-                if (this.shuvhaKarma > 0 && this.activeNaam > 0) {
-                    this.activeNaam -= 1; this.shuvhaKarma -= 1; this.samarpita += 1;
-                    this._addFloatingText("🌸", "#32ff32"); this._triggerGlow("#32ff32"); this._cb.playSound?.('samarpita');
-                } else if (this.ashuvhaKarma > 0 && this.activeNaam > 4) {
-                    this.activeNaam -= 5; this.ashuvhaKarma -= 1; this.samarpita += 1;
-                    this._addFloatingText("💧", "#ff3232"); this._triggerGlow("#ff3232"); this._cb.playSound?.('samarpita');
-                } else if (this.prarabdha > 0 && this.activeNaam > 9) {
-                    this.activeNaam -= 10; this.prarabdha -= 1; this.samarpita += 1;
-                    this._addFloatingText("⚖️", "#a78bfa"); this._triggerGlow("#a78bfa"); this._cb.playSound?.('samarpita');
-                }
-            }
-        } else if (m.type === "kripa") {
-            this._grantKripa(m.x, m.y);
-        } else if (m.type === "shankha") {
-            this._collectResource('shankha', m.x, m.y);
-        } else if (m.type === "jyoti") {
-            this._collectResource('jyoti', m.x, m.y);
-        } else if (m.type === "cyclone") {
-            // सीधी टक्कर: पाप-प्रहार — cyclone नष्ट नहीं होता, नाम या शंख चाहिए
-            this.ashuvhaKarma++;
-            this.shakeTimer = 14;
-            this._addFloatingText("🌪️", "#aaaaaa", { x: m.x + m.width / 2, y: m.y });
-            this._cb.vibrateGamepad?.(0.7, 0.9, 250);
-            this._updateAlert("🌪️ चक्रवात-प्रहार! नाम या शंख से भस्म करें!", "#aaaaaa");
-            return; // m.active = false नहीं — cyclone यथावत
-        } else if (m.type === "shuvha") {
-            if (!this._pendingGoodKarma) { this._pendingGoodKarma = true; this._punyaTimer = 180; }
-            this._pendingGoodKarmaCount++;
-            this._cb.playSound?.('shuvha');
-        } else {
-            // ashuvha (पाप)
-            this.ashuvhaKarma++;
-            this._addFloatingText("🥀", "#ff3232"); this._triggerBlast("#ff3232");
-            this._cb.playSound?.('ashuvha');
-            this._updateAlert("🚨 पाप हमला!", "#ff3232");
-        }
-        m.active = false;
-    }
-
-    // ── Vedic Helper Methods ──────────────────────────────────
-
-    /**
-     * कृपा-प्रभाव — सक्रिय पुण्य व पाप भस्म; प्रारब्ध अप्रभावित।
-     * बंधन हो → kripa--, karma→samarpita; बंधन न हो → kripa++।
-     * (§1.4)
-     */
-    _grantKripa(x, y, reason = null) {
-        const freedKarma = this.shuvhaKarma + this.ashuvhaKarma;
-        const hadKarma   = freedKarma > 0;
-        if (hadKarma) {
-            if (this.kripa > 0) this.kripa--;
-            this.samarpita   += freedKarma;
-            this.shuvhaKarma  = 0; this.ashuvhaKarma = 0;
-            // ⚠️ प्रारब्ध जानबूझकर अप्रभावित — पूर्व-जन्मों का भार
-        } else {
-            this.kripa++;
-        }
-        const px = x ?? (this.player.x + this.player.width / 2);
-        const py = y ?? (this.player.y + this.player.height / 2);
-        this._createGainedGlow(px, py, "#ffe9a8");
-        if (reason === 'naam')     this._addFloatingText("✋ॐ", "#ffffff", { x:px, y:py, alpha:1.5, vy:-2.2, isBigName:true });
-        else if (reason === 'samarpita') this._addFloatingText("✋🙏", "#fb923c", { x:px, y:py, alpha:1.5, vy:-2.2, isBigName:true });
-        else                             this._addFloatingText("✋", "#ffe9a8", { x:px, y:py, alpha:1.3, vy:-1.6, isBigName:true });
-        if (hadKarma) {
-            const bandhanX = this.player.x + this.player.width / 2;
-            const bandhanY = this.player.y + this.player.height / 2 + 50;
-            this._createExplosion(bandhanX, bandhanY, "#ffe9a8");
-            this._addFloatingText(`+${freedKarma} 🙏`, "#ffe9a8", { x:bandhanX, y:bandhanY - 20 });
-        }
-        this._triggerGlow("#ffe9a8");
-        this._cb.playSound?.('kripa');
-        this._updateAlert(hadKarma ? "✋ कृपा: सारथी के सभी सांसारिक पुण्य-पाप समर्पित हुए।"
-                                   : "✋ कृपा प्राप्त हुई।", "#ffe9a8");
-        this.glowRings.kripa.active = true; this.glowRings.kripa.radius = 0;
-    }
-
-    /**
-     * Resource-collect helper (DRY: शंख/ज्योति दोनों के लिए)।
-     * @param {string}  type — 'shankha' | 'jyoti'
-     * @param {number}  x, y — world position
-     * @param {Object}  opts — { withGainedGlow, alert }
-     */
-    _collectResource(type, x, y, opts = {}) {
-        const info = RESOURCE_PICKUP_TABLE[type];
-        if (!info) return;
-        if (type === "shankha") this.shankha++;
-        else if (type === "jyoti") this.jyoti++;
-        this._addFloatingText(info.icon, info.color, { x, y });
-        if (opts.withGainedGlow) this._createGainedGlow(x, y, info.color);
-        this._triggerGlow(info.color);
-        this._cb.playSound?.(info.sound);
-        if (opts.alert !== false) this._updateAlert(info.alert, info.color);
-    }
-
-    /**
-     * Pool pattern: floatingText activate करें।
-     * (§2.3 — कोई push नहीं, पहला inactive slot reuse)
-     */
-    _addFloatingText(text, color, opts = {}) {
-        const baseX = opts.x ?? (this.player.x + this.player.width / 2);
-        const baseY = opts.y ?? this.player.y;
-        for (let i = 0; i < this.floatingTextPool.length; i++) {
-            let ft = this.floatingTextPool[i];
-            if (ft.active) continue;
-            ft.active = true;
-            ft.x      = baseX + (Math.random() * 20 - 10);
-            ft.y      = baseY + (opts.yOffset ?? 10);
-            ft.text   = text; ft.color = color;
-            ft.alpha  = opts.alpha ?? 1.0;
-            ft.vy     = opts.vy ?? (-1 - Math.random() * 0.5);
-            ft.isBigName = opts.isBigName || false;
-            if (ft._cachedText !== text) { ft._cachedTextWidth = undefined; ft._cachedText = text; }
-            return;
-        }
-        // सभी slots व्यस्त — silently skip (pool-integrity बनाए रखें)
-    }
-
-    /** Explosion particles spawn (pool pattern) */
-    _createExplosion(x, y, color) {
-        let spawned = 0;
-        for (let i = 0; i < this.particlePool.length && spawned < 10; i++) {
-            let p = this.particlePool[i];
-            if (!p.active) {
-                p.active = true; p.x = x; p.y = y;
-                p.vx = (Math.random() - 0.5) * 5; p.vy = (Math.random() - 0.5) * 5;
-                p.radius = Math.random() * 1.8 + 0.5; p.color = color; p.alpha = 1;
-                spawned++;
-            }
-        }
-    }
-
-    /** Body-glow timer set करें */
-    _triggerGlow(color) { this.bodyGlowTimer = 40; this.bodyGlowColor = color; }
-
-    /** Explosion + glow एक साथ */
-    _triggerBlast(color) {
-        this._createExplosion(this.player.x + this.player.width / 2,
-                               this.player.y + this.player.height / 2, color);
-        this._triggerGlow("#fb923c");
-    }
-
-    /** Gained-glow ring spawn (pool pattern) */
-    _createGainedGlow(x, y, color) {
-        for (let i = 0; i < this.glowEffectPool.length; i++) {
-            let g = this.glowEffectPool[i];
-            if (!g.active) {
-                g.active = true; g.x = x; g.y = y;
-                g.radius = 4; g.maxRadius = 26; g.color = color; g.alpha = 1;
-                break;
-            }
-        }
-    }
-
-    /** क्या player अभी tunnel के अंदर है? */
-    _isPlayerInsideTunnel() {
-        const buffer = 4;
-        return (this.player.x >= (this.TUNNEL_X - buffer) &&
-                (this.player.x + this.player.width) <= (this.TUNNEL_X + this.TUNNEL_WIDTH + buffer));
-    }
-
-    /**
-     * Glow-ring विस्तार (DRY — §2.4)।
-     * @param {Object}   ring    — glowRings.jyoti / .shankha / .kripa
-     * @param {number}   dt
-     * @param {Function} onTick  — optional (शंख-vलय के cyclone-check हेतु)
-     */
-    _updateGlowRing(ring, dt, onTick) {
-        if (!ring.active) return;
-        ring.radius += ring.speed * dt;
-        if (onTick) onTick(ring);
-        if (ring.radius > ring.maxRadius) { ring.active = false; ring.radius = 0; }
-    }
-
-    /** सभी glow-rings निष्क्रिय/reset करें (punahaPrarambha में प्रयुक्त) */
-    _resetAllGlowRings() {
-        for (let key in this.glowRings) {
-            this.glowRings[key].active = false; this.glowRings[key].radius = 0;
-        }
-    }
+    // ====================== UI HELPERS ======================
+    // (state.js として切り出し可能 — 将来の refactor で StateMixin へ)
 
     /** Alert box DOM update */
     _updateAlert(text, color) {
         if (!this._UI?.alertBox) return;
-        this._UI.alertBox.innerText = text;
+        this._UI.alertBox.innerText   = text;
         this._UI.alertBox.style.color = color;
     }
 
-    /** HUD stat update (pulse animation trigger) */
+    /** HUD stat update — dirty-check, pulse animation trigger */
     _updateStatWithPulse(el, key, newVal, icon, suffix = "") {
         if (!el) return;
         if (this._oldStats[key] !== newVal) {
-            el.textContent = `${icon} ${newVal}${suffix}`;
-            this._uiScales[key] = 1.15; this._uiGlows[key] = 1.0;
-            this._oldStats[key] = newVal;
+            el.textContent        = `${icon} ${newVal}${suffix}`;
+            this._uiScales[key]   = 1.15;
+            this._uiGlows[key]    = 1.0;
+            this._oldStats[key]   = newVal;
         }
     }
 
     /** सभी HUD stats एक साथ update करें */
     _updateUIStats() {
         if (!this._UI) return;
-        this._updateStatWithPulse(this._UI.naama,       'naama',       this.activeNaam,       'ॐ');
-        this._updateStatWithPulse(this._UI.punya,       'punya',       this.shuvhaKarma,      '🌿');
-        this._updateStatWithPulse(this._UI.paap,        'paap',        this.ashuvhaKarma,     '🥀');
-        this._updateStatWithPulse(this._UI.prarabdha,   'prarabdha',   this.prarabdha,        '📜');
-        this._updateStatWithPulse(this._UI.samarpita,   'samarpita',   this.samarpita,        '🙏', ` / ${CHETANA_JAGRITI_THRESHOLD}`);
-        this._updateStatWithPulse(this._UI.punaraJanma, 'punaraJanma', this.punaraJanmaCount, '♻️');
-        this._updateStatWithPulse(this._UI.kripa,       'kripa',       this.kripa,            '✋');
-        this._updateStatWithPulse(this._UI.shankha,     'shankha',     this.shankha,          '🐚');
-        this._updateStatWithPulse(this._UI.jyoti,       'jyoti',       this.jyoti,            '🪔');
-        this._updateStatWithPulse(this._UI.chetana,     'chetana',     this.chetanaaJagrita ? "👁️" : "😴", "");
-        this._updateStatWithPulse(this._UI.drishti,     'drishti',     this.ashuvhaKarma >= 3 ? "⚫" : "☀️", "");
+        this._updateStatWithPulse(this._UI.naama,          'naama',          this.activeNaam,          'ॐ');
+        this._updateStatWithPulse(this._UI.punya,          'punya',          this.shuvhaKarma,         '🌿');
+        this._updateStatWithPulse(this._UI.paap,           'paap',           this.ashuvhaKarma,        '🥀');
+        this._updateStatWithPulse(this._UI.prarabdha,      'prarabdha',      this.prarabdha,           '📜');
+        this._updateStatWithPulse(this._UI.samarpita,      'samarpita',      this.samarpita,
+                                  '🙏', ` / ${CHETANA_JAGRITI_THRESHOLD}`);
+        this._updateStatWithPulse(this._UI.punaraJanma,    'punaraJanma',    this.punaraJanmaCount,    '♻️');
+        this._updateStatWithPulse(this._UI.kripa,          'kripa',          this.kripa,               '✋');
+        this._updateStatWithPulse(this._UI.shankha,        'shankha',        this.shankha,             '🐚');
+        this._updateStatWithPulse(this._UI.jyoti,          'jyoti',          this.jyoti,               '🪔');
+        this._updateStatWithPulse(this._UI.chetana,        'chetana',        this.chetanaaJagrita ? "👁️" : "😴", "");
+        this._updateStatWithPulse(this._UI.drishti,        'drishti',        this.ashuvhaKarma >= 3 ? "⚫" : "☀️", "");
         this._updateStatWithPulse(this._UI.purnaSamarpana, 'purnaSamarpana', this.purnaSamarpana ? "🙌" : "🤲", "");
     }
 
@@ -1445,16 +1019,16 @@ export class KarmaEngine {
             }
             const el = this._UI?.[key];
             if (el) {
-                const currentGlow = this._uiGlows[key] * 15;
+                const currentGlow  = this._uiGlows[key] * 15;
                 const newTransform = `scale(${this._uiScales[key].toFixed(4)})`;
-                const newShadow = currentGlow < 0.1 ? '' : `0 0 ${currentGlow.toFixed(1)}px currentColor`;
+                const newShadow    = currentGlow < 0.1 ? '' : `0 0 ${currentGlow.toFixed(1)}px currentColor`;
                 if (el._lastTransform !== newTransform) { el.style.transform = newTransform; el._lastTransform = newTransform; }
-                if (el._lastShadow !== newShadow)   { el.style.boxShadow = newShadow; el._lastShadow = newShadow; }
+                if (el._lastShadow    !== newShadow)    { el.style.boxShadow = newShadow;    el._lastShadow    = newShadow; }
             }
         }
     }
 
-    /** Container border color (DRY: सिर्फ़ बदलने पर DOM write) */
+    /** Container border color (dirty-check) */
     setContainerBorderColor(color) {
         if (this.currentBorderColor !== color && this._UI?.container) {
             this._UI.container.style.borderColor = color;
@@ -1462,3 +1036,9 @@ export class KarmaEngine {
         }
     }
 }
+
+// ====================== MIXIN APPLICATION ======================
+// physics.js और karma.js के methods engine.prototype पर assign करें।
+// इससे `this` engine instance को refer करता है — zero breaking changes।
+// ⚠️ Order: PhysicsMixin पहले (karma.js इन पर depend करती है)
+Object.assign(KarmaEngine.prototype, PhysicsMixin, KarmaMixin);

@@ -147,9 +147,9 @@ MOKSHA/
 ├── audio/            — 28 .mp3 ambient & SFX files
 └── src/
     ├── audio.js      — AudioManager: 28-mp3 preload, ambient layers, duck system (1276 lines)
-    ├── engine.js     — KarmaEngine: core loop, state, pools, HUD (trimmed)
-    ├── karma.js      — KarmaMixin: Vedic logic, maya, kripa, actions (new)
-    ├── physics.js    — PhysicsMixin: collision, glow-rings, particles (new)
+    ├── engine.js     — KarmaEngine: core loop, state, pools, HUD (1044 lines)
+    ├── karma.js      — KarmaMixin: Vedic logic, maya, kripa, actions (449 lines)
+    ├── physics.js    — PhysicsMixin: glow-rings, particles, pool helpers (162 lines)
     ├── render.js     — Renderer: Canvas draw functions, sprite caches (780 lines)
     └── main.js       — Orchestrator: wires all modules, gameLoop, input (524 lines)
 ```
@@ -159,7 +159,7 @@ MOKSHA/
 # 📖 मोक्ष — प्रोजेक्ट संदर्भ-दस्तावेज़ (Developer Reference)
 
 > **उद्देश्य:** यह दस्तावेज़ मोक्ष codebase के लिए एक स्थायी संदर्भ (reference) है।
-> **अंतिम अपडेट आधार:** ES6 Modular Refactor + engine.js split (~4614 lines across 6 src files + style.css)
+> **अंतिम अपडेट आधार:** v0.0.6 — engine.js → KarmaMixin + PhysicsMixin split (~4223 lines across 6 src files + style.css)
 > **भाषा/स्टैक:** HTML5 Canvas, Vanilla JS ES6 Modules (no build tooling, no TypeScript, no framework), Web Audio API, Gamepad API
 
 ---
@@ -500,6 +500,7 @@ AM.updateAmbientVolumes();
 | क्षेत्र | परिवर्तन |
 |---|---|
 | **🆕 ES6 Modular Refactor** | `index.html` (3835 lines) → `audio.js` + `engine.js` + `render.js` + `main.js` + `style.css` |
+| **🆕 engine.js split (v0.0.6)** | `engine.js` (1449→1044 lines) → `KarmaMixin` (karma.js) + `PhysicsMixin` (physics.js); `Object.assign` mixin pattern |
 | **🆕 KarmaEngine class** | सभी Vedic state + logic → `src/engine.js` ES6 class; `setCallbacks()` DI pattern |
 | **🆕 AudioManager class** | सभी Web Audio logic → `src/audio.js`; `setGameStateGetter()` DI pattern |
 | **🆕 Renderer module** | सभी draw functions → `src/render.js` |
@@ -548,21 +549,53 @@ AM.updateAmbientVolumes();
 
 ## 10. फ़ाइल त्वरित-नेविगेशन
 
-### src/engine.js (~1449 lines)
+### src/engine.js (~1044 lines) — Slim Orchestrator
 | पंक्ति | फ़ंक्शन/सेक्शन |
 |---|---|
-| ~1 | Exported constants (SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, etc.) |
-| ~93 | `KarmaEngine` class constructor — सभी state properties |
-| ~250 | `init()` — canvas dimensions setup |
-| ~270 | `setCallbacks()`, `setUI()` |
-| ~290 | `update(dt, keys, frameNow)` — मुख्य game logic tick |
-| ~900 | मोक्ष-चेक |
-| ~1000 | `reset()` — punahaPrarambha |
-| ~1100 | `showEndScreen(reason)` |
-| ~1200 | `grantKripa()`, `collectResource()` |
-| ~1320 | `_updateGlowRings()`, `resetAllGlowRings()` |
-| ~1390 | `_updateUIStats()`, `_updateHUDAnimations()` |
-| ~1442 | `setContainerBorderColor()` |
+| ~1 | Imports: KarmaMixin, PhysicsMixin |
+| ~25 | Exported constants (SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, etc.) |
+| ~65 | `KarmaEngine` class constructor — सभी state properties |
+| ~220 | `setCallbacks()`, `setUI()` |
+| ~240 | `init()` — pool + stars initialization |
+| ~280 | `update(dt, keys, frameNow)` — मुख्य game logic tick |
+| ~730 | `toggleShastra()` |
+| ~760 | `showEndScreen(reason)` |
+| ~830 | `reset()` — punahaPrarambha |
+| ~930 | `getState()` — renderer snapshot |
+| ~970 | `_updateAlert()`, `_updateStatWithPulse()` |
+| ~990 | `_updateUIStats()`, `_updateHUDAnimations()` |
+| ~1040 | `setContainerBorderColor()` |
+| ~1044 | `Object.assign(KarmaEngine.prototype, PhysicsMixin, KarmaMixin)` |
+
+### src/karma.js (~449 lines) — KarmaMixin
+| पंक्ति | फ़ंक्शन/सेक्शन |
+|---|---|
+| ~1 | `import { SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, RESOURCE_PICKUP_TABLE }` from engine.js |
+| ~36 | `export const KarmaMixin` |
+| ~41 | `_syncOrbitCounts()` |
+| ~59 | `_checkMokhsha()` — मोक्ष-शर्त + पुनर्जन्म |
+| ~137 | `_spawnMaya()` — type determination + pool slot |
+| ~177 | `_handlePlayerMayaCollision()` — Vedic collision logic |
+| ~247 | `_grantKripa()` — §1.4 |
+| ~297 | `_collectResource()` — शंख/ज्योति DRY |
+| ~314 | `actionNaamaJaapa()` |
+| ~333 | `actionShankha()`, `actionJyoti()` |
+| ~367 | `actionNaamaSamarpan()` |
+| ~397 | `actionVairaagya()` |
+| ~417 | `actionPralaya()`, `actionPause()`, `actionResume()` |
+
+### src/physics.js (~160 lines) — PhysicsMixin
+| पंक्ति | फ़ंक्शन/सेक्शन |
+|---|---|
+| ~1 | `export const PhysicsMixin` |
+| ~10 | `_isPlayerInsideTunnel()` |
+| ~20 | `_updateGlowRing(ring, dt, onTick)` — DRY §2.4 |
+| ~35 | `_resetAllGlowRings()` |
+| ~45 | `_createExplosion(x, y, color)` |
+| ~65 | `_createGainedGlow(x, y, color)` |
+| ~80 | `_addFloatingText(text, color, opts)` — pool §2.3 |
+| ~115 | `_triggerGlow(color)` |
+| ~120 | `_triggerBlast(color)` |
 
 ### src/audio.js (~1277 lines)
 | पंक्ति | फ़ंक्शन/सेक्शन |
