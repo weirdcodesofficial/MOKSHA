@@ -505,8 +505,6 @@ export class KarmaEngine {
                 let explColor = m.type === 'shuvha' ? '#32ff32' : m.type === 'ashuvha' ? '#ff3232' : '#ffffff';
 
                 if (dist <= this.naamaGhera) {
-                    // cyclone — naam-ring से प्रभावित नहीं (शास्त्र-संगत)
-                    if (m.type === 'cyclone') continue;
                     if (m.isPulling) this._mayaConsumedWhilePulling = true;
 
                     if (m.type === 'naama') {
@@ -533,7 +531,10 @@ export class KarmaEngine {
                             this._createExplosion(mCx, mCy, explColor);
                             this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
                             this.samarpita++; takraavaMaya = true; m.active = false; continue;
-                    }
+                    } else if (m.type === 'cyclone') {
+                        this._createExplosion(mCx, mCy, explColor);
+                        this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
+                        this.samarpita++; takraavaMaya = true; m.active = false; continue;
                 }
             }
             if (takraavaMaya) this._cb.playSound?.('samarpita');

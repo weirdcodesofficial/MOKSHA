@@ -35,7 +35,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | **समर्पित** (Surrendered) | `samarpita` | ≥50 triggers चेतना-जागृति (Awakening) |
 | **चेतना-जागृति** (Awakening) | `chetanaaJagrita` | **True gate for Moksha** |
 | **कृपा** (Grace) | `kripa` | Earned through surrender; frees karma-bondage |
-| **शंख** (Conch) | `shankha` | Dispels cyclone (तूफ़ान) of Maya |
+| **शंख** (Conch) | `shankha` | Dispels cyclone (तूफ़ान) of Maya when Naam is unavailable then Shanka (यंत्र-मार्ग) |
 | **ज्योति** (Lamp) | `jyoti` | Restores vision in the darkness of bad karma |
 
 ## 🎮 Controls
@@ -50,7 +50,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | Pure Rebirth | `R` | LT (6) | Zero karma → new life |
 | Shastra (Knowledge) | `ESC` | BACK (8) | Open wisdom scroll |
 | Pause | `F` | START (9) | Stillness |
-| Shankha (Conch) | `Y` | Y (0) | Dispel cyclone |
+| Shankha (Conch) | `Y` | Y (0) | Dispel cyclone (यंत्र-मार्ग, when Naam unavailable) |
 | Jyoti (Lamp) | `B` | B (1) | Restore vision in bad-karma darkness |
 | Shastra Scroll | `↑` / `↓` (hold) | DPAD U/D | Navigate wisdom text |
 
@@ -60,7 +60,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 
 - 🕉️ **Vedic Karma Engine** — Real-time Punya/Paap/Prarabdha/Samarpita system
 - 🌸 **Lotus Petal Ring** — 10 animated petals visualise remaining breath (Swaansa)
-- 🌀 **Cyclone (Maya Tufaan)** — Can only be dispelled by Shankha, not Naam-Jaap
+- 🌀 **Cyclone (Maya Tufaan)** — Can only be dispelled by Naam-Jaapa or Shankha if Naam-Jaap Unavailable
 - 🎵 **Layered Ambient Audio** — 4 continuous loops (bgMusic, Shathendriya, SushuptiBreath, JagritaBreath) with smooth duck/fade
 - 🔮 **Sci-Fi Yantra Visuals** — CRT scanlines, gold scan-sweep, Yantra polygons, cyberGrid
 - 🏆 **Three End States** — Moksha (liberation), Pralaya (dissolution), Punarjanma (rebirth)
@@ -214,7 +214,8 @@ grantKripa(x, y, reason = null) {
 
 ### 1.5 cyclone — शास्त्र-संगत व्यवहार
 - cyclone **player को नहीं खींचता** — सिर्फ shuvha/ashuvha माया को
-- naam-jaap वलय cyclone को नहीं छूती — सिर्फ शंख-वलय (Y) ही cyclone भस्म करती है
+- naam-jaap वलय cyclone को भस्म करती है (नाम-मार्ग) — नाम सर्वशक्तिमान है
+शंख-वलय (Y) भी cyclone भस्म करती है (यंत्र-मार्ग) — जब नाम संचित न हो
 
 ---
 
@@ -516,7 +517,7 @@ AM.updateAmbientVolumes();
 | **sci-fi विज़ुअल** | scan-sweep, CRT scanlines, drawRingTicks, drawYantraPolygon, cyberGrid |
 | **वलय रंग** | violet/cyan → neon-gold #ffc83c |
 | **grantKripa()** | बंधन हो → kripa--, karma→samarpita; बंधन न हो → kripa++ |
-| **cyclone** | player नहीं खींचता; naam-jaap वलय cyclone नहीं छूती |
+| **cyclone** | player नहीं खींचता; naam-jaap वलय cyclone भस्म करती है (नाम-मार्ग); शंख यंत्र-मार्ग |
 | **bgMusicVolume** | fix: सभी layers पर multiplier |
 | **SUSHUPTI duck** | 0.55→0.20 |
 | **Audio eager/deferred** | 22 eager + 6 deferred |
