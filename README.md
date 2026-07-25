@@ -213,9 +213,11 @@ grantKripa(x, y, reason = null) {
 ```
 
 ### 1.5 cyclone — शास्त्र-संगत व्यवहार
-- cyclone **player को नहीं खींचता** — सिर्फ shuvha/ashuvha माया को
+- cyclone **player को भी खींचता है** (range: 220px) — माया का भय-रूप
+- cyclone shuvha/rikta माया को भी अपनी ओर खींचता है
 - naam-jaap वलय cyclone को भस्म करती है (नाम-मार्ग) — नाम सर्वशक्तिमान है
-शंख-वलय (Y) भी cyclone भस्म करती है (यंत्र-मार्ग) — जब नाम संचित न हो
+- शंख-वलय (Y) भी cyclone भस्म करती है (यंत्र-मार्ग) — जब नाम संचित न हो
+- player सीधे टकराए → `ashuvhaKarma++` — नाम या शंख ही एकमात्र रक्षा
 
 ---
 
@@ -517,7 +519,7 @@ AM.updateAmbientVolumes();
 | **sci-fi विज़ुअल** | scan-sweep, CRT scanlines, drawRingTicks, drawYantraPolygon, cyberGrid |
 | **वलय रंग** | violet/cyan → neon-gold #ffc83c |
 | **grantKripa()** | बंधन हो → kripa--, karma→samarpita; बंधन न हो → kripa++ |
-| **cyclone** | player नहीं खींचता; naam-jaap वलय cyclone भस्म करती है (नाम-मार्ग); शंख यंत्र-मार्ग |
+| **cyclone** | player को खींचता है; naam-ring भस्म करती है (नाम-मार्ग); शंख यंत्र-मार्ग; direct collision → ashuvhaKarma++ |शंख यंत्र-मार्ग |
 | **bgMusicVolume** | fix: सभी layers पर multiplier |
 | **SUSHUPTI duck** | 0.55→0.20 |
 | **Audio eager/deferred** | 22 eager + 6 deferred |

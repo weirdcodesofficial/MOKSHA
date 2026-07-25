@@ -64,6 +64,12 @@ export const KRIPA_NAAM_MILESTONE = 20;
 /** हर 30 नए समर्पित-अर्जन पर कृपा++ */
 export const KRIPA_SAMARPITA_MILESTONE = 30;
 
+/** cyclone का player-आकर्षण दायरा (px) */
+export const CYCLONE_PLAYER_PULL_RANGE = 220;
+
+/** cyclone का player पर आकर्षण-बल गुणक */
+export const CYCLONE_PLAYER_PULL_FORCE = 1.4;
+
 /**
  * माया-size lookup-table (DRY: nested-ternary का स्थान)।
  * नया type जोड़ने पर सिर्फ़ यहाँ एक entry जोड़ें।
@@ -484,11 +490,18 @@ export class KarmaEngine {
         for (let ci = 0; ci < this.mayaPool.length; ci++) {
             let cy0 = this.mayaPool[ci]; if (!cy0.active || cy0.type !== "cyclone") continue;
             let cyCx = cy0.x + cy0.width / 2;
+            let cyCy = cy0.y + cy0.height / 2;
             for (let mi = 0; mi < this.mayaPool.length; mi++) {
                 let m2 = this.mayaPool[mi];
                 if (!m2.active || m2 === cy0) continue;
                 if (m2.type !== "shuvha" && m2.type !== "ashuvha") continue;
                 m2.x += (cyCx - (m2.x + m2.width / 2)) * 0.05 * CYCLONE_FORCE * dt;
+            }
+            // player को भी खींचे — माया का भय-रूप, नाम या शंख से ही मुक्ति
+            const playerDist = Math.hypot(cx - cyCx, cy - cyCy);
+            if (playerDist < CYCLONE_PLAYER_PULL_RANGE && playerDist > 0) {
+                const pullStr = (1 - playerDist / CYCLONE_PLAYER_PULL_RANGE) * CYCLONE_PLAYER_PULL_FORCE;
+                this.player.x += (cyCx - cx) * pullStr * dt;
             }
         }
         this.player.x = Math.max(0, Math.min(this.WIDTH - this.player.width, this.player.x));
@@ -1221,12 +1234,12 @@ export class KarmaEngine {
         } else if (m.type === "jyoti") {
             this._collectResource('jyoti', m.x, m.y);
         } else if (m.type === "cyclone") {
-            const cycloneCx = m.x + m.width / 2;
-            const pushDir = (cx < cycloneCx) ? -1 : 1;
-            this.player.x = Math.max(0, Math.min(this.WIDTH - this.player.width, this.player.x + pushDir * 200));
+            // सीधी टक्कर: पाप-प्रहार — cyclone नष्ट नहीं होता, नाम या शंख चाहिए
+            this.ashuvhaKarma++;
+            this.shakeTimer = 14;
             this._addFloatingText("🌪️", "#aaaaaa", { x: m.x + m.width / 2, y: m.y });
-            this._cb.vibrateGamepad?.(0.4, 0.6, 180);
-            this._updateAlert("🌪️ विक्षेप: चक्रवात ने रथ को झकझोरा!", "#aaaaaa");
+            this._cb.vibrateGamepad?.(0.7, 0.9, 250);
+            this._updateAlert("🌪️ चक्रवात-प्रहार! नाम या शंख से भस्म करें!", "#aaaaaa");
             return; // m.active = false नहीं — cyclone यथावत
         } else if (m.type === "shuvha") {
             if (!this._pendingGoodKarma) { this._pendingGoodKarma = true; this._punyaTimer = 180; }
