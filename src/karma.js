@@ -220,19 +220,34 @@ export const KarmaMixin = {
             this._updateAlert("🌪️ विक्षेप: चक्रवात ने रथ को झकझोरा!", "#aaaaaa");
             return; // m.active = false नहीं — chakravaata यथावत
         } else if (m.type === "shuvha") {
-            if (!this._pendingGoodKarma) {
+            if (this.activeNaam >= 1) {
+                this.activeNaam--; this.samarpita++;
+                this._createExplosion(m.x + m.width / 2, m.y + m.height / 2, "#ffffff");
+                this._addFloatingText("🙏", "#fb923c", { x: m.x + m.width / 2, y: m.y });
+                this._cb.playSound?.('samarpita');
+                m.active = false; return;
+            } else if (!this._pendingGoodKarma) {
                 this._pendingGoodKarma = true;
                 this._punyaTimer       = 180;
             }
             this._pendingGoodKarmaCount++;
             this._cb.playSound?.('shuvha');
-        } else {
-            // ashuvha (पाप)
-            this.ashuvhaKarma++;
-            this._addFloatingText("🥀", "#ff3232");
-            this._triggerBlast("#ff3232");
-            this._cb.playSound?.('ashuvha');
-            this._updateAlert("🚨 पाप हमला!", "#ff3232");
+        } else if (m.type === "ashuvha") {
+            if (this.activeNaam >= 5) {
+                this.activeNaam -= 5; this.samarpita++;
+                this._createExplosion(m.x + m.width / 2, m.y + m.height / 2, "#ffffff");
+                this._addFloatingText("🙏", "#fb923c", { x: m.x + m.width / 2, y: m.y });
+                this._cb.playSound?.('samarpita');
+                m.active = false; return;
+            } else {
+                // ashuvha (पाप)
+                this.ashuvhaKarma++;
+                this._createExplosion(m.x + m.width / 2, m.y + m.height / 2, "#ffffff");
+                this._addFloatingText("🥀", "#ff3232", { x: m.x + m.width / 2, y: m.y });
+                this._triggerBlast("#ff3232");
+                this._cb.playSound?.('ashuvha');
+                this._updateAlert("🚨 पाप हमला!", "#ff3232");
+            }
         }
         m.active = false;
     },
