@@ -63,6 +63,12 @@ export const KRIPA_NAAM_MILESTONE = 20;
 /** हर 30 नए समर्पित-अर्जन पर कृपा++ */
 export const KRIPA_SAMARPITA_MILESTONE = 30;
 
+/** cyclone का player-आकर्षण दायरा (px) */
+export const CYCLONE_PLAYER_PULL_RANGE = 160;
+
+/** cyclone का player पर आकर्षण-बल गुणक */
+export const CYCLONE_PLAYER_PULL_FORCE = 0.8;
+
 /**
  * माया-size lookup-table (DRY: nested-ternary का स्थान)।
  * नया type जोड़ने पर सिर्फ़ यहाँ एक entry जोड़ें।
@@ -493,11 +499,18 @@ export class KarmaEngine {
             let cy0 = this.mayaPool[ci];
             if (!cy0.active || cy0.type !== "cyclone") continue;
             let cyCx = cy0.x + cy0.width / 2;
+            let cyCy = cy0.y + cy0.height / 2;
             for (let mi = 0; mi < this.mayaPool.length; mi++) {
                 let m2 = this.mayaPool[mi];
                 if (!m2.active || m2 === cy0) continue;
                 if (m2.type !== "shuvha" && m2.type !== "ashuvha") continue;
                 m2.x += (cyCx - (m2.x + m2.width / 2)) * 0.05 * CYCLONE_FORCE * dt;
+            }
+            // player को भी खींचे — माया का भय-रूप, नाम या शंख से ही मुक्ति
+            const playerDist = Math.hypot(cx - cyCx, cy - cyCy);
+           if (playerDist <= CYCLONE_PLAYER_PULL_RANGE && playerDist > 0) {
+                const pullStrength = (1 - playerDist / CYCLONE_PLAYER_PULL_RANGE) * CYCLONE_PLAYER_PULL_FORCE;
+                this.player.x += (cyCx - cx) * pullStrength * dt;
             }
         }
         this.player.x = Math.max(
@@ -542,7 +555,7 @@ export class KarmaEngine {
                         this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
                         this.samarpita++; takraavaMaya = true;
                         m.active = false; continue;
-                    }
+                    } 
                 }
             }
             if (takraavaMaya) this._cb.playSound?.('samarpita');
