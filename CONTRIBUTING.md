@@ -88,7 +88,7 @@ this.mayaPool.splice(i, 1);   // कभी नहीं
 
 | नियम | विवरण |
 |---|---|
-| मोक्ष-गेट | `chetanaaJagrita` boolean use करें — `samarpita >= 50` नहीं |
+| मोक्ष-गेट | `chetanaaJaagrita` boolean use करें — `samarpita >= 50` नहीं |
 | प्रारब्ध | सिर्फ 10-नाम से भस्म होता है — `grantKripa()` इसे नहीं छूती |
 | cyclone | player को नहीं खींचता — सिर्फ shuvha/rikta माया को |
 | naam-jaap वलय | cyclone को affect नहीं करती — सिर्फ शंख-वलय (Y) करती है |

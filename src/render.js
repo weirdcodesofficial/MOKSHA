@@ -9,8 +9,8 @@ let cachedBuddhiSprite = null;
 let cachedBuddhiSRadiusKey = -1;
 let cachedAtmanSprite = null;
 let cachedAtmanGlowKey = -1;
-let cachedBreathGrad = null;
-let cachedBreathGradBucket = -1;
+let cachedSwaansaGrad = null;
+let cachedSwaansaGradBucket = -1;
 let cachedTunnelGrad = null;
 let cachedTunnelGradBucket = -1;
 let sciFiGridSprite = null;
@@ -202,7 +202,7 @@ export const Renderer = {
             frameNow, shakeTimer, samaya, swaansaSamapta, stars, tunnelSparkles,
             particlePool, glowEffectPool, player, smoothSize, glowRings,
             shuvhaKarma, ashuvhaKarma, prarabdha, activeNaam, kripa, shankha, jyoti,
-            samarpita, punaraJanmaCount, chetanaaJagrita, purnaSamarpana, chainSlots,
+            samarpita, punaraJanmaCount, chetanaaJaagrita, purnaSamarpana, chainSlots,
             finalHorsePositions, pulledHorseIndex, pulledHorseX, pulledHorseY,
             isPaused, gameOver, mayaPool, pendingGoodKarma, punyaTimer,
             pendingGoodKarmaCount, floatingTextPool, isNaamaJaapa, naamaGhera,
@@ -220,17 +220,17 @@ export const Renderer = {
         if (samaya < 100 && !swaansaSamapta) { ctx.fillStyle = "rgba(255, 0, 0, " + (1 - samaya / 100) * 0.35 + ")"; ctx.fillRect(0, 0, WIDTH, HEIGHT); }
 
         ctx.save();
-        let worldBreathPhase = swaansaTimer / 360;
-        let worldBreathPulse = (Math.sin(worldBreathPhase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+        let worldSwaansaPhase = swaansaTimer / 360;
+        let worldSwaansaPulse = (Math.sin(worldSwaansaPhase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
 
         ctx.globalCompositeOperation = 'screen';
-        let breathGradBucket = Math.round(worldBreathPulse * 24);
-        if (breathGradBucket !== cachedBreathGradBucket || !cachedBreathGrad) {
-            cachedBreathGradBucket = breathGradBucket;
-            cachedBreathGrad = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 120 + worldBreathPulse * 180, WIDTH / 2, HEIGHT / 2, WIDTH * 0.8);
-            cachedBreathGrad.addColorStop(0, "rgba(147, 197, 253, 0)"); cachedBreathGrad.addColorStop(1, "rgba(147, 197, 253, " + (0.1 + worldBreathPulse * 0.4) + ")");
+        let swaansaGradBucket = Math.round(worldSwaansaPulse * 24);
+        if (swaansaGradBucket !== cachedSwaansaGradBucket || !cachedSwaansaGrad) {
+            cachedSwaansaGradBucket = swaansaGradBucket;
+            cachedSwaansaGrad = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 120 + worldSwaansaPulse * 180, WIDTH / 2, HEIGHT / 2, WIDTH * 0.8);
+            cachedSwaansaGrad.addColorStop(0, "rgba(147, 197, 253, 0)"); cachedSwaansaGrad.addColorStop(1, "rgba(147, 197, 253, " + (0.1 + worldSwaansaPulse * 0.4) + ")");
         }
-        ctx.fillStyle = cachedBreathGrad; ctx.fillRect(0, 0, WIDTH, HEIGHT); ctx.restore();
+        ctx.fillStyle = cachedSwaansaGrad; ctx.fillRect(0, 0, WIDTH, HEIGHT); ctx.restore();
 
         ctx.save(); let edgeIntensity = (samaya < 100) ? (1 - samaya / 100) : 0;
         let tunnelGradBucket = Math.round(edgeIntensity * 24);
@@ -293,7 +293,7 @@ export const Renderer = {
         drawGlowRing(cx, cy, glowRings.shankha);
         drawGlowRing(cx, cy, glowRings.kripa);
 
-        let sharirPulseScale = 1 + (worldBreathPulse * 0.28);
+        let sharirPulseScale = 1 + (worldSwaansaPulse * 0.28);
         const CHAIN_GAP = 44; 
         let activeChainCount = 0;
         if (shuvhaKarma > 0) { let s = chainSlots[activeChainCount++]; s.active = true; s.color = "#32ff32"; s.strength = Math.min(1, shuvhaKarma / 5); s.isHeavy = false; }
@@ -306,7 +306,7 @@ export const Renderer = {
             drawKarmaChain(chainCx, chainCy, c.color, c.strength, c.isHeavy, frameNow);
         });
 
-        let breathingSmoothSize = smoothSize * sharirPulseScale; let sharirGlow = 8 + worldBreathPulse * 28; let sharirAlpha = 0.4 + worldBreathPulse * 0.6;
+        let swaansaingSmoothSize = smoothSize * sharirPulseScale; let sharirGlow = 8 + worldSwaansaPulse * 28; let sharirAlpha = 0.4 + worldSwaansaPulse * 0.6;
         
         if (naamaGlowTimer > 0 || bodyGlowTimer > 0) {
             ctx.save();
@@ -314,19 +314,19 @@ export const Renderer = {
                 let a = naamaGlowTimer / 40;
                 ctx.shadowBlur = 18; ctx.shadowColor = "rgba(255, 255, 255, " + a + ")";
                 ctx.fillStyle = "rgba(255, 255, 255, " + a + ")";
-                ctx.beginPath(); ctx.arc(cx, cy, (breathingSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx, cy, (swaansaingSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
             }
             if (bodyGlowTimer > 0) {
                 ctx.globalAlpha = bodyGlowTimer / 40;
                 ctx.shadowBlur = 18; ctx.shadowColor = bodyGlowColor; ctx.fillStyle = bodyGlowColor;
-                ctx.beginPath(); ctx.arc(cx, cy, (breathingSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx, cy, (swaansaingSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
             }
             ctx.restore();
         }
 
-        ctx.save(); ctx.shadowBlur = sharirGlow; ctx.shadowColor = `rgba(255,255,255,${sharirAlpha})`; ctx.strokeStyle = `rgba(255,255,255,${sharirAlpha})`; ctx.lineWidth = (0.5 + worldBreathPulse * 1.2) * (smoothSize / 60); ctx.beginPath(); ctx.arc(cx, cy, breathingSmoothSize / 2, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.shadowBlur = sharirGlow; ctx.shadowColor = `rgba(255,255,255,${sharirAlpha})`; ctx.strokeStyle = `rgba(255,255,255,${sharirAlpha})`; ctx.lineWidth = (0.5 + worldSwaansaPulse * 1.2) * (smoothSize / 60); ctx.beginPath(); ctx.arc(cx, cy, swaansaingSmoothSize / 2, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
         
-        let sRadius = (breathingSmoothSize / 2) - 7; 
+        let sRadius = (swaansaingSmoothSize / 2) - 7; 
         let sCy = cy; 
         
         let buddhiSRadiusKey = Math.round(sRadius);
@@ -389,7 +389,7 @@ export const Renderer = {
         for (let i = 0; i < horseCount; i++) { 
             let hx, hy; 
             if (i === pulledHorseIndex) { hx = pulledHorseX; hy = pulledHorseY; } 
-            else { hx = startX + i * horseSpacing; hy = cy - breathingSmoothSize / 2 - 45 + (isPaused || gameOver ? 0 : Math.sin((frameNow / 70) + i) * 3); } 
+            else { hx = startX + i * horseSpacing; hy = cy - swaansaingSmoothSize / 2 - 45 + (isPaused || gameOver ? 0 : Math.sin((frameNow / 70) + i) * 3); } 
             finalHorsePositions[i].x = hx; finalHorsePositions[i].y = hy; 
             ctx.beginPath(); ctx.arc(hx, hy, 2.2, 0, Math.PI * 2); ctx.fill(); 
         }
@@ -536,7 +536,7 @@ export const Renderer = {
             ctx.save(); let alpha = 1.0; if (notifyTimer < 50) { alpha = notifyTimer / 50; } ctx.globalAlpha = alpha; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "rgba(0, 0, 0, " + (alpha * 0.7) + ")"; ctx.fillRect(0, HEIGHT / 2 - 50, WIDTH, 100); ctx.fillStyle = "#ff6b6b"; ctx.font = "900 32px 'Orbitron', sans-serif"; ctx.shadowBlur = 25; ctx.shadowColor = "#ff3232"; ctx.fillText(notifyText, WIDTH / 2, HEIGHT / 2); ctx.restore();
         }
 
-        let gatiRadius = (breathingSmoothSize / 2) + 5;   
+        let gatiRadius = (swaansaingSmoothSize / 2) + 5;   
         let samayRadius = gatiRadius + 12;                 
         
         ctx.save();
@@ -639,8 +639,8 @@ export const Renderer = {
         let pankhudiBaseHalfWidth = 8;                
         let pankhudiRotation = frameNow / 4500;      
         
-        let breathProgress = swaansaTimer / 360;
-        let breathBoost = Math.sin(breathProgress * Math.PI); 
+        let swaansaProgress = swaansaTimer / 360;
+        let swaansaBoost = Math.sin(swaansaProgress * Math.PI); 
 
         let p_consumed = 10 - swaansa; 
 
@@ -649,8 +649,8 @@ export const Renderer = {
             let isConsumed = p < p_consumed;          
             let isActive   = p === p_consumed && swaansa > 0; 
             
-            let curLength = isActive ? pankhudiLength * (1 + breathBoost * 0.5) : pankhudiLength;
-            let curWidth = isActive ? pankhudiWidth * (1 + breathBoost * 0.4) : isConsumed ? pankhudiWidth * 0.7 : pankhudiWidth;
+            let curLength = isActive ? pankhudiLength * (1 + swaansaBoost * 0.5) : pankhudiLength;
+            let curWidth = isActive ? pankhudiWidth * (1 + swaansaBoost * 0.4) : isConsumed ? pankhudiWidth * 0.7 : pankhudiWidth;
 
             ctx.save();
             ctx.translate(cx, cy);
@@ -712,7 +712,7 @@ export const Renderer = {
         let emojiRenderTime = frameNow / 1800;
 
         let innerOrbit = [
-            chetanaaJagrita ? "👁️" : "😴",
+            chetanaaJaagrita ? "👁️" : "😴",
             ashuvhaKarma >= 3 ? "⚫" : "☀️",
             purnaSamarpana ? "🙌" : "🤲"
         ];

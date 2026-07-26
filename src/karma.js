@@ -63,7 +63,7 @@ export const KarmaMixin = {
             this.ashuvhaKarma   === 0 &&
             !this._pendingGoodKarma   &&
             this.prarabdha      === 0 &&
-            this.chetanaaJagrita      &&
+            this.chetanaaJaagrita      &&
             this.purnaSamarpana
         ) {
             if (this._UI?.samayaVal)  this._UI.samayaVal.innerText  = `मोक्ष 🌿`;
@@ -79,7 +79,7 @@ export const KarmaMixin = {
         // ── पुनर्जन्म (अपवित्र/पवित्र) ──
         const isApavitra = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0 || this.prarabdha > 0);
         const earnsKripaOnRebirth = (
-            this.activeNaam >= 20 || this.samarpita >= 30 || this.chetanaaJagrita
+            this.activeNaam >= 20 || this.samarpita >= 30 || this.chetanaaJaagrita
         );
         const gainedPrarabdha = (this.shuvhaKarma + this.ashuvhaKarma) +
                                  (this._pendingGoodKarma ? this._pendingGoodKarmaCount : 0);

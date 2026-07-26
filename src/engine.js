@@ -17,10 +17,10 @@
  *      playSound,                // (name) => void
  *      vibrateGamepad,           // (weak, strong, ms) => void
  *      updateAmbientVolumes,     // () => void
- *      stopSushuptiBreathLayer,  // () => void
- *      startJagritaBreathLayer,  // () => void
- *      stopJagritaBreathLayer,   // () => void
- *      startSushuptiBreathLayer, // () => void
+ *      stopSushuptiSwaansaLayer,  // () => void
+ *      startJaagritaSwaansaLayer,  // () => void
+ *      stopJaagritaSwaansaLayer,   // () => void
+ *      startSushuptiSwaansaLayer, // () => void
  *  });
  *  engine.setUI(UI);  // DOM element references object
  *
@@ -122,17 +122,17 @@ export class KarmaEngine {
         this.jyoti            = 0;   // ज्योति resource
 
         // ── Spiritual State ──────────────────────────────────
-        this.chetanaaJagrita = false;  // मोक्ष की प्रामाणिक शर्त
+        this.chetanaaJaagrita = false;  // मोक्ष की प्रामाणिक शर्त
         this.purnaSamarpana  = false;  // अंतिम-चरण में समस्त नाम समर्पित
         this.jaapaNaama      = "राधा"; // नाम-जाप पर floating text
         this.isNaamaJaapa    = false;  // क्या अभी नाम-जाप-वलय सक्रिय है?
         this.naamaGhera      = 0;     // नाम-जाप-वलय की वर्तमान त्रिज्या
         this.naamaJaapaPower = 0;     // SPACE दबाने पर उपलब्ध activeNaam
 
-        // ── Time / Breath ────────────────────────────────────
+        // ── Time / Swaansa ────────────────────────────────────
         this.samaya          = SAMAYA_PRAARAMBHIKA;
         this.swaansa         = 10;
-        this.swaansaTimer    = 0;      // 0→360 per breath-cycle
+        this.swaansaTimer    = 0;      // 0→360 per swaansa-cycle
         this.swaansaSamapta  = false;  // क्या ब्रह्मांडीय क्षितिज आ गया?
 
         // ── Game Flow Flags ──────────────────────────────────
@@ -254,10 +254,10 @@ export class KarmaEngine {
      *   playSound: function,
      *   vibrateGamepad: function,
      *   updateAmbientVolumes: function,
-     *   stopSushuptiBreathLayer: function,
-     *   startJagritaBreathLayer: function,
-     *   stopJagritaBreathLayer: function,
-     *   startSushuptiBreathLayer: function,
+     *   stopSushuptiSwaansaLayer: function,
+     *   startJaagritaSwaansaLayer: function,
+     *   stopJaagritaSwaansaLayer: function,
+     *   startSushuptiSwaansaLayer: function,
      * }} callbacks
      */
     setCallbacks(callbacks) {
@@ -355,12 +355,12 @@ export class KarmaEngine {
         this._syncOrbitCounts();
 
         // ── 3. चेतना-जागृति transition ───────────────────────
-        if (!this.gameOver && !this.chetanaaJagrita &&
+        if (!this.gameOver && !this.chetanaaJaagrita &&
             this.samarpita >= CHETANA_JAGRITI_THRESHOLD) {
-            this.chetanaaJagrita = true;
+            this.chetanaaJaagrita = true;
             this._cb.playSound?.('chetana');
-            this._cb.stopSushuptiBreathLayer?.();
-            this._cb.startJagritaBreathLayer?.();
+            this._cb.stopSushuptiSwaansaLayer?.();
+            this._cb.startJaagritaSwaansaLayer?.();
             this._addFloatingText("👁️", "#ffffff",
                 { yOffset:-10, alpha:1.5, vy:-3, isBigName:true });
         }
@@ -457,7 +457,7 @@ export class KarmaEngine {
             let m = this.mayaPool[i]; if (!m || !m.active) continue;
             let mCx = m.x + m.width / 2; let mCy = m.y + m.height / 2;
 
-            if (!isAlreadyPulled && !this.chetanaaJagrita && m.y < cy - bodyRadius) {
+            if (!isAlreadyPulled && !this.chetanaaJaagrita && m.y < cy - bodyRadius) {
                 let closestIdx = -1; let minDistance = Infinity;
                 let targetHx = 0; let targetHy = 0;
                 for (let h = 0; h < horseCount; h++) {
@@ -864,7 +864,7 @@ export class KarmaEngine {
         if (this._UI?.swaansaVal) this._UI.swaansaVal.innerText = `10`;
 
         // ── Spiritual state reset ──
-        this.chetanaaJagrita = false; this.purnaSamarpana = false;
+        this.chetanaaJaagrita = false; this.purnaSamarpana = false;
 
         // ── Edge-detection flags reset ──
         this._prevPurnaSamarpana = false; this._prevDrishtiClear = true;
@@ -898,8 +898,8 @@ export class KarmaEngine {
         for (let i = 0; i < this.mayaPool.length;         i++) this.mayaPool[i].active         = false;
 
         // ── Audio layers reset ──
-        this._cb.stopJagritaBreathLayer?.();
-        this._cb.startSushuptiBreathLayer?.();
+        this._cb.stopJaagritaSwaansaLayer?.();
+        this._cb.startSushuptiSwaansaLayer?.();
 
         // ── HUD cache invalidate ──
         this._oldStats = { purnaSamarpana:"", naama:-1, punya:-1, paap:-1,
@@ -936,7 +936,7 @@ export class KarmaEngine {
             shankha:             this.shankha,
             jyoti:               this.jyoti,
             // Spiritual
-            chetanaaJagrita:     this.chetanaaJagrita,
+            chetanaaJaagrita:     this.chetanaaJaagrita,
             purnaSamarpana:      this.purnaSamarpana,
             // Time
             samaya:              this.samaya,
@@ -1012,7 +1012,7 @@ export class KarmaEngine {
         this._updateStatWithPulse(this._UI.kripa,          'kripa',          this.kripa,               '✋');
         this._updateStatWithPulse(this._UI.shankha,        'shankha',        this.shankha,             '🐚');
         this._updateStatWithPulse(this._UI.jyoti,          'jyoti',          this.jyoti,               '🪔');
-        this._updateStatWithPulse(this._UI.chetana,        'chetana',        this.chetanaaJagrita ? "👁️" : "😴", "");
+        this._updateStatWithPulse(this._UI.chetana,        'chetana',        this.chetanaaJaagrita ? "👁️" : "😴", "");
         this._updateStatWithPulse(this._UI.drishti,        'drishti',        this.ashuvhaKarma >= 3 ? "⚫" : "☀️", "");
         this._updateStatWithPulse(this._UI.purnaSamarpana, 'purnaSamarpana', this.purnaSamarpana ? "🙌" : "🤲", "");
     }

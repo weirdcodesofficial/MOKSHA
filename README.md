@@ -23,7 +23,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | 🛻 Chariot | Game entity | शरीर — The body |
 | 👁️ Passenger | Soul (Aatma) | आत्मा — The soul |
 | ॐ Naam-Jaap | SPACE / RT button | नाम-स्मरण — Self-remembrance |
-| 🌬️ Breath | Lotus petals ring | आयु-शेष — Remaining life |
+| 🌬️ Swaansa | Lotus petals ring | आयु-शेष — Remaining life |
 
 ### Core Karma System
 
@@ -33,7 +33,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | **पाप** (Bad Karma) | `ashuvhaKarma` | Slows + strikes chariot (vision distortion) |
 | **प्रारब्ध** (Past Life Karma) | `prarabdha` | Accumulates on rebirth; only 10 Naam can burn it |
 | **समर्पित** (Surrendered) | `samarpita` | ≥50 triggers चेतना-जागृति (Awakening) |
-| **चेतना-जागृति** (Awakening) | `chetanaaJagrita` | **True gate for Moksha** |
+| **चेतना-जागृति** (Awakening) | `chetanaaJaagrita` | **True gate for Moksha** |
 | **कृपा** (Grace) | `kripa` | Earned through surrender; frees karma-bondage |
 | **शंख** (Conch) | `shankha` | Dispels chakravaata (तूफ़ान) of Maya when Naam is unavailable then Shanka (यंत्र-मार्ग) |
 | **ज्योति** (Lamp) | `jyoti` | Restores vision in the darkness of bad karma |
@@ -59,9 +59,9 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 ## ✨ Key Features
 
 - 🕉️ **Vedic Karma Engine** — Real-time Punya/Paap/Prarabdha/Samarpita system
-- 🌸 **Lotus Petal Ring** — 10 animated petals visualise remaining breath (Swaansa)
+- 🌸 **Lotus Petal Ring** — 10 animated petals visualise remaining swaansa (Swaansa)
 - 🌀 **Chakravaata (Maya Tufaan)** — Can only be dispelled by Naam-Jaapa or Shankha if Naam-Jaap Unavailable
-- 🎵 **Layered Ambient Audio** — 4 continuous loops (bgMusic, Shathendriya, SushuptiBreath, JagritaBreath) with smooth duck/fade
+- 🎵 **Layered Ambient Audio** — 4 continuous loops (bgMusic, Shathendriya, SushuptiSwaansa, JaagritaSwaansa) with smooth duck/fade
 - 🔮 **Sci-Fi Yantra Visuals** — CRT scanlines, gold scan-sweep, Yantra polygons, cyberGrid
 - 🏆 **Three End States** — Moksha (liberation), Pralaya (dissolution), Punarjanma (rebirth)
 - 🎮 **Full Gamepad Support** — Xbox/generic controller with deadzone handling
@@ -172,7 +172,7 @@ MOKSHA/
 | **पाप** (अशुभ कर्म) | `ashuvhaKarma` | गति मंद + रथ पर आघात (कंपन/दृष्टि-भ्रम) |
 | **प्रारब्ध** | `prarabdha` | पुनर्जन्म पर भारी होकर जुड़ता है; 10 नाम से भस्म होता है |
 | **समर्पित** | `samarpita` | जब >= CHETANA_JAGRITI_THRESHOLD (50), चेतना-जागृति ट्रिगर |
-| **चेतना-जागृति** | `chetanaaJagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` केवल ट्रिगर |
+| **चेतना-जागृति** | `chetanaaJaagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` केवल ट्रिगर |
 | **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म, 10=प्रारब्ध भस्म |
 | **कृपा** | `kripa` | बंधन हो → kripa-- व कर्म समर्पित में; बंधन न हो → kripa++ |
 | **शंख** | `shankha` | Y/gamepad — chakravaata-शमन हेतु |
@@ -188,14 +188,14 @@ MOKSHA/
 ### 1.2 मोक्ष-शर्त
 ```js
 if (shuvhaKarma === 0 && ashuvhaKarma === 0 && !pendingGoodKarma
-    && prarabdha === 0 && chetanaaJagrita && purnaSamarpana) { /* मोक्ष */ }
+    && prarabdha === 0 && chetanaaJaagrita && purnaSamarpana) { /* मोक्ष */ }
 ```
-⚠️ सदैव `chetanaaJagrita` boolean प्रयोग करें, `samarpita >= 50` नहीं।
+⚠️ सदैव `chetanaaJaagrita` boolean प्रयोग करें, `samarpita >= 50` नहीं।
 
 ### 1.3 पुनर्जन्म — पवित्र बनाम अपवित्र
 ```js
 let isApavitra = (shuvhaKarma > 0 || ashuvhaKarma > 0 || prarabdha > 0);
-let earnsKripaOnRebirth = (activeNaam >= 20 || samarpita >= 30 || chetanaaJagrita);
+let earnsKripaOnRebirth = (activeNaam >= 20 || samarpita >= 30 || chetanaaJaagrita);
 ```
 सिर्फ कर्म-बंधन शेष रहने पर "अपवित्र" — समर्पित/नाम की कमी "अपवित्र" नहीं।
 
@@ -229,7 +229,7 @@ grantKripa(x, y, reason = null) {
 engine.shuvhaKarma, engine.ashuvhaKarma, engine.activeNaam  — वर्तमान सक्रिय मात्रा
 engine.prarabdha, engine.samarpita, engine.punaraJanmaCount — संचित/आजीवन काउंटर
 engine.kripa, engine.shankha, engine.jyoti                  — दुर्लभ resource काउंटर
-engine.chetanaaJagrita (boolean)                            — मोक्ष-गेट
+engine.chetanaaJaagrita (boolean)                            — मोक्ष-गेट
 engine.isKarmaImmune                                        — अस्थायी सुरक्षा
 ```
 
@@ -290,7 +290,7 @@ export const SAMAYA_PRAARAMBHIKA       = 2880;
 
 **वलय रेडियस:**
 ```js
-let gatiRadius  = (breathingSmoothSize / 2) + 5;   // शरीर से 5px बाहर
+let gatiRadius  = (swaansaingSmoothSize / 2) + 5;   // शरीर से 5px बाहर
 let samayRadius = gatiRadius + 12;                   // गति-वलय से 12px बाहर
 ```
 - **रंग:** neon-gold `#ffc83c` — यंत्र-वर्ण-सुसंगति
@@ -321,7 +321,7 @@ PANKHUDI_COUNT    = 10;
 pankhudiRadius    = samayRadius + 3;
 pankhudiLength    = 22;
 pankhudiRotation  = frameNow / 4500;   // ~28s प्रति-चक्कर
-breathBoost       = Math.sin((swaansaTimer / 360) * Math.PI);
+swaansaBoost       = Math.sin((swaansaTimer / 360) * Math.PI);
 ```
 **तीन अवस्थाएँ** — pre-rendered offscreen sprites (render.js में cached):
 - `cachedPankhudiConsumed`: खर्च — dim/पतली
@@ -331,7 +331,7 @@ breathBoost       = Math.sin((swaansaTimer / 360) * Math.PI);
 ### 2.9 innerOrbit system (गति↔समय वलयों के बीच)
 ```js
 let innerOrbit = [
-    chetanaaJagrita ? "👁️" : "😴",
+    chetanaaJaagrita ? "👁️" : "😴",
     ashuvhaKarma >= 3 ? "⚫" : "☀️",
     purnaSamarpana ? "🙌" : "🤲"
     // + count>0 होने पर: ♻️ 🌿 🥀 📜 ॐ ✋ 🐚 🪔 🙏
@@ -381,18 +381,18 @@ getEmojiSprite(emoji, fontSize) // orbit/innerOrbit emoji cache (नई)
 ```
 bgMusic         → BG_MUSIC_MP3_LAYER_VOLUME=0.01, स्थिर
 shathendriya    → RUNNING_HORSES_VOLUME=0.16, स्थिर (file: ./audio/shathendriya.mp3)
-sushuptiBreath  → SUSHUPTI_BREATH_VOLUME=1, श्वास-सिंक — खेल-आरंभ से chetanaaJagrita तक
-jagritaBreath   → JAGRITA_BREATH_VOLUME=0.22, श्वास-सिंक — chetanaaJagrita के बाद
+sushuptiSwaansa  → SUSHUPTI_SWAANSA_VOLUME=1, श्वास-सिंक — खेल-आरंभ से chetanaaJaagrita तक
+jaagritaSwaansa   → JAAGRITA_SWAANSA_VOLUME=0.22, श्वास-सिंक — chetanaaJaagrita के बाद
 ```
-`sushuptiBreath` व `jagritaBreath` कभी एक साथ नहीं।
+`sushuptiSwaansa` व `jaagritaSwaansa` कभी एक साथ नहीं।
 
 **bgMusicVolume slider:** 0–100 → 0.0–1.0 multiplier — सभी layers पर लागू।
 
 ### 4.2 Duck Reduction per Layer
 ```
 BG_MUSIC_DUCK_REDUCTION        = 0.75
-JAGRITA_BREATH_DUCK_REDUCTION  = 0.55
-SUSHUPTI_BREATH_DUCK_REDUCTION = 0.20  // पहले 0.55 — बहुत दब रही थी
+JAAGRITA_SWAANSA_DUCK_REDUCTION  = 0.55
+SUSHUPTI_SWAANSA_DUCK_REDUCTION = 0.20  // पहले 0.55 — बहुत दब रही थी
 RUNNING_HORSES_DUCK_REDUCTION  = 0.15
 ```
 
@@ -417,14 +417,14 @@ Eager load (22):  naamaSamarpita, samarpita, punaraJanma, shathendriya,
                   aakarshana, tyaaga, kripaDhwani, shankhaDhwani, jyotiDhwani,
                   shankhaPrapta, jyotiPrapta, purnaSamarpana, drishti, andhakaara
 
-Deferred load (6): bgMusic, chetanaJagrita, pralaya, jagritaBreath,
+Deferred load (6): bgMusic, chetanaJaagrita, pralaya, jaagritaSwaansa,
                    moksha, antimaCharana
 ```
 
 ### 4.6 AudioManager dependency injection (main.js में)
 ```js
 Audio.setGameStateGetter(() => ({ isGameStarted, gameOver, won,
-                                   isPaused, isShastraVisible, chetanaaJagrita }));
+                                   isPaused, isShastraVisible, chetanaaJaagrita }));
 Audio.setVibrateCallback(vibrateGamepad);
 Audio.setReadinessGetters({ getFontsReady: () => isFontsReady,
                              getScaleGameDone: () => isScaleGameDone });
@@ -450,8 +450,8 @@ index.html
 ```js
 const engine = new KarmaEngine();
 engine.setCallbacks({ playSound, vibrateGamepad, updateAmbientVolumes,
-                      stopSushuptiBreathLayer, startJagritaBreathLayer,
-                      stopJagritaBreathLayer, startSushuptiBreathLayer });
+                      stopSushuptiSwaansaLayer, startJaagritaSwaansaLayer,
+                      stopJaagritaSwaansaLayer, startSushuptiSwaansaLayer });
 engine.setUI(UI);
 engine.init(600, 680, TUNNEL_X, 180);
 
@@ -477,7 +477,7 @@ import Audio from './audio.js';
 const AM = Audio;
 AM.init();
 AM.playSound('naamaDhwani');
-AM.setBreathPulse(worldBreathPulse);
+AM.setSwaansaPulse(worldSwaansaPulse);
 AM.updateDuckDecay();
 AM.updateAmbientVolumes();
 ```
@@ -488,7 +488,7 @@ AM.updateAmbientVolumes();
 
 1. **Pool pattern** (§2.3) — 4 pools, push/splice कभी नहीं
 2. **Sprite caches** — `mayaSpriteCache` (shuvha/ashuvha), `emojiSpriteCache` (सभी orbits/innerOrbit, नई), `cachedPankhudiConsumed/Active/Inactive` (3 states, नई), `sciFiGridSprite`, `cachedBuddhiSprite`, `cachedAtmanSprite`
-3. **Bucket-cached gradients** — `cachedBreathGrad` / `cachedTunnelGrad`
+3. **Bucket-cached gradients** — `cachedSwaansaGrad` / `cachedTunnelGrad`
 4. **DOM throttle** — `lastPunyaAlertSecond` जैसे guards
 5. **`_updateStatWithPulse()`** — बदलाव पर ही UI update (`_oldStats` compare)
 6. **HUD animation** — `_uiScales` / `_uiGlows` per-key lerp, dirty-check से DOM write
@@ -511,11 +511,11 @@ AM.updateAmbientVolumes();
 | ग्लो-रिंग | 6 variables → `glowRings` object + helpers |
 | माया-रेंडर | duplicate draw → `drawPickupGlowIcon()` |
 | resource-संग्रहण | duplicate → `collectResource()` + `RESOURCE_PICKUP_TABLE` |
-| मोक्ष-गेट | samarpita>=50 → `chetanaaJagrita` boolean |
+| मोक्ष-गेट | samarpita>=50 → `chetanaaJaagrita` boolean |
 | **shuvhaKarma** | `activeGoodKarma` → `shuvhaKarma` |
 | **ashuvhaKarma** | `activeBadKarma` → `ashuvhaKarma` |
 | **outerOrbits 10→9** | श्वास-orbit हटी → कमल-पंखुड़ी से दृश्यित |
-| **कमल-पंखुड़ी वलय** | 10 पंखुड़ियाँ, swaansa दिखाती हैं, breathBoost animation |
+| **कमल-पंखुड़ी वलय** | 10 पंखुड़ियाँ, swaansa दिखाती हैं, swaansaBoost animation |
 | **innerOrbit** | गति↔समय वलयों के बीच status-icons |
 | **sci-fi विज़ुअल** | scan-sweep, CRT scanlines, drawRingTicks, drawYantraPolygon, cyberGrid |
 | **वलय रंग** | violet/cyan → neon-gold #ffc83c |
@@ -609,8 +609,8 @@ AM.updateAmbientVolumes();
 | ~450 | Deferred audio batch (6 files) |
 | ~500 | `startBgMusicMp3Layer()` |
 | ~530 | `startRunningHorsesLayer()` (shathendriya) |
-| ~560 | `startJagritaBreathLayer()` |
-| ~600 | `startSushuptiBreathLayer()` |
+| ~560 | `startJaagritaSwaansaLayer()` |
+| ~600 | `startSushuptiSwaansaLayer()` |
 | ~680 | `playSound(name)` — SFX dispatcher |
 | ~950 | `duckBackgroundMusic()`, `updateDuckDecay()` |
 | ~1000 | `updateAmbientVolumes()` |

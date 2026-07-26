@@ -75,10 +75,10 @@ engine.setCallbacks({
     playSound:                (n)    => AM?.playSound(n),
     vibrateGamepad:           (w, s, d) => vibrateGamepad(w, s, d),
     updateAmbientVolumes:     ()     => AM?.updateAmbientVolumes(),
-    stopSushuptiBreathLayer:  ()     => AM?.stopSushuptiBreathLayer(),
-    startJagritaBreathLayer:  ()     => AM?.startJagritaBreathLayer(),
-    stopJagritaBreathLayer:   ()     => AM?.stopJagritaBreathLayer(),
-    startSushuptiBreathLayer: ()     => AM?.startSushuptiBreathLayer(),
+    stopSushuptiSwaansaLayer:  ()     => AM?.stopSushuptiSwaansaLayer(),
+    startJaagritaSwaansaLayer:  ()     => AM?.startJaagritaSwaansaLayer(),
+    stopJaagritaSwaansaLayer:   ()     => AM?.stopJaagritaSwaansaLayer(),
+    startSushuptiSwaansaLayer: ()     => AM?.startSushuptiSwaansaLayer(),
 });
 engine.setUI(UI);
 engine.init(WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH);
@@ -402,7 +402,7 @@ function draw() {
     
     const st = engine.getState();
     
-    AM?.setBreathPulse?.(st.worldBreathPulse ?? 0);
+    AM?.setSwaansaPulse?.(st.worldSwaansaPulse ?? 0);
     AM?.updateDuckDecay?.();
     AM?.updateAmbientVolumes?.();
 
@@ -493,7 +493,7 @@ AM?.setGameStateProvider?.(() => ({
     won:             engine.won,
     isPaused:        engine.isPaused,
     isShastraVisible: engine.isShastraVisible,
-    chetanaaJagrita: engine.chetanaaJagrita,
+    chetanaaJaagrita: engine.chetanaaJaagrita,
 }));
 // पुराना API compatibility
 AM?.setGameStateGetter?.(() => ({
@@ -502,7 +502,7 @@ AM?.setGameStateGetter?.(() => ({
     won:             engine.won,
     isPaused:        engine.isPaused,
     isShastraVisible: engine.isShastraVisible,
-    chetanaaJagrita: engine.chetanaaJagrita,
+    chetanaaJaagrita: engine.chetanaaJaagrita,
 }));
 AM?.setVibrateGamepad?.(vibrateGamepad);
 AM?.setVibrateCallback?.(vibrateGamepad);

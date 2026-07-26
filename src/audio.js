@@ -10,16 +10,16 @@
  *  • Readiness system (checkReadiness / finalizeReadiness / showReadyState)
  *  • 28 mp3 AudioBuffer preloading (2-batch strategy)
  *  • Ambient layer management:
- *      bgMusic, shathendriya, jagritaBreath, sushuptiBreath
+ *      bgMusic, shathendriya, jaagritaSwaansa, sushuptiSwaansa
  *  • SFX playback (playSound, playTone, playBufferedSound)
  *  • Sidechain ducking (duckBackgroundMusic / updateDuckDecay)
  *  • Volume control (mute toggle, bgMusicVolume slider)
- *  • Breath-pulse sync (setBreathPulse)
+ *  • Swaansa-pulse sync (setSwaansaPulse)
  *
  * ── बाहरी निर्भरताएँ (injected callbacks) ─────────────────
  *  Audio.setGameStateGetter(fn)
  *      fn() → { isGameStarted, gameOver, won, isPaused,
- *                isShastraVisible, chetanaaJagrita }
+ *                isShastraVisible, chetanaaJaagrita }
  *
  *  Audio.setVibrateCallback(fn)
  *      fn(weakMagnitude, strongMagnitude, duration) → void
@@ -32,7 +32,7 @@
  *  // पेज-लोड पर एक बार:
  *  Audio.setGameStateGetter(() => ({
  *      isGameStarted, gameOver, won, isPaused,
- *      isShastraVisible, chetanaaJagrita
+ *      isShastraVisible, chetanaaJaagrita
  *  }));
  *  Audio.setVibrateCallback(vibrateGamepad);
  *  Audio.setReadinessGetters({
@@ -42,7 +42,7 @@
  *  Audio.init();   // ← initAudioPreload() की जगह
  *
  *  // draw() में हर frame:
- *  Audio.setBreathPulse(worldBreathPulse);
+ *  Audio.setSwaansaPulse(worldSwaansaPulse);
  *  Audio.updateDuckDecay();
  *  Audio.updateAmbientVolumes();
  *
@@ -57,20 +57,20 @@ const BG_MUSIC_MP3_LAYER_VOLUME = 0.01;
 /** shathendriya — स्पष्ट, स्थिर स्तर (सांस से असंबद्ध) */
 const RUNNING_HORSES_VOLUME = 0.16;
 
-/** jagritaBreath — चेतना-जागृति के बाद सांस-सिंक layer */
-const JAGRITA_BREATH_VOLUME = 0.22;
+/** jaagritaSwaansa — चेतना-जागृति के बाद सांस-सिंक layer */
+const JAAGRITA_SWAANSA_VOLUME = 0.22;
 
-/** sushuptiBreath — चेतना-जागृति से पहले तक बजने वाला स्वप्न-श्वास */
-const SUSHUPTI_BREATH_VOLUME = 1.0;
+/** sushuptiSwaansa — चेतना-जागृति से पहले तक बजने वाला स्वप्न-श्वास */
+const SUSHUPTI_SWAANSA_VOLUME = 1.0;
 
 /** samarpita ध्वनि debounce — ms में (muddy sound रोकने हेतु) */
 const SAMARPITA_SOUND_COOLDOWN = 90;
 
 /**
- * सांस के साथ jagritaBreath / sushuptiBreath का उतार-चढ़ाव अनुपात।
- * 0.3 = ±30% volume modulation (breathPulse 0→1 range पर)
+ * सांस के साथ jaagritaSwaansa / sushuptiSwaansa का उतार-चढ़ाव अनुपात।
+ * 0.3 = ±30% volume modulation (swaansaPulse 0→1 range पर)
  */
-const BG_BREATH_MOD_RANGE = 0.3;
+const BG_SWAANSA_MOD_RANGE = 0.3;
 
 // ── Sidechain ducking स्थिरांक ──
 
@@ -83,14 +83,14 @@ const BG_MUSIC_DUCK_REDUCTION = 0.75;
 /** shathendriya बहुत हल्का duck हो — हमेशा स्पष्ट सुनाई दे */
 const RUNNING_HORSES_DUCK_REDUCTION = 0.15;
 
-/** jagritaBreath मध्यम रूप से duck हो */
-const JAGRITA_BREATH_DUCK_REDUCTION = 0.55;
+/** jaagritaSwaansa मध्यम रूप से duck हो */
+const JAAGRITA_SWAANSA_DUCK_REDUCTION = 0.55;
 
 /**
- * sushuptiBreath — घोड़ों (0.15) जैसा हल्का duck।
+ * sushuptiSwaansa — घोड़ों (0.15) जैसा हल्का duck।
  * (पहले 0.55 था — बार-बार माया-टकराव पर बहुत दब जाती थी)
  */
-const SUSHUPTI_BREATH_DUCK_REDUCTION = 0.20;
+const SUSHUPTI_SWAANSA_DUCK_REDUCTION = 0.20;
 
 /**
  * हर SFX की "डकिंग शक्ति" (0–1)।
@@ -164,7 +164,7 @@ class AudioManager {
             samarpita:          null,  // समर्पण
             punarJanma:         null,  // पुनर्जन्म
             shathendriya:       null,  // दौड़ते घोड़े (ambient loop)
-            sushuptiBreath:     null,  // स्वप्न-श्वास (ambient loop)
+            sushuptiSwaansa:     null,  // स्वप्न-श्वास (ambient loop)
             timer:              null,  // अंतिम-चरण चेतावनी
             prarabdhaBandhana:  null,  // प्रारब्ध-बंधन
             paapaBandhana:      null,  // पाप-बंधन
@@ -184,9 +184,9 @@ class AudioManager {
             andhakaara:         null,  // पाप-अंधकार
             // Batch-2 (deferred — भारी / देर से ज़रूरी)
             bgMusic:            null,  // पृष्ठभूमि संगीत (~6.5MB)
-            chetanaJagrita:     null,  // चेतना-जागृति
+            chetanaJaagrita:     null,  // चेतना-जागृति
             pralaya:            null,  // प्रलय
-            jagritaBreath:      null,  // अंतरिक्ष-श्वास (ambient loop)
+            jaagritaSwaansa:      null,  // अंतरिक्ष-श्वास (ambient loop)
             moksha:             null,  // मोक्ष-विजय
             antimaCharana:       null,  // अंतिम-चरण
         };
@@ -203,13 +203,13 @@ class AudioManager {
         this._shathendriyaSourceNode  = null;
         this._shathendriyaGain        = null;
 
-        /** jagritaBreath (अंतरिक्ष-श्वास) source + gain */
-        this._jagritaBreathSourceNode = null;
-        this._jagritaBreathGain       = null;
+        /** jaagritaSwaansa (अंतरिक्ष-श्वास) source + gain */
+        this._jaagritaSwaansaSourceNode = null;
+        this._jaagritaSwaansaGain       = null;
 
-        /** sushuptiBreath (स्वप्न-श्वास) source + gain */
-        this._sushuptiBreathSourceNode = null;
-        this._sushuptiBreathGain       = null;
+        /** sushuptiSwaansa (स्वप्न-श्वास) source + gain */
+        this._sushuptiSwaansaSourceNode = null;
+        this._sushuptiSwaansaGain       = null;
 
         // ── State flags ─────────────────────────────────────
         /** ambient graph एक बार ही init हो */
@@ -225,10 +225,10 @@ class AudioManager {
         this.bgMusicVolume = 1.0;
 
         /**
-         * सांस-pulse (0→1→0) — draw() में हर frame setBreathPulse() से सेट होता है।
-         * jagritaBreath और sushuptiBreath इसी से volume-sync रहते हैं।
+         * सांस-pulse (0→1→0) — draw() में हर frame setSwaansaPulse() से सेट होता है।
+         * jaagritaSwaansa और sushuptiSwaansa इसी से volume-sync रहते हैं।
          */
-        this.breathPulseGlobal = 0;
+        this.swaansaPulseGlobal = 0;
 
         // ── Sidechain ducking state ─────────────────────────
         /** 0 = कोई ducking नहीं, 1 = अधिकतम ducking */
@@ -244,7 +244,7 @@ class AudioManager {
         // ── Injected callbacks ──────────────────────────────
         /**
          * () => { isGameStarted, gameOver, won, isPaused,
-         *          isShastraVisible, chetanaaJagrita }
+         *          isShastraVisible, chetanaaJaagrita }
          */
         this._getGameState = null;
 
@@ -268,7 +268,7 @@ class AudioManager {
      * circular dependency को callback pattern से हल करता है।
      *
      * @param {Function} fn — () => { isGameStarted, gameOver, won,
-     *                                 isPaused, isShastraVisible, chetanaaJagrita }
+     *                                 isPaused, isShastraVisible, chetanaaJaagrita }
      */
     setGameStateGetter(fn) {
         this._getGameState = fn;
@@ -369,12 +369,12 @@ class AudioManager {
 
     /**
      * draw() में हर frame बुलाएँ।
-     * jagritaBreath और sushuptiBreath की volume इसी pulse से sync रहती है।
+     * jaagritaSwaansa और sushuptiSwaansa की volume इसी pulse से sync रहती है।
      *
-     * @param {number} val — 0.0 to 1.0 (worldBreathPulse)
+     * @param {number} val — 0.0 to 1.0 (worldSwaansaPulse)
      */
-    setBreathPulse(val) {
-        this.breathPulseGlobal = val;
+    setSwaansaPulse(val) {
+        this.swaansaPulseGlobal = val;
     }
 
     /**
@@ -627,10 +627,10 @@ class AudioManager {
             // ── चेतना-जागृति (fade-in envelope) ────────────
             case 'chetana':
                 // समर्पित≥50 पर एक बार — पूरी buffer-duration तक प्राकृतिक रूप से बजे
-                if (buf.chetanaJagrita) {
+                if (buf.chetanaJaagrita) {
                     const cNow  = ctx.currentTime;
                     const cSrc  = ctx.createBufferSource();
-                    cSrc.buffer = buf.chetanaJagrita;
+                    cSrc.buffer = buf.chetanaJaagrita;
                     const cGain = ctx.createGain();
                     cGain.gain.setValueAtTime(0.0001, cNow);
                     cGain.gain.exponentialRampToValueAtTime(0.7, cNow + 0.05); // हल्का fade-in
@@ -639,7 +639,7 @@ class AudioManager {
                     cSrc.start(cNow);
                     // premature stop() नहीं — पूरी duration तक बजे (शास्त्र-संगत)
                 } else {
-                    console.warn('⚠️ chetanaJagrita.mp3 लोड नहीं हुई — ./audio/chetanaJagrita.mp3 path जाँचें');
+                    console.warn('⚠️ chetanaJaagrita.mp3 लोड नहीं हुई — ./audio/chetanaJaagrita.mp3 path जाँचें');
                 }
                 break;
 
@@ -735,7 +735,7 @@ class AudioManager {
     /**
      * हर frame draw() में बुलाएँ (updateDuckDecay के बाद)।
      * सभी ambient layers की volume compute करके Web Audio param पर set करता है।
-     * duck decay + breath-sync + gameplay gating + mute + user-volume — सब यहाँ।
+     * duck decay + swaansa-sync + gameplay gating + mute + user-volume — सब यहाँ।
      * (replaces updateAmbientVolumes())
      */
     updateAmbientVolumes() {
@@ -747,14 +747,14 @@ class AudioManager {
 
         const dl  = this._duckLevel;
         const vol = this.bgMusicVolume;
-        const bp  = this.breathPulseGlobal;
+        const bp  = this.swaansaPulseGlobal;
         const ctx = this.audioCtx;
 
         // प्रत्येक layer की duck-गुणक (परत के अनुसार अलग तीव्रता)
         const bgMusicDuckMul      = 1 - (dl * BG_MUSIC_DUCK_REDUCTION);
         const shathendriyaDuckMul = 1 - (dl * RUNNING_HORSES_DUCK_REDUCTION);
-        const jagritaDuckMul      = 1 - (dl * JAGRITA_BREATH_DUCK_REDUCTION);
-        const sushuptiDuckMul     = 1 - (dl * SUSHUPTI_BREATH_DUCK_REDUCTION);
+        const jaagritaDuckMul      = 1 - (dl * JAAGRITA_SWAANSA_DUCK_REDUCTION);
+        const sushuptiDuckMul     = 1 - (dl * SUSHUPTI_SWAANSA_DUCK_REDUCTION);
 
         // ⚡ DRY: isActiveGameplay() एक ही बार compute — तीनों gameplay-gated layers में प्रयोग
         const active = this._isActiveGameplay();
@@ -773,22 +773,22 @@ class AudioManager {
             this._shathendriyaGain.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
         }
 
-        // ── jagritaBreath — gameplay-gated, सांस-सिंक ──
+        // ── jaagritaSwaansa — gameplay-gated, सांस-सिंक ──
         // 🛠️ बग-फिक्स: पहले pause/shastra/pralaya/moksha में भी बजती थी
-        if (this._jagritaBreathGain) {
-            const breathVol = JAGRITA_BREATH_VOLUME *
-                (1 - BG_BREATH_MOD_RANGE + bp * BG_BREATH_MOD_RANGE);
-            const target = breathVol * jagritaDuckMul * vol * (active ? 1 : 0);
-            this._jagritaBreathGain.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
+        if (this._jaagritaSwaansaGain) {
+            const swaansaVol = JAAGRITA_SWAANSA_VOLUME *
+                (1 - BG_SWAANSA_MOD_RANGE + bp * BG_SWAANSA_MOD_RANGE);
+            const target = swaansaVol * jaagritaDuckMul * vol * (active ? 1 : 0);
+            this._jaagritaSwaansaGain.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
         }
 
-        // ── sushuptiBreath — gameplay-gated, सांस-सिंक (pre-chetanaaJagrita) ──
+        // ── sushuptiSwaansa — gameplay-gated, सांस-सिंक (pre-chetanaaJaagrita) ──
         // 🛠️ बग-फिक्स: shathendriya जैसा gameplay-gating — pause/shastra पर मौन
-        if (this._sushuptiBreathGain) {
-            const dreamVol = SUSHUPTI_BREATH_VOLUME *
-                (1 - BG_BREATH_MOD_RANGE + bp * BG_BREATH_MOD_RANGE);
+        if (this._sushuptiSwaansaGain) {
+            const dreamVol = SUSHUPTI_SWAANSA_VOLUME *
+                (1 - BG_SWAANSA_MOD_RANGE + bp * BG_SWAANSA_MOD_RANGE);
             const target = dreamVol * sushuptiDuckMul * vol * (active ? 1 : 0);
-            this._sushuptiBreathGain.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
+            this._sushuptiSwaansaGain.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
         }
     }
 
@@ -802,70 +802,70 @@ class AudioManager {
         this._bgMusicStarted = true;
 
         // bgMasterGain अब सिर्फ़ mute/unmute का "मुख्य द्वार" (1=बजे, 0=मौन)।
-        // हर layer अपनी volume खुद संभालती है — विरासत में breath-sync नहीं मिलता।
+        // हर layer अपनी volume खुद संभालती है — विरासत में swaansa-sync नहीं मिलता।
         this._bgMasterGain = this.audioCtx.createGain();
         this._bgMasterGain.gain.setValueAtTime(this.bgMusicMuted ? 0 : 1, this.audioCtx.currentTime);
         this._bgMasterGain.connect(this.audioCtx.destination);
 
         this._startBgMusicMp3Layer();    // bgMusic.mp3 — हल्का ambient bed
         this._startRunningHorsesLayer(); // shathendriya — स्पष्ट, स्थिर स्तर
-        // sushuptiBreath — चेतना-जागृति से पहले तक
+        // sushuptiSwaansa — चेतना-जागृति से पहले तक
         const state = this._getGameState?.();
-        if (!state?.chetanaaJagrita) {
-            this._startSushuptiBreathLayer();
+        if (!state?.chetanaaJaagrita) {
+            this._startSushuptiSwaansaLayer();
         }
     }
 
     /**
-     * chetanaaJagrita true होने पर एक बार बुलाएँ।
-     * sushuptiBreath बंद → jagritaBreath शुरू।
-     * (update() में chetanaaJagrita flip detect होने पर call करें)
+     * chetanaaJaagrita true होने पर एक बार बुलाएँ।
+     * sushuptiSwaansa बंद → jaagritaSwaansa शुरू।
+     * (update() में chetanaaJaagrita flip detect होने पर call करें)
      */
-    onChetanaaJagrita() {
-        this.stopSushuptiBreathLayer();
-        this._startJagritaBreathLayer();
+    onChetanaaJaagrita() {
+        this.stopSushuptiSwaansaLayer();
+        this._startJaagritaSwaansaLayer();
     }
 
     /**
-     * punahaPrarambha() में बुलाएँ — jagritaBreath बंद करें।
-     * अगले जीवन में chetanaaJagrita होने पर दोबारा शुरू होगी।
-     * (replaces stopJagritaBreathLayer())
+     * punahaPrarambha() में बुलाएँ — jaagritaSwaansa बंद करें।
+     * अगले जीवन में chetanaaJaagrita होने पर दोबारा शुरू होगी।
+     * (replaces stopJaagritaSwaansaLayer())
      */
-    stopJagritaBreathLayer() {
-        if (this._jagritaBreathSourceNode) {
-            try { this._jagritaBreathSourceNode.stop(); } catch (_) { /* already stopped */ }
-            this._jagritaBreathSourceNode.disconnect();
-            this._jagritaBreathSourceNode = null;
+    stopJaagritaSwaansaLayer() {
+        if (this._jaagritaSwaansaSourceNode) {
+            try { this._jaagritaSwaansaSourceNode.stop(); } catch (_) { /* already stopped */ }
+            this._jaagritaSwaansaSourceNode.disconnect();
+            this._jaagritaSwaansaSourceNode = null;
         }
         // gain node को भी null करें ताकि updateAmbientVolumes में गलत node access न हो
-        this._jagritaBreathGain = null;
+        this._jaagritaSwaansaGain = null;
     }
 
     /**
-     * punahaPrarambha() में बुलाएँ — नए जीवन-चक्र के लिए sushuptiBreath फिर शुरू।
-     * (replaces startSushuptiBreathLayer() public call in punahaPrarambha)
+     * punahaPrarambha() में बुलाएँ — नए जीवन-चक्र के लिए sushuptiSwaansa फिर शुरू।
+     * (replaces startSushuptiSwaansaLayer() public call in punahaPrarambha)
      */
 
-    startJagritaBreathLayer() {
-        this._startJagritaBreathLayer();
+    startJaagritaSwaansaLayer() {
+        this._startJaagritaSwaansaLayer();
     }
 
-    startSushuptiBreathLayer() {
-        this._startSushuptiBreathLayer();
+    startSushuptiSwaansaLayer() {
+        this._startSushuptiSwaansaLayer();
     }
 
     /**
-     * onChetanaaJagrita() से internally बुलाया जाता है।
+     * onChetanaaJaagrita() से internally बुलाया जाता है।
      * Public भी रखा है ताकि edge-case में main.js manually बुला सके।
-     * (replaces stopSushuptiBreathLayer())
+     * (replaces stopSushuptiSwaansaLayer())
      */
-    stopSushuptiBreathLayer() {
-        if (this._sushuptiBreathSourceNode) {
-            try { this._sushuptiBreathSourceNode.stop(); } catch (_) { /* already stopped */ }
-            this._sushuptiBreathSourceNode.disconnect();
-            this._sushuptiBreathSourceNode = null;
+    stopSushuptiSwaansaLayer() {
+        if (this._sushuptiSwaansaSourceNode) {
+            try { this._sushuptiSwaansaSourceNode.stop(); } catch (_) { /* already stopped */ }
+            this._sushuptiSwaansaSourceNode.disconnect();
+            this._sushuptiSwaansaSourceNode = null;
         }
-        this._sushuptiBreathGain = null;
+        this._sushuptiSwaansaGain = null;
     }
 
 
@@ -1042,7 +1042,7 @@ class AudioManager {
             { url: './audio/samarpita.mp3', key: 'samarpita'},
             { url: './audio/punaraJanma.mp3', key: 'punarJanma'},
             { url: './audio/shathendriya.mp3', key: 'shathendriya'},
-            { url: './audio/sushuptiSwaansa.mp3', key: 'sushuptiBreath'},
+            { url: './audio/sushuptiSwaansa.mp3', key: 'sushuptiSwaansa'},
             { url: './audio/timer.mp3', key: 'timer'},
             { url: './audio/prarabdhaBandhana.mp3', key: 'prarabdhaBandhana'},
             { url: './audio/paapaBandhana.mp3', key: 'paapaBandhana'},
@@ -1085,8 +1085,8 @@ class AudioManager {
         if (this._bgMusicStarted) {
             this._startRunningHorsesLayer();
             const state = this._getGameState?.();
-            if(!state?.chetanaaJagrita){
-                this._startSushuptiBreathLayer();
+            if(!state?.chetanaaJaagrita){
+                this._startSushuptiSwaansaLayer();
             }
         }
     }
@@ -1102,20 +1102,20 @@ class AudioManager {
             if (!buf) this.ambientLoadFailures.push(url);
             return buf;
         };
-        const [bg, chetana, pralaya, jagritaBreath, moksha, antimaCharana] = await Promise.all([
+        const [bg, chetana, pralaya, jaagritaSwaansa, moksha, antimaCharana] = await Promise.all([
             _loadAmbient('./audio/bgMusic.mp3'),
-            _loadAmbient('./audio/chetanaJagrita.mp3'),
+            _loadAmbient('./audio/chetanaJaagrita.mp3'),
             _loadAmbient('./audio/pralaya.mp3'),
-            _loadAmbient('./audio/jagritaBreath.mp3'),
+            _loadAmbient('./audio/jaagritaSwaansa.mp3'),
             _loadAmbient('./audio/moksha.mp3'),
             _loadAmbient('./audio/antimaCharana.mp3'),
         ]);
 
         Object.assign(this.audioBuffers, {
             bgMusic:        bg,
-            chetanaJagrita: chetana,
+            chetanaJaagrita: chetana,
             pralaya,
-            jagritaBreath,
+            jaagritaSwaansa,
             moksha,
             antimaCharana,
         });
@@ -1216,52 +1216,52 @@ class AudioManager {
     }
 
     /**
-     * jagritaBreath (अंतरिक्ष-श्वास) layer शुरू करता है।
-     * चेतना-जागृति (chetanaaJagrita = true) होने पर एक बार बुलाया जाता है।
+     * jaagritaSwaansa (अंतरिक्ष-श्वास) layer शुरू करता है।
+     * चेतना-जागृति (chetanaaJaagrita = true) होने पर एक बार बुलाया जाता है।
      * gameplay-gated + सांस-सिंक — updateAmbientVolumes() में संभाला।
      */
-    _startJagritaBreathLayer() {
-        if (!this._bgMasterGain || !this.audioBuffers.jagritaBreath || this._jagritaBreathSourceNode) return;
+    _startJaagritaSwaansaLayer() {
+        if (!this._bgMasterGain || !this.audioBuffers.jaagritaSwaansa || this._jaagritaSwaansaSourceNode) return;
 
         const now = this.audioCtx.currentTime;
-        this._jagritaBreathGain = this.audioCtx.createGain();
+        this._jaagritaSwaansaGain = this.audioCtx.createGain();
 
         // 🛠️ बग-फिक्स: node बनने के तुरंत बाद isActiveGameplay() check —
         // ताकि pause/shastra के दौरान node बनते ही पूर्ण-स्तर gain न मिले
-        const initVol = this._isActiveGameplay() ? JAGRITA_BREATH_VOLUME : 0;
-        this._jagritaBreathGain.gain.setValueAtTime(initVol, now);
-        this._jagritaBreathGain.connect(this._bgMasterGain);
+        const initVol = this._isActiveGameplay() ? JAAGRITA_SWAANSA_VOLUME : 0;
+        this._jaagritaSwaansaGain.gain.setValueAtTime(initVol, now);
+        this._jaagritaSwaansaGain.connect(this._bgMasterGain);
 
-        this._jagritaBreathSourceNode = this.audioCtx.createBufferSource();
-        this._jagritaBreathSourceNode.buffer = this.audioBuffers.jagritaBreath;
-        this._jagritaBreathSourceNode.loop   = true;
-        this._jagritaBreathSourceNode.connect(this._jagritaBreathGain);
-        this._jagritaBreathSourceNode.start(now);
+        this._jaagritaSwaansaSourceNode = this.audioCtx.createBufferSource();
+        this._jaagritaSwaansaSourceNode.buffer = this.audioBuffers.jaagritaSwaansa;
+        this._jaagritaSwaansaSourceNode.loop   = true;
+        this._jaagritaSwaansaSourceNode.connect(this._jaagritaSwaansaGain);
+        this._jaagritaSwaansaSourceNode.start(now);
     }
 
     /**
-     * sushuptiBreath (स्वप्न-श्वास) layer शुरू करता है।
+     * sushuptiSwaansa (स्वप्न-श्वास) layer शुरू करता है।
      * खेल आरंभ से चेतना-जागृति तक बजता है।
      * gameplay-gated + सांस-सिंक — updateAmbientVolumes() में संभाला।
      */
-    _startSushuptiBreathLayer() {
-        if (!this._bgMasterGain || !this.audioBuffers.sushuptiBreath || this._sushuptiBreathSourceNode) return;
+    _startSushuptiSwaansaLayer() {
+        if (!this._bgMasterGain || !this.audioBuffers.sushuptiSwaansa || this._sushuptiSwaansaSourceNode) return;
 
         const now = this.audioCtx.currentTime;
-        this._sushuptiBreathGain = this.audioCtx.createGain();
+        this._sushuptiSwaansaGain = this.audioCtx.createGain();
 
         // 🛠️ बग-फिक्स: shathendriya जैसा pattern (DRY) — node बनने के तुरंत बाद
         // isActiveGameplay() check, ताकि start-screen पर pointerdown से
-        // ensureAudio() चलने पर sushuptiBreath सुनाई न दे
-        const initVol = this._isActiveGameplay() ? SUSHUPTI_BREATH_VOLUME : 0;
-        this._sushuptiBreathGain.gain.setValueAtTime(initVol, now);
-        this._sushuptiBreathGain.connect(this._bgMasterGain);
+        // ensureAudio() चलने पर sushuptiSwaansa सुनाई न दे
+        const initVol = this._isActiveGameplay() ? SUSHUPTI_SWAANSA_VOLUME : 0;
+        this._sushuptiSwaansaGain.gain.setValueAtTime(initVol, now);
+        this._sushuptiSwaansaGain.connect(this._bgMasterGain);
 
-        this._sushuptiBreathSourceNode = this.audioCtx.createBufferSource();
-        this._sushuptiBreathSourceNode.buffer = this.audioBuffers.sushuptiBreath;
-        this._sushuptiBreathSourceNode.loop   = true;
-        this._sushuptiBreathSourceNode.connect(this._sushuptiBreathGain);
-        this._sushuptiBreathSourceNode.start(now);
+        this._sushuptiSwaansaSourceNode = this.audioCtx.createBufferSource();
+        this._sushuptiSwaansaSourceNode.buffer = this.audioBuffers.sushuptiSwaansa;
+        this._sushuptiSwaansaSourceNode.loop   = true;
+        this._sushuptiSwaansaSourceNode.connect(this._sushuptiSwaansaGain);
+        this._sushuptiSwaansaSourceNode.start(now);
     }
 }
 
