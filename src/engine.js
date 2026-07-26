@@ -63,11 +63,11 @@ export const KRIPA_NAAM_MILESTONE = 20;
 /** हर 30 नए समर्पित-अर्जन पर कृपा++ */
 export const KRIPA_SAMARPITA_MILESTONE = 30;
 
-/** cyclone का player-आकर्षण दायरा (px) */
-export const CYCLONE_PLAYER_PULL_RANGE = 160;
+/** chakravaata का player-आकर्षण दायरा (px) */
+export const CHAKRAVAATA_PLAYER_PULL_RANGE = 160;
 
-/** cyclone का player पर आकर्षण-बल गुणक */
-export const CYCLONE_PLAYER_PULL_FORCE = 0.8;
+/** chakravaata का player पर आकर्षण-बल गुणक */
+export const CHAKRAVAATA_PLAYER_PULL_FORCE = 0.8;
 
 /**
  * माया-size lookup-table (DRY: nested-ternary का स्थान)।
@@ -76,7 +76,7 @@ export const CYCLONE_PLAYER_PULL_FORCE = 0.8;
 export const MAYA_SIZE_TABLE = {
     naama:   { width: 36, height: 36 },
     kripa:   { width: 32, height: 32 },
-    cyclone: { width: 32, height: 32 },
+    chakravaata: { width: 32, height: 32 },
     shankha: { width: 32, height: 32 },
     jyoti:   { width: 32, height: 32 },
     default: { width: 20, height: 24 },   // shuvha / ashuvha
@@ -493,23 +493,23 @@ export class KarmaEngine {
         }
         this._prevPulledHorseIndex = this.pulledHorseIndex;
 
-        // ── 11. Cyclone — माया-विक्षेप-बल ────────────────────
-        const CYCLONE_FORCE = 2.2;
+        // ── 11. Chakravaata — माया-विक्षेप-बल ────────────────────
+        const CHAKRAVAATA_FORCE = 2.2;
         for (let ci = 0; ci < this.mayaPool.length; ci++) {
             let cy0 = this.mayaPool[ci];
-            if (!cy0.active || cy0.type !== "cyclone") continue;
+            if (!cy0.active || cy0.type !== "chakravaata") continue;
             let cyCx = cy0.x + cy0.width / 2;
             let cyCy = cy0.y + cy0.height / 2;
             for (let mi = 0; mi < this.mayaPool.length; mi++) {
                 let m2 = this.mayaPool[mi];
                 if (!m2.active || m2 === cy0) continue;
                 if (m2.type !== "shuvha" && m2.type !== "ashuvha") continue;
-                m2.x += (cyCx - (m2.x + m2.width / 2)) * 0.05 * CYCLONE_FORCE * dt;
+                m2.x += (cyCx - (m2.x + m2.width / 2)) * 0.05 * CHAKRAVAATA_FORCE * dt;
             }
             // player को भी खींचे — माया का भय-रूप, नाम या शंख से ही मुक्ति
             const playerDist = Math.hypot(cx - cyCx, cy - cyCy);
-           if (playerDist <= CYCLONE_PLAYER_PULL_RANGE && playerDist > 0) {
-                const pullStrength = (1 - playerDist / CYCLONE_PLAYER_PULL_RANGE) * CYCLONE_PLAYER_PULL_FORCE;
+           if (playerDist <= CHAKRAVAATA_PLAYER_PULL_RANGE && playerDist > 0) {
+                const pullStrength = (1 - playerDist / CHAKRAVAATA_PLAYER_PULL_RANGE) * CHAKRAVAATA_PLAYER_PULL_FORCE;
                 this.player.x += (cyCx - cx) * pullStrength * dt;
             }
         }
@@ -550,7 +550,7 @@ export class KarmaEngine {
                     } else if (m.type === 'kripa') {
                         this._grantKripa(mCx, mCy);
                         takraavaMaya = true; m.active = false; continue;
-                    } else if (m.type === 'shuvha' || m.type === 'ashuvha' || m.type === 'cyclone') {
+                    } else if (m.type === 'shuvha' || m.type === 'ashuvha' || m.type === 'chakravaata') {
                         this._createExplosion(mCx, mCy, explColor);
                         this._addFloatingText("🙏", "#fb923c", { x:mCx, y:mCy });
                         this.samarpita++; takraavaMaya = true;
@@ -579,12 +579,12 @@ export class KarmaEngine {
         // ज्योति — सिर्फ़ दृश्य
         this._updateGlowRing(this.glowRings.jyoti, dt);
 
-        // शंख — cyclone-collision भी जाँचे
+        // शंख — chakravaata-collision भी जाँचे
         this._updateGlowRing(this.glowRings.shankha, dt, (ring) => {
             let shankhaHit = false;
             for (let si = 0; si < this.mayaPool.length; si++) {
                 let sm = this.mayaPool[si];
-                if (!sm.active || sm.type !== "cyclone") continue;
+                if (!sm.active || sm.type !== "chakravaata") continue;
                 let smCx = sm.x + sm.width / 2; let smCy = sm.y + sm.height / 2;
                 if (Math.hypot(smCx - cx, smCy - cy) <= ring.radius) {
                     sm.active = false; this.samarpita++;
