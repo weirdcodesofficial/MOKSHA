@@ -146,7 +146,7 @@ export const KarmaMixin = {
         const naamaThreshold  = shuvhaThreshold + punyaProb;
 
         if      (rand > 0.985)           { type = "kripa";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > 0.97)            { type = "cyclone"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
+        else if (rand > 0.97)            { type = "chakravaata"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
         else if (rand > 0.945)           { type = "shankha"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
         else if (rand > 0.92)            { type = "jyoti";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
         else if (rand > naamaThreshold)  { type = "naama";   xPos = this.TUNNEL_X + Math.random() * (this.TUNNEL_WIDTH - 20); }
@@ -208,9 +208,9 @@ export const KarmaMixin = {
             this._collectResource('shankha', m.x, m.y);
         } else if (m.type === "jyoti") {
             this._collectResource('jyoti', m.x, m.y);
-        } else if (m.type === "cyclone") {
-            const cycloneCx = m.x + m.width / 2;
-            const pushDir   = (cx < cycloneCx) ? -1 : 1;
+        } else if (m.type === "chakravaata") {
+            const chakravaataCx = m.x + m.width / 2;
+            const pushDir   = (cx < chakravaataCx) ? -1 : 1;
             this.player.x   = Math.max(0, Math.min(
                 this.WIDTH - this.player.width,
                 this.player.x + pushDir * 200
@@ -218,7 +218,7 @@ export const KarmaMixin = {
             this._addFloatingText("🌪️", "#aaaaaa", { x: m.x + m.width / 2, y: m.y });
             this._cb.vibrateGamepad?.(0.4, 0.6, 180);
             this._updateAlert("🌪️ विक्षेप: चक्रवात ने रथ को झकझोरा!", "#aaaaaa");
-            return; // m.active = false नहीं — cyclone यथावत
+            return; // m.active = false नहीं — chakravaata यथावत
         } else if (m.type === "shuvha") {
             if (!this._pendingGoodKarma) {
                 this._pendingGoodKarma = true;

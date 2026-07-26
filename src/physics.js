@@ -41,7 +41,7 @@ export const PhysicsMixin = {
      * Glow-ring विस्तार (DRY — §2.4)।
      * @param {Object}   ring   — glowRings.jyoti / .shankha / .kripa
      * @param {number}   dt
-     * @param {Function} onTick — optional (शंख-वलय के cyclone-check हेतु)
+     * @param {Function} onTick — optional (शंख-वलय के chakravaata-check हेतु)
      */
     _updateGlowRing(ring, dt, onTick) {
         if (!ring.active) return;

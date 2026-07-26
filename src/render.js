@@ -444,7 +444,7 @@ export const Renderer = {
                 ctx.restore();
             } else if (m.type === "kripa") {
                 drawPickupGlowIcon(m.x + m.width / 2, m.y + m.height / 2, bScale, "✋", "255,215,0", 0.55, "#ffd700", frameNow, 130, 5);
-            } else if (m.type === "cyclone") {
+            } else if (m.type === "chakravaata") {
                 let ccx = m.x + m.width / 2; let ccy = m.y + m.height / 2; ctx.save();
                 ctx.translate(ccx, ccy); ctx.rotate((frameNow / 120) % (Math.PI * 2));
                 let cGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 22 * bScale);

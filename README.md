@@ -35,7 +35,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | **समर्पित** (Surrendered) | `samarpita` | ≥50 triggers चेतना-जागृति (Awakening) |
 | **चेतना-जागृति** (Awakening) | `chetanaaJagrita` | **True gate for Moksha** |
 | **कृपा** (Grace) | `kripa` | Earned through surrender; frees karma-bondage |
-| **शंख** (Conch) | `shankha` | Dispels cyclone (तूफ़ान) of Maya when Naam is unavailable then Shanka (यंत्र-मार्ग) |
+| **शंख** (Conch) | `shankha` | Dispels chakravaata (तूफ़ान) of Maya when Naam is unavailable then Shanka (यंत्र-मार्ग) |
 | **ज्योति** (Lamp) | `jyoti` | Restores vision in the darkness of bad karma |
 
 ## 🎮 Controls
@@ -50,7 +50,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | Pure Rebirth | `R` | LT (6) | Zero karma → new life |
 | Shastra (Knowledge) | `ESC` | BACK (8) | Open wisdom scroll |
 | Pause | `F` | START (9) | Stillness |
-| Shankha (Conch) | `Y` | Y (0) | Dispel cyclone (यंत्र-मार्ग, when Naam unavailable) |
+| Shankha (Conch) | `Y` | Y (0) | Dispel chakravaata (यंत्र-मार्ग, when Naam unavailable) |
 | Jyoti (Lamp) | `B` | B (1) | Restore vision in bad-karma darkness |
 | Shastra Scroll | `↑` / `↓` (hold) | DPAD U/D | Navigate wisdom text |
 
@@ -60,7 +60,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 
 - 🕉️ **Vedic Karma Engine** — Real-time Punya/Paap/Prarabdha/Samarpita system
 - 🌸 **Lotus Petal Ring** — 10 animated petals visualise remaining breath (Swaansa)
-- 🌀 **Cyclone (Maya Tufaan)** — Can only be dispelled by Naam-Jaapa or Shankha if Naam-Jaap Unavailable
+- 🌀 **Chakravaata (Maya Tufaan)** — Can only be dispelled by Naam-Jaapa or Shankha if Naam-Jaap Unavailable
 - 🎵 **Layered Ambient Audio** — 4 continuous loops (bgMusic, Shathendriya, SushuptiBreath, JagritaBreath) with smooth duck/fade
 - 🔮 **Sci-Fi Yantra Visuals** — CRT scanlines, gold scan-sweep, Yantra polygons, cyberGrid
 - 🏆 **Three End States** — Moksha (liberation), Pralaya (dissolution), Punarjanma (rebirth)
@@ -175,7 +175,7 @@ MOKSHA/
 | **चेतना-जागृति** | `chetanaaJagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` केवल ट्रिगर |
 | **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म, 10=प्रारब्ध भस्म |
 | **कृपा** | `kripa` | बंधन हो → kripa-- व कर्म समर्पित में; बंधन न हो → kripa++ |
-| **शंख** | `shankha` | Y/gamepad — cyclone-शमन हेतु |
+| **शंख** | `shankha` | Y/gamepad — chakravaata-शमन हेतु |
 | **ज्योति** | `jyoti` | B/gamepad — पाप-अंधकार में दृष्टि हेतु |
 | **श्वास** | `swaansa`, `samaya` | कमल-पंखुड़ी वलय से दृश्यित (§2.8) |
 | **ब्रह्मांडीय क्षितिज** | `samaya <= 0` | मोक्ष या पुनर्जन्म का निर्णय-क्षण |
@@ -212,11 +212,11 @@ grantKripa(x, y, reason = null) {
 }
 ```
 
-### 1.5 cyclone — शास्त्र-संगत व्यवहार
-- cyclone **player को भी खींचता है** (range: 220px) — माया का भय-रूप
-- cyclone shuvha/rikta माया को भी अपनी ओर खींचता है
-- naam-jaap वलय cyclone को भस्म करती है (नाम-मार्ग) — नाम सर्वशक्तिमान है
-- शंख-वलय (Y) भी cyclone भस्म करती है (यंत्र-मार्ग) — जब नाम संचित न हो
+### 1.5 chakravaata — शास्त्र-संगत व्यवहार
+- chakravaata **player को भी खींचता है** (range: 220px) — माया का भय-रूप
+- chakravaata shuvha/rikta माया को भी अपनी ओर खींचता है
+- naam-jaap वलय chakravaata को भस्म करती है (नाम-मार्ग) — नाम सर्वशक्तिमान है
+- शंख-वलय (Y) भी chakravaata भस्म करती है (यंत्र-मार्ग) — जब नाम संचित न हो
 - player सीधे टकराए → `ashuvhaKarma++` — नाम या शंख ही एकमात्र रक्षा
 
 ---
@@ -261,13 +261,13 @@ engine.glowRings = {
 // engine methods: _updateGlowRings(dt), resetAllGlowRings()
 // render.js में: drawGlowRing(cx, cy, ring)
 ```
-- **शंख-वलय onTick:** cyclone-collision-चेक
+- **शंख-वलय onTick:** chakravaata-collision-चेक
 - **ज्योति-वलय:** सिर्फ यही पाप-दृष्टि-भ्रम हटाती है
 
 ### 2.5 रिसोर्स-पिकअप यूनिफिकेशन (DRY)
 ```js
 // engine.js से exported:
-export const MAYA_SIZE_TABLE = { naama:{36,36}, kripa:{32,32}, cyclone:{32,32}, shankha:{32,32}, jyoti:{32,32}, default:{20,24} };
+export const MAYA_SIZE_TABLE = { naama:{36,36}, kripa:{32,32}, chakravaata:{32,32}, shankha:{32,32}, jyoti:{32,32}, default:{20,24} };
 export const RESOURCE_PICKUP_TABLE = {
     shankha: { icon:"🐚", color:"#7dd3fc", sound:"shankhaPrapta", alert:"..." },
     jyoti:   { icon:"🪔", color:"#ffe932", sound:"jyotiPrapta",  alert:"..." }
@@ -367,7 +367,7 @@ getEmojiSprite(emoji, fontSize) // orbit/innerOrbit emoji cache (नई)
 | पवित्र पुनर्जन्म | R | LT (6) | कर्म शून्य, नया जीवन |
 | शास्त्र | ESC | BACK (8) | ज्ञान-द्वार |
 | स्तम्भन | F | START (9) | विराम |
-| शंख | Y | Y (0) | cyclone-शमन वलय |
+| शंख | Y | Y (0) | chakravaata-शमन वलय |
 | ज्योति | B | B (1) | पाप-अंधकार में दृष्टि |
 | शास्त्र-नेविगेशन | ↑↓ (held) | DPAD U/D (12/13) | scroll; DPAD = PageUp/Down |
 
@@ -520,7 +520,7 @@ AM.updateAmbientVolumes();
 | **sci-fi विज़ुअल** | scan-sweep, CRT scanlines, drawRingTicks, drawYantraPolygon, cyberGrid |
 | **वलय रंग** | violet/cyan → neon-gold #ffc83c |
 | **grantKripa()** | बंधन हो → kripa--, karma→samarpita; बंधन न हो → kripa++ |
-| **cyclone** | player को खींचता है; naam-ring भस्म करती है (नाम-मार्ग); शंख यंत्र-मार्ग; direct collision → ashuvhaKarma++ |शंख यंत्र-मार्ग |
+| **chakravaata** | player को खींचता है; naam-ring भस्म करती है (नाम-मार्ग); शंख यंत्र-मार्ग; direct collision → ashuvhaKarma++ |शंख यंत्र-मार्ग |
 | **bgMusicVolume** | fix: सभी layers पर multiplier |
 | **SUSHUPTI duck** | 0.55→0.20 |
 | **Audio eager/deferred** | 22 eager + 6 deferred |
