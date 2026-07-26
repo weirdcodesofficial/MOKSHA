@@ -207,7 +207,7 @@ export const Renderer = {
             isPaused, gameOver, mayaPool, pendingGoodKarma, punyaTimer,
             pendingGoodKarmaCount, floatingTextPool, isNaamaJaapa, naamaGhera,
             outerOrbits, notifyTimer, notifyText, swaansaTimer, swaansa,
-            naamaGlowTimer, bodyGlowTimer, bodyGlowColor
+            naamaGlowTimer, bodyGlowTimer, bodyGlowColor, prarabdhaTimer
         } = state;
 
         let totalKarma = shuvhaKarma + ashuvhaKarma;
@@ -748,6 +748,10 @@ export const Renderer = {
             let orbit = outerOrbits[o]; if (orbit.count > 0) {
                 ctx.save();
                 let extraGlow = (orbit.glowTimer && orbit.glowTimer > 0) ? (orbit.glowTimer / 60) * 22 : 0; 
+                // 📜 प्रारब्ध orbit — भोग-timer सक्रिय होने पर subtle pulse glow
+                if (o === 2 && prarabdhaTimer > 0) {
+                    extraGlow += (Math.sin(frameNow / 300) * 0.5 + 0.5) * 20;
+                }
                 ctx.shadowBlur = (orbit.glow || 6) + extraGlow;
                 ctx.shadowColor = orbit.color; let renderTime = frameNow / 1000;
                 let pulse = Math.sin(renderTime * 1.2 + o) * 2; let actualDist = baseDist + pulse; let visibleCount = Math.min(orbit.count, 36); let step = Math.max(1, Math.ceil(orbit.count / visibleCount)); let drawCount = Math.ceil(orbit.count / step);

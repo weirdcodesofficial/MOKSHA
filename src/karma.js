@@ -31,7 +31,7 @@
  * ============================================================
  */
 
-import { SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, RESOURCE_PICKUP_TABLE } from './engine.js';
+import { SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, RESOURCE_PICKUP_TABLE, PRARABDHA_BHOG_FRAMES } from './engine.js';
 
 export const KarmaMixin = {
 
@@ -85,12 +85,16 @@ export const KarmaMixin = {
                                  (this._pendingGoodKarma ? this._pendingGoodKarmaCount : 0);
 
         if (this._pendingGoodKarma) {
-            this.prarabdha           += this._pendingGoodKarmaCount;
+            const pendingCount = this._pendingGoodKarmaCount;
+            this.prarabdha           += pendingCount;
+            this.prarabdhaTimer += pendingCount * PRARABDHA_BHOG_FRAMES;
             this._pendingGoodKarma    = false;
             this._punyaTimer          = 0;
             this._pendingGoodKarmaCount = 0;
         }
-        this.prarabdha += (this.shuvhaKarma + this.ashuvhaKarma);
+        const sanchitaKarma = this.shuvhaKarma + this.ashuvhaKarma;
+        this.prarabdha += sanchitaKarma;
+        this.prarabdhaTimer += sanchitaKarma * PRARABDHA_BHOG_FRAMES;
         if (gainedPrarabdha > 0) this._addFloatingText(`+${gainedPrarabdha} 📜`, "#a78bfa");
 
         this.ashuvhaKarma = 0; this.shuvhaKarma = 0;
@@ -194,11 +198,6 @@ export const KarmaMixin = {
                     this.activeNaam -= 5; this.ashuvhaKarma--; this.samarpita++;
                     this._addFloatingText("💧", "#ff3232");
                     this._triggerGlow("#ff3232");
-                    this._cb.playSound?.('samarpita');
-                } else if (this.prarabdha > 0 && this.activeNaam >= 10) {
-                    this.activeNaam -= 10; this.prarabdha--; this.samarpita++;
-                    this._addFloatingText("⚖️", "#a78bfa");
-                    this._triggerGlow("#a78bfa");
                     this._cb.playSound?.('samarpita');
                 }
             }

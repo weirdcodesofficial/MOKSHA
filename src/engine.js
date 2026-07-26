@@ -63,6 +63,9 @@ export const KRIPA_NAAM_MILESTONE = 20;
 /** हर 30 नए समर्पित-अर्जन पर कृपा++ */
 export const KRIPA_SAMARPITA_MILESTONE = 30;
 
+/** प्रति प्रारब्ध unit भोगने हेतु frames (10s × 60fps) — "प्रारब्धं भुज्यते एव" */
+export const PRARABDHA_BHOG_FRAMES = 600;
+
 /** chakravaata का player-आकर्षण दायरा (px) */
 export const CHAKRAVAATA_PLAYER_PULL_RANGE = 160;
 
@@ -114,6 +117,7 @@ export class KarmaEngine {
         this.ashuvhaKarma     = 0;   // पाप (सक्रिय)
         this.activeNaam       = 0;   // ॐ नाम (उपयोग-योग्य)
         this.prarabdha        = 0;   // प्रारब्ध (संचित — सिर्फ़ 10-नाम से भस्म)
+        this.prarabdhaTimer = 0; // भोग-countdown (frames); पुनर्जन्म पर persist, R-reset पर शून्य
         this.samarpita        = 0;   // समर्पित (lifetime)
         this.punaraJanmaCount = 0;   // पुनर्जन्म गिनती
         this.isKarmaImmune    = false; // purnaSamarpana के बाद अस्थायी कर्म-रक्षा
@@ -561,16 +565,11 @@ export class KarmaEngine {
             if (takraavaMaya) this._cb.playSound?.('samarpita');
 
             // वलय पूर्ण — नाम-शक्ति जाँचें
+            // ⚠️ शास्त्र-संगत (Issue #11): प्रारब्ध नाम-जाप से नष्ट नहीं होता।
+            // activeNaam >= 10 होने पर prarabdhaTimer 2× गति से घटता है (§22.5)।
             if (this.naamaGhera > NAAMA_JAAP_MAX_RADIUS) {
                 this.isNaamaJaapa = false; this.naamaGhera = 0;
-                if (this.naamaJaapaPower >= 10 && this.prarabdha > 0) {
-                    this.prarabdha--;
-                    this._addFloatingText("-📜", "#a78bfa", { vy:-3, isBigName:true });
-                    this._cb.playSound?.('bandhanaMukta');
-                    this._updateAlert("🔥 दस नाम से प्रारब्ध भस्म हुआ!", "#a78bfa");
-                } else {
-                    this._updateAlert("नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");
-                }
+                this._updateAlert("नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");
                 this.naamaJaapaPower = 0;
             }
         }
@@ -748,6 +747,30 @@ export class KarmaEngine {
         if (this.bodyGlowTimer  > 0) this.bodyGlowTimer  -= dt;
         if (this.outerOrbits[3]?.glowTimer > 0) this.outerOrbits[3].glowTimer -= dt;
         if (this.outerOrbits[7]?.glowTimer > 0) this.outerOrbits[7].glowTimer -= dt;
+        
+        // ── 22.5. प्रारब्ध-भोग countdown — "प्रारब्धं भुज्यते एव" (Issue #11) ─
+        if (this.prarabdhaTimer > 0) {
+            const prevPrarabdha = this.prarabdha;
+            this.prarabdhaTimer = Math.max(0, this.prarabdhaTimer - dt);
+            
+            // Math.ceil: जब timer unit-boundary cross करे → prarabdha घटे
+            const newPrarabdha = this.prarabdhaTimer > 0 ? Math.ceil(this.prarabdhaTimer / PRARABDHA_BHOG_FRAMES) : 0;
+            
+            if(newPrarabdha < prevPrarabdha) {
+                this.prarabdha = newPrarabdha;
+                if (this.prarabdha > 0) {
+                    // एक unit भोगा — अगला unit जारी
+                    this._updateAlert(`📜 एक प्रारब्ध भोगा गया — ${this.prarabdha} शेष`, "#a78bfa");
+                    this._addFloatingText("-📜", "#a78bfa", {vy: -2.5, isBigName: true});              
+                    this._cb.playSound?.('bandhanaMukta');
+                } else {
+                    // सभी units भोगे — प्रारब्ध-मुक्ति
+                    this.prarabdhaTimer = 0;
+                    this._updateAlert("🙏 प्रारब्ध से मुक्ति — पूर्ण भोग संपन्न 🙏", "#a78bfa");
+                    this._cb.playSound?.('bandhanaMukta');
+                }
+            }             
+        }
 
         this.smoothSize += ((this.playerInTunnel ? 30 : 60) - this.smoothSize) * 0.18 * dt;
 
@@ -857,7 +880,7 @@ export class KarmaEngine {
      */
     reset() {
         // ── Karma reset ──
-        this.prarabdha = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
+        this.prarabdha = 0; this.prarabdhaTimer = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
         this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;
         this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
 
@@ -933,6 +956,7 @@ export class KarmaEngine {
             ashuvhaKarma:        this.ashuvhaKarma,
             activeNaam:          this.activeNaam,
             prarabdha:           this.prarabdha,
+            prarabdhaTimer:      this.prarabdhaTimer,
             samarpita:           this.samarpita,
             punaraJanmaCount:    this.punaraJanmaCount,
             kripa:               this.kripa,
@@ -1008,7 +1032,16 @@ export class KarmaEngine {
         this._updateStatWithPulse(this._UI.naama,          'naama',          this.activeNaam,          'ॐ');
         this._updateStatWithPulse(this._UI.punya,          'punya',          this.shuvhaKarma,         '🌿');
         this._updateStatWithPulse(this._UI.paap,           'paap',           this.ashuvhaKarma,        '🥀');
-        this._updateStatWithPulse(this._UI.prarabdha,      'prarabdha',      this.prarabdha,           '📜');
+        if (this._UI?.prarabdha) {
+            const bhogSec = this.prarabdhaTimer > 0 ? ` ⏱${Math.ceil(this.prarabdhaTimer / 60)}s` : '';
+            const newDisplay = `📜 ${this.prarabdha}${bhogSec}`;
+            if (this._UI.prarabdha.textContent !== newDisplay) {
+            this._UI.prarabdha.textContent = newDisplay;
+            this._uiScales.prarabdha = 1.15;
+            this._uiGlows.prarabdha = 1.0;
+            this._oldStats.prarabdha = this.prarabdha;
+            }
+        }
         this._updateStatWithPulse(this._UI.samarpita,      'samarpita',      this.samarpita,
                                   '🙏', ` / ${CHETANA_JAGRITI_THRESHOLD}`);
         this._updateStatWithPulse(this._UI.punaraJanma,    'punaraJanma',    this.punaraJanmaCount,    '♻️');
