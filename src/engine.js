@@ -731,7 +731,10 @@ export class KarmaEngine {
             if (hitX && hitY) {
                 if (m.isPulling) this._mayaConsumedWhilePulling = true;
                 if (this.isKarmaImmune) {
-                    this._createExplosion(m.x, m.y, "#ffffff");
+                    this._createExplosion(m.x + m.width/2, m.y + m.height/2, "#ffffff");
+                    this._addFloatingText("🙏", "#fb923c", { x:m.x + m.width/2, y:m.y + m.height/2 });
+                    this.samarpita++;
+                    this._cb.playSound?.('samarpita');
                     m.active = false; continue;
                 }
                 this.shakeTimer = 8;
