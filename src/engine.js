@@ -759,35 +759,28 @@ export class KarmaEngine {
                 this._prarabdhaTimerPulseAccum -= 60;
                 if (this.outerOrbits[2]) this.outerOrbits[2].glowTimer = 18;
             }
-            // Alert box में live countdown — _punyaTimer pattern
+            // Alert box countdown — _punyaTimer pattern (step 14.5 से move किया)
             const prarabdhaSecLeft = Math.ceil(this.prarabdhaTimer / 60);
             if (prarabdhaSecLeft !== this._lastPrarabdhaAlertSecond) {
                 this._lastPrarabdhaAlertSecond = prarabdhaSecLeft;
                 this._updateAlert(`📜 प्रारब्ध भोग जारी — ${this.prarabdha} शेष | ⏱ ${prarabdhaSecLeft}s`, "#a78bfa");
             }
-        
-        // ── 22.5. प्रारब्ध-भोग countdown — "प्रारब्धं भुज्यते एव" (Issue #11) ─
-        if (this.prarabdhaTimer > 0) {
+            // prarabdha unit घटाने का logic
             const prevPrarabdha = this.prarabdha;
             this.prarabdhaTimer = Math.max(0, this.prarabdhaTimer - dt);
-            
-            // Math.ceil: जब timer unit-boundary cross करे → prarabdha घटे
-            const newPrarabdha = this.prarabdhaTimer > 0 ? Math.ceil(this.prarabdhaTimer / PRARABDHA_BHOG_FRAMES) : 0;
-            
-            if(newPrarabdha < prevPrarabdha) {
+            const newPrarabdha  = this.prarabdhaTimer > 0 ? Math.ceil(this.prarabdhaTimer / PRARABDHA_BHOG_FRAMES) : 0;
+            if (newPrarabdha < prevPrarabdha) {
                 this.prarabdha = newPrarabdha;
                 if (this.prarabdha > 0) {
-                    // एक unit भोगा — अगला unit जारी
                     this._updateAlert(`📜 एक प्रारब्ध भोगा गया — ${this.prarabdha} शेष`, "#a78bfa");
-                    this._addFloatingText("-📜", "#a78bfa", {vy: -2.5, isBigName: true});              
+                    this._addFloatingText("-📜", "#a78bfa", { vy: -2.5, isBigName: true });
                     this._cb.playSound?.('bandhanaMukta');
                 } else {
-                    // सभी units भोगे — प्रारब्ध-मुक्ति
                     this.prarabdhaTimer = 0;
                     this._updateAlert("🙏 प्रारब्ध से मुक्ति — पूर्ण भोग संपन्न 🙏", "#a78bfa");
                     this._cb.playSound?.('bandhanaMukta');
                 }
-            }             
+            }
         }
 
         this.smoothSize += ((this.playerInTunnel ? 30 : 60) - this.smoothSize) * 0.18 * dt;
