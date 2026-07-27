@@ -229,6 +229,21 @@ button.hud-icon-btn:hover {
     box-shadow: inset 2px 0 0 0 currentColor; /* sci-fi tech-readout accent-bar */
 }
 
+/* ── HUD stat-line per-element colors ──
+   outerOrbits color scheme से aligned — currentColor glow auto-match करता है */
+#naama        { color: #ffffff; }          /* ॐ नाम     — शुद्ध श्वेत */
+#punya        { color: #32ff80; }          /* 🌿 पुण्य   — दिव्य हरा  */
+#paap         { color: #ff2244; }          /* 🥀 पाप    — रक्त-वर्ण   */
+#prarabdha    { color: #a78bfa; }          /* 📜 प्रारब्ध — नील-बैंगनी */
+#samarpita    { color: #fb923c; }          /* 🙏 समर्पित — नारंगी     */
+#punaraJanma  { color: #f87171; }          /* ♻️ जन्म   — गुलाबी-लाल  */
+#kripa        { color: #ffe9a8; }          /* ✋ कृपा   — सोनारंग     */
+#shankha      { color: #7dd3fc; }          /* 🐚 शंख   — आकाश-नील    */
+#jyoti        { color: #ffe932; }          /* 🪔 ज्योति — सुवर्ण-पीत  */
+#chetana      { color: #2dd4bf; }          /* 👁️ चेतना — वैदूर्य-हरा  */
+#drishti      { color: #facc15; }          /* ☀️ दृष्टि — तेज-पीत     */
+#purnaSamarpana { color: #e879f9; }        /* 🙌 पूर्ण  — दिव्य-नील   */
+
 /* ====================== PAUSE (VIRAAMA) OVERLAY ====================== */
 #viraama-overlay {
     position: absolute;
@@ -437,13 +452,14 @@ button.hud-icon-btn:hover {
 }
 
 @keyframes breathPulse {
+    /* cosmic violet से sync — render.js cachedSwaansaGrad के साथ संगत */
     0%, 100% {
         opacity: 0.6;
-        text-shadow: 0 0 8px rgba(147, 197, 253, 0.5);
+        text-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
     }
     50% {
         opacity: 1;
-        text-shadow: 0 0 23px rgba(147, 197, 253, 1);
+        text-shadow: 0 0 23px rgba(139, 92, 246, 1);
     }
 }
 

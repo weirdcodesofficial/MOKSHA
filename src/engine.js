@@ -64,7 +64,7 @@ export const KRIPA_NAAM_MILESTONE = 20;
 export const KRIPA_SAMARPITA_MILESTONE = 30;
 
 /** प्रति प्रारब्ध unit भोगने हेतु frames (10s × 60fps) — "प्रारब्धं भुज्यते एव" */
-export const PRARABDHA_BHOG_FRAMES = 600;
+export const PRARABDHA_BHOG_FRAMES = 1800;
 
 /** chakravaata का player-आकर्षण दायरा (px) */
 export const CHAKRAVAATA_PLAYER_PULL_RANGE = 160;
