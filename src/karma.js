@@ -106,6 +106,10 @@ export const KarmaMixin = {
         this._timerTickAccumulator = 0;
         this._timerSoundPlayed     = false;
 
+        // पुनर्जन्म: इस जीवन की कर्म-रक्षा और समर्पण-अवस्था नए जीवन में नहीं जाती
+        this.isKarmaImmune  = false;
+        this.purnaSamarpana = false;
+        
         if (isApavitra) {
             this._updateAlert("♻️ अपवित्र पुनर्जन्म: कर्म असंतुलित रह गया, चक्र जारी है...", "#ff3232");
             this.notifyText = "♻️ अपवित्र पुनर्जन्म";
