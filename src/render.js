@@ -67,13 +67,16 @@ function getMayaSprite(type, bScale) {
     const cx = canvasSize / 2, cy = canvasSize / 2;
 
     const isShuvha = type === 'shuvha';
-    const midColor = isShuvha ? '#32ff32' : '#ff3232';
-    const darkColor = isShuvha ? '#004400' : '#440000';
-    const strokeColor = isShuvha ? 'rgba(50, 255, 50, 0.8)' : 'rgba(255, 50, 50, 0.8)';
-    const symbol = isShuvha ? '🌿' : '🥀';
+    // शुभ — दिव्य हरा (fresh divine light → vibrant green → forest depth)
+    // अशुभ — रक्त-वर्ण (soft warning center → vivid crimson → deep dark red)
+    const centerColor = isShuvha ? '#efffb0' : '#ffbbbb';
+    const midColor    = isShuvha ? '#32ff80' : '#ff2244';
+    const darkColor   = isShuvha ? '#004422' : '#660011';
+    const strokeColor = isShuvha ? 'rgba(50, 255, 128, 0.85)' : 'rgba(255, 34, 68, 0.85)';
+    const symbol = isShuvha ? '🌿' : '🥀'; // माया चिह्न
 
     const grad = octx.createRadialGradient(cx, cy - r * 0.3, 0, cx, cy, r);
-    grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.4, midColor); grad.addColorStop(1, darkColor);
+    grad.addColorStop(0, centerColor); grad.addColorStop(0.4, midColor); grad.addColorStop(1, darkColor);
     octx.fillStyle = grad;
     octx.beginPath(); octx.arc(cx, cy, r, 0, Math.PI * 2); octx.fill();
     octx.strokeStyle = strokeColor; octx.lineWidth = 1.5; octx.stroke();
@@ -228,7 +231,8 @@ export const Renderer = {
         if (swaansaGradBucket !== cachedSwaansaGradBucket || !cachedSwaansaGrad) {
             cachedSwaansaGradBucket = swaansaGradBucket;
             cachedSwaansaGrad = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 120 + worldSwaansaPulse * 180, WIDTH / 2, HEIGHT / 2, WIDTH * 0.8);
-            cachedSwaansaGrad.addColorStop(0, "rgba(147, 197, 253, 0)"); cachedSwaansaGrad.addColorStop(1, "rgba(147, 197, 253, " + (0.1 + worldSwaansaPulse * 0.4) + ")");
+            cachedSwaansaGrad.addColorStop(0, "rgba(139, 92, 246, 0)");
+            cachedSwaansaGrad.addColorStop(1, "rgba(139, 92, 246, " + (0.12 + worldSwaansaPulse * 0.38) + ")");
         }
         ctx.fillStyle = cachedSwaansaGrad; ctx.fillRect(0, 0, WIDTH, HEIGHT); ctx.restore();
 
@@ -238,7 +242,9 @@ export const Renderer = {
             cachedTunnelGradBucket = tunnelGradBucket;
             cachedTunnelGrad = ctx.createLinearGradient(TUNNEL_X, 0, TUNNEL_X + TUNNEL_WIDTH, 0);
             cachedTunnelGrad.addColorStop(0, "rgba(255, 0, 200, " + (0.02 + edgeIntensity * 0.15) + ")");
-            cachedTunnelGrad.addColorStop(0.5, "rgba(0, 240, 255, " + (0.1 + edgeIntensity * 0.45) + ")");
+            cachedTunnelGrad.addColorStop(0, "rgba(255, 200, 60, " + (0.05 + edgeIntensity * 0.16) + ")");
+            cachedTunnelGrad.addColorStop(0.5, "rgba(0, 240, 255, " + (0.12 + edgeIntensity * 0.45) + ")");
+            cachedTunnelGrad.addColorStop(0, "rgba(255, 200, 60, " + (0.05 + edgeIntensity * 0.16) + ")");
             cachedTunnelGrad.addColorStop(1, "rgba(255, 0, 200, " + (0.02 + edgeIntensity * 0.15) + ")");
         }
         ctx.fillStyle = cachedTunnelGrad; ctx.fillRect(TUNNEL_X, 0, TUNNEL_WIDTH, HEIGHT);
@@ -338,20 +344,20 @@ export const Renderer = {
             const bCtx = bOff.getContext('2d');
             const bCx = bSz / 2, bCy = bSz / 2;
             const bGrad = bCtx.createRadialGradient(bCx, bCy, 0, bCx, bCy, sRadius);
-            bGrad.addColorStop(0, "rgba(255, 225, 150, 0.22)");
-            bGrad.addColorStop(0.6, "rgba(255, 210, 110, 0.14)");
+            bGrad.addColorStop(0, "rgba(255, 160, 60, 0.32)");   // saffron-orange core (ज्ञान-अग्नि)
+            bGrad.addColorStop(0.5, "rgba(255, 210, 110, 0.18)");
             bGrad.addColorStop(1, "rgba(255, 190, 80, 0.05)");
             bCtx.fillStyle = bGrad;
             bCtx.beginPath(); bCtx.arc(bCx, bCy, sRadius, 0, Math.PI * 2); bCtx.fill();
             cachedBuddhiSprite = { canvas: bOff, sz: bSz };
         }
         ctx.save();
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = "rgba(255, 210, 120, 0.4)";
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = "rgba(255, 160, 60, 0.55)";
         ctx.drawImage(cachedBuddhiSprite.canvas, cx - cachedBuddhiSprite.sz / 2, sCy - cachedBuddhiSprite.sz / 2);
-        ctx.shadowBlur = 14;
-        ctx.shadowColor = "rgba(255, 190, 80, 0.7)";
-        ctx.strokeStyle = "rgba(255, 200, 60, 0.45)"; ctx.lineWidth = 1.2;
+        ctx.shadowBlur = 22;
+        ctx.shadowColor = "rgba(255, 170, 50, 0.88)";
+        ctx.strokeStyle = "rgba(255, 200, 60, 0.65)"; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(cx, sCy, sRadius, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
 
@@ -371,8 +377,8 @@ export const Renderer = {
             const aCx = aSz / 2, aCy = aSz / 2;
             const aGrad = aCtx.createRadialGradient(aCx, aCy, 0, aCx, aCy, glowR);
             aGrad.addColorStop(0, "rgba(255, 255, 255, 1)");
-            aGrad.addColorStop(0.1, "rgba(255, 255, 255, 0.9)");
-            aGrad.addColorStop(0.3, "rgba(200, 230, 255, 0.35)");
+            aGrad.addColorStop(0.1, "rgba(255, 255, 255, 0.92)");
+            aGrad.addColorStop(0.3, "rgba(220, 200, 255, 0.42)"); // divine violet (चित्-शक्ति / पुरुष-चेतना)
             aGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
             aCtx.fillStyle = aGrad;
             aCtx.beginPath(); aCtx.arc(aCx, aCy, glowR, 0, Math.PI * 2); aCtx.fill();
@@ -461,7 +467,7 @@ export const Renderer = {
             }
             ctx.textAlign = "left";
         });
-
+        // punyaTimer
         if (pendingGoodKarma && !gameOver) {
             ctx.save(); let secondsLeft = Math.ceil(punyaTimer / 60); let karmaPulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let py = player.y + 40 + smoothSize + 30; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#32ff32"; ctx.fillStyle = "rgba(200, 255, 200, 0.9)"; ctx.fillText("पुण्य त्यागो (+" + pendingGoodKarmaCount + ")", cx, py - 20); ctx.font = "900 " + (26 + karmaPulse * 4) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + karmaPulse * 15; ctx.shadowColor = "#00ff00"; ctx.fillText(secondsLeft + "s", cx, py); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(50, 255, 50, " + (0.8 + karmaPulse * 0.2) + ")"; ctx.strokeText(secondsLeft + "s", cx, py); ctx.restore();
         }
@@ -476,7 +482,7 @@ export const Renderer = {
             ctx.font       = "800 13px 'Orbitron', sans-serif";
             ctx.shadowBlur = 10; ctx.shadowColor = "#a78bfa";
             ctx.fillStyle  = "rgba(200, 180, 255, 0.9)";
-            ctx.fillText(`प्रारब्ध भोग (${state.prarabdha} शेष)`, cx, py - 20);
+            ctx.fillText(`प्रारब्धं भुज्यते एव (${state.prarabdha} शेष)`, cx, py - 20);
             ctx.font       = "900 " + (26 + bhogPulse * 4) + "px 'Orbitron', sans-serif";
             ctx.fillStyle  = "#ffffff";
             ctx.shadowBlur = 20 + bhogPulse * 15;
@@ -562,16 +568,17 @@ export const Renderer = {
         let samayRadius = gatiRadius + 12;                 
         
         ctx.save();
+        // बाहरी वलय आधार — cosmic indigo (यंत्र-संगत)
         ctx.beginPath();
         ctx.arc(cx, cy, gatiRadius, 0, Math.PI * 2);
-        ctx.lineWidth = 4; ctx.strokeStyle = "rgba(200, 20, 20, 0.15)";
-        ctx.shadowBlur = 28; ctx.shadowColor = "rgba(220, 30, 30, 0.9)";
+        ctx.lineWidth = 4; ctx.strokeStyle = "rgba(88, 28, 220, 0.15)";
+        ctx.shadowBlur = 28; ctx.shadowColor = "rgba(100, 40, 255, 0.70)";
         ctx.globalAlpha = 0.55; ctx.stroke();
         
         ctx.beginPath();
         ctx.arc(cx, cy, samayRadius, 0, Math.PI * 2);
-        ctx.lineWidth = 7; ctx.strokeStyle = "rgba(200, 20, 20, 0.18)";
-        ctx.shadowBlur = 45; ctx.shadowColor = "rgba(220, 30, 30, 1)";
+        ctx.lineWidth = 7; ctx.strokeStyle = "rgba(100, 40, 255, 0.18)";
+        ctx.shadowBlur = 45; ctx.shadowColor = "rgba(120, 60, 255, 0.90)";
         ctx.globalAlpha = 0.75; ctx.stroke();
         ctx.restore();    
 
@@ -683,9 +690,10 @@ export const Renderer = {
             if (!cachedPankhudiConsumed) {
                 // 🌑 खर्च — dim/धुंधला (consumed petals)
                 cachedPankhudiConsumed = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                cachedPankhudiConsumed.addColorStop(0, "rgba(250, 198, 93, 0.83)");
-                cachedPankhudiConsumed.addColorStop(0.55, "rgba(255, 196, 108, 0.85)");
-                cachedPankhudiConsumed.addColorStop(1, "rgba(255, 177, 100, 0.85)");
+                // खर्च श्वास — ash-grey-gold (spent/dim breath petals)
+                cachedPankhudiConsumed.addColorStop(0,    "rgba(140, 120, 90, 0.55)");
+                cachedPankhudiConsumed.addColorStop(0.55, "rgba(120, 100, 72, 0.50)");
+                cachedPankhudiConsumed.addColorStop(1,    "rgba(100, 90, 70, 0.45)");
 
                 // 🌸 अभी सांस — चमकीला white → gold (active petal)
                 cachedPankhudiActive = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
