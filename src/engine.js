@@ -571,15 +571,7 @@ export class KarmaEngine {
             // activeNaam >= 10 होने पर prarabdhaTimer 2× गति से घटता है (§22.5)।
             if (this.naamaGhera > NAAMA_JAAP_MAX_RADIUS) {
                 this.isNaamaJaapa = false; this.naamaGhera = 0;
-                // शास्त्र: प्रारब्ध destroy नहीं — 10+ नाम-शक्ति से भोग-गति त्वरित
-                if (this.naamaJaapaPower >= 10 && this.prarabdha > 0 && this.prarabdhaTimer > 0) {
-                    const boost = Math.min(60, this.prarabdhaTimer); // max 1s boost
-                    this.prarabdhaTimer -= boost;
-                    this._addFloatingText("📜⚡", "#a78bfa", { vy:-2, isBigName:true });
-                    this._updateAlert("🔥 नाम-बल से प्रारब्ध-भोग त्वरित हुआ!", "#a78bfa");
-                } else {
-                    this._updateAlert("नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");
-                }
+                this._updateAlert("नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");
                 this.naamaJaapaPower = 0;
             }
         }
@@ -773,6 +765,9 @@ export class KarmaEngine {
                 this._lastPrarabdhaAlertSecond = prarabdhaSecLeft;
                 this._updateAlert(`📜 प्रारब्ध भोग जारी — ${this.prarabdha} शेष | ⏱ ${prarabdhaSecLeft}s`, "#a78bfa");
             }
+        
+        // ── 22.5. प्रारब्ध-भोग countdown — "प्रारब्धं भुज्यते एव" (Issue #11) ─
+        if (this.prarabdhaTimer > 0) {
             const prevPrarabdha = this.prarabdha;
             this.prarabdhaTimer = Math.max(0, this.prarabdhaTimer - dt);
             
