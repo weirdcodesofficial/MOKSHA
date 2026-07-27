@@ -118,6 +118,7 @@ export class KarmaEngine {
         this.activeNaam       = 0;   // ॐ नाम (उपयोग-योग्य)
         this.prarabdha        = 0;   // प्रारब्ध (संचित — सिर्फ़ 10-नाम से भस्म)
         this.prarabdhaTimer = 0; // भोग-countdown (frames); पुनर्जन्म पर persist, R-reset पर शून्य
+        this._prarabdhaTimerPulseAccum = 0; // orbit pulse accumulator
         this.samarpita        = 0;   // समर्पित (lifetime)
         this.punaraJanmaCount = 0;   // पुनर्जन्म गिनती
         this.isKarmaImmune    = false; // purnaSamarpana के बाद अस्थायी कर्म-रक्षा
@@ -174,7 +175,7 @@ export class KarmaEngine {
         this.outerOrbits = [
             { count: 0, color: "#32ff32", speed:  0.8, emoji: "🌿" },  // 0 पुण्य
             { count: 0, color: "#ff3232", speed: -0.9, emoji: "🥀" },  // 1 पाप
-            { count: 0, color: "#a78bfa", speed:  0.6, emoji: "📜" },  // 2 प्रारब्ध
+            { count: 0, color: "#a78bfa", speed:  0.6, emoji: "📜", glowTimer: 0 },  // 2 प्रारब्ध
             { count: 0, color: "#ffffff", speed:  1.0, emoji: "ॐ",  glowTimer: 0 }, // 3 नाम
             { count: 0, color: "#ffe9a8", speed:  0.7, emoji: "✋" },  // 4 कृपा
             { count: 0, color: "#7dd3fc", speed:  0.5, emoji: "🐚" },  // 5 शंख
@@ -233,6 +234,7 @@ export class KarmaEngine {
         this._timerSoundPlayed     = false;
         this._timerTickAccumulator = 0;
         this._lastPunyaAlertSecond = -1;
+        this._lastPrarabdhaAlertSecond = -1;
 
         // ── HUD animation state ──────────────────────────────
         this._oldStats = { naama:-1, punya:-1, paap:-1, prarabdha:-1, samarpita:-1,
@@ -655,7 +657,7 @@ export class KarmaEngine {
             // ── 16. ब्रह्मांडीय क्षितिज — मोक्ष-निर्णय (karma.js) ──
             this._checkMokhsha();
         }
-
+        
         // ── 17. अंतिम-चरण टाइमर-ध्वनि ───────────────────────
         const samayaAntimaCharana = (this.samaya < 100 && this.samaya > 0 && !this.swaansaSamapta);
         const antimaCharana       = samayaAntimaCharana || this._pendingGoodKarma;
@@ -747,6 +749,22 @@ export class KarmaEngine {
         if (this.bodyGlowTimer  > 0) this.bodyGlowTimer  -= dt;
         if (this.outerOrbits[3]?.glowTimer > 0) this.outerOrbits[3].glowTimer -= dt;
         if (this.outerOrbits[7]?.glowTimer > 0) this.outerOrbits[7].glowTimer -= dt;
+        if (this.outerOrbits[2]?.glowTimer > 0) this.outerOrbits[2].glowTimer -= dt;
+        
+        // ── 22.5. प्रारब्ध-भोग countdown — "प्रारब्धं भुज्यते एव" (Issue #11) ─
+        if (this.prarabdhaTimer > 0) {
+            // orbit pulse — हर second 📜 हल्की चमके
+            this._prarabdhaTimerPulseAccum += dt;
+            if (this._prarabdhaTimerPulseAccum >= 60) {
+                this._prarabdhaTimerPulseAccum -= 60;
+                if (this.outerOrbits[2]) this.outerOrbits[2].glowTimer = 18;
+            }
+            // Alert box में live countdown — _punyaTimer pattern
+            const prarabdhaSecLeft = Math.ceil(this.prarabdhaTimer / 60);
+            if (prarabdhaSecLeft !== this._lastPrarabdhaAlertSecond) {
+                this._lastPrarabdhaAlertSecond = prarabdhaSecLeft;
+                this._updateAlert(`📜 प्रारब्ध भोग जारी — ${this.prarabdha} शेष | ⏱ ${prarabdhaSecLeft}s`, "#a78bfa");
+            }
         
         // ── 22.5. प्रारब्ध-भोग countdown — "प्रारब्धं भुज्यते एव" (Issue #11) ─
         if (this.prarabdhaTimer > 0) {
@@ -883,7 +901,7 @@ export class KarmaEngine {
         this.prarabdha = 0; this.prarabdhaTimer = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
         this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;
         this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
-
+        if(this.outerOrbits[2]) this.outerOrbits[2].glowTimer = 0;
         // ── Time reset ──
         this.samaya = SAMAYA_PRAARAMBHIKA; this.swaansa = 10;
         if (this._UI?.samayaVal)  this._UI.samayaVal.innerText  = `${SAMAYA_PRAARAMBHIKA}s`;
@@ -903,6 +921,7 @@ export class KarmaEngine {
         // ── Timer flags reset ──
         this._timerSoundPlayed = false; this._timerTickAccumulator = 0;
         this._lastPunyaAlertSecond = -1;
+        this._lastPrarabdhaAlertSecond = -1;
 
         // ── Physics reset ──
         this.swaansaTimer = 0; this.gameOver = false; this.isPaused = false;

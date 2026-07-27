@@ -466,6 +466,28 @@ export const Renderer = {
             ctx.save(); let secondsLeft = Math.ceil(punyaTimer / 60); let karmaPulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let py = player.y + smoothSize + 30; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#32ff32"; ctx.fillStyle = "rgba(200, 255, 200, 0.9)"; ctx.fillText("पुण्य त्यागो (+" + pendingGoodKarmaCount + ")", cx, py - 14); ctx.font = "900 " + (26 + karmaPulse * 4) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + karmaPulse * 15; ctx.shadowColor = "#00ff00"; ctx.fillText(secondsLeft + "s", cx, py); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(50, 255, 50, " + (0.8 + karmaPulse * 0.2) + ")"; ctx.strokeText(secondsLeft + "s", cx, py); ctx.restore();
         }
 
+        // ── prarabdhaTimer canvas countdown (punyaTimer pattern) ──
+        if (state.prarabdhaTimer > 0 && state.prarabdha > 0 && !gameOver) {
+            ctx.save();
+            let secLeft    = Math.ceil(state.prarabdhaTimer / 60);
+            let bhogPulse  = (Math.sin(frameNow / 150) + 1) / 2;
+            let py         = player.y + smoothSize + 30;
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.font       = "800 13px 'Orbitron', sans-serif";
+            ctx.shadowBlur = 10; ctx.shadowColor = "#a78bfa";
+            ctx.fillStyle  = "rgba(200, 180, 255, 0.9)";
+            ctx.fillText(`प्रारब्ध भोग (${state.prarabdha} शेष)`, cx, py - 14);
+            ctx.font       = "900 " + (26 + bhogPulse * 4) + "px 'Orbitron', sans-serif";
+            ctx.fillStyle  = "#ffffff";
+            ctx.shadowBlur = 20 + bhogPulse * 15;
+            ctx.shadowColor = "#a78bfa";
+            ctx.fillText(secLeft + "s", cx, py);
+            ctx.lineWidth  = 1.5;
+            ctx.strokeStyle = "rgba(167, 139, 250, " + (0.8 + bhogPulse * 0.2) + ")";
+            ctx.strokeText(secLeft + "s", cx, py);
+            ctx.restore();
+        }
+
         if (samaya < 100 && samaya > 0 && !swaansaSamapta && !gameOver) {
             ctx.save(); let currentSamay = Math.ceil(samaya); let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let textY = cy - smoothSize / 2 - 55; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#ff3232"; ctx.fillStyle = "rgba(255, 200, 200, 0.9)"; ctx.fillText("अंतिम चरण", cx, textY - 24); ctx.font = "900 " + (26 + pulse * 3) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + pulse * 35; ctx.shadowColor = "#ff0000"; ctx.fillText(currentSamay + "s", cx, textY); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255, 50, 50, " + (0.8 + pulse * 0.2) + ")"; ctx.strokeText(currentSamay + "s", cx, textY); ctx.restore();
         }
