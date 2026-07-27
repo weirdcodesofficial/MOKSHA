@@ -1042,7 +1042,17 @@ export class KarmaEngine {
     _updateUIStats() {
         if (!this._UI) return;
         this._updateStatWithPulse(this._UI.naama,          'naama',          this.activeNaam,          'ॐ');
-        this._updateStatWithPulse(this._UI.punya,          'punya',          this.shuvhaKarma,         '🌿');
+        // 🌿 shuvhaKarma — pendingGoodKarma active होने पर live timer दिखे (prarabdha pattern)
+        if (this._UI?.punya) {
+            const punyaSec    = this._pendingGoodKarma ? ` ⏱${Math.ceil(this._punyaTimer / 60)}s` : '';
+            const newDisplay  = `🌿 ${this.shuvhaKarma}${punyaSec}`;
+            if (this._UI.punya.textContent !== newDisplay) {
+                this._UI.punya.textContent = newDisplay;
+                this._uiScales.punya = 1.15;
+                this._uiGlows.punya  = 1.0;
+                this._oldStats.punya = this.shuvhaKarma;
+            }
+        }
         this._updateStatWithPulse(this._UI.paap,           'paap',           this.ashuvhaKarma,        '🥀');
         if (this._UI?.prarabdha) {
             const bhogSec = this.prarabdhaTimer > 0 ? ` ⏱${Math.ceil(this.prarabdhaTimer / 60)}s` : '';
