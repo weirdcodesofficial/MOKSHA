@@ -162,14 +162,17 @@ function drawKarmaChain(cx, baseY, color, strength = 1, isHeavy = false, frameNo
     ctx.save();
     let swayPeriod = isHeavy ? 480 : 200;
     let pulse = Math.sin(frameNow / swayPeriod) * (isHeavy ? 7 : 5);
-    let weightDropOffset = isHeavy ? (strength * 12) : 0;
+    // prarabdha chain — orbits से visually अलग करने हेतु Y नीचे shift
+    let weightDropOffset = isHeavy ? (strength * 12) + 8 : 0;
     let y = baseY + pulse + weightDropOffset;
     let fontSize = isHeavy ? (32 + strength * 16) : (22 + strength * 14);
-    
+
+    // prarabdha chain subtle opacity — orbit rings से distinguish हो
+    ctx.globalAlpha = isHeavy ? 0.72 : 1.0;
     ctx.font = `${fontSize}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.shadowColor = color; ctx.shadowBlur = isHeavy ? (35 + strength * 30) : (25 + strength * 20);
+    ctx.shadowColor = color; ctx.shadowBlur = isHeavy ? (28 + strength * 22) : (25 + strength * 20);
     ctx.fillText(isHeavy ? "📜" : "⛓️", cx, y);
-    ctx.shadowBlur = isHeavy ? 18 : 12;
+    ctx.shadowBlur = isHeavy ? 14 : 12;
     ctx.fillText(isHeavy ? "📜" : "⛓️", cx, y);
     ctx.restore();
 }
@@ -211,12 +214,12 @@ function drawAlerts(alertQueue, WIDTH) {
     };
 
     const CARD_W      = 220;
-    const CARD_H      = 68;
-    const CARD_GAP    = 8;
-    const CARD_RIGHT  = 10;          // canvas right-edge से distance
-    const CARD_TOP    = 12;          // canvas top से पहले card का Y
-    const BORDER_W    = 4;           // left colored border width
-    const RADIUS      = 6;           // rounded corner radius
+    const CARD_H      = 58;          // compact — HUD overlap कम करें
+    const CARD_GAP    = 6;
+    const CARD_RIGHT  = 10;
+    const CARD_TOP    = 12;
+    const BORDER_W    = 4;
+    const RADIUS      = 6;
 
     for (let i = 0; i < alertQueue.length; i++) {
         const a = alertQueue[i];
@@ -229,8 +232,9 @@ function drawAlerts(alertQueue, WIDTH) {
         const cardY = CARD_TOP + i * (CARD_H + CARD_GAP);
 
         ctx.save();
-        ctx.globalAlpha = Math.min(1, a.opacity);
-
+        // stack depth fade — नीचे वाले cards हल्के (visually layered)
+        const depthFade = 1 - (i * 0.12);
+        ctx.globalAlpha = Math.min(1, a.opacity) * depthFade;
         // ── drop shadow ──
         ctx.shadowBlur  = 18;
         ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
@@ -570,57 +574,71 @@ export const Renderer = {
             }
             ctx.textAlign = "left";
         });
-        // ── punyaTimer + prarabdhaTimer — side-by-side जब दोनों active हों ──
+        // ── punyaTimer + prarabdhaTimer — player के ऊपर, side-by-side ──
         {
             const hasPunya     = pendingGoodKarma && !gameOver;
             const hasPrarabdha = prarabdhaTimer > 0 && prarabdha > 0 && !gameOver;
-            // दोनों active → side-by-side; अकेला → center
-            const HALF_GAP  = 54;  // center से किनारे की दूरी (px)
-            const baseY     = player.y + 40 + smoothSize + 30;
+
+            // player के ऊपर position — chains/maya से दूर
+            const HALF_GAP = 52;
+            const baseY    = player.y - (smoothSize * 0.5) - 48;
+            const PILL_W   = 96; const PILL_H = 48; const PILL_R = 10;
 
             if (hasPunya) {
-                const timerCx    = (hasPrarabdha) ? cx - HALF_GAP : cx;
+                const timerCx     = hasPrarabdha ? cx - HALF_GAP : cx;
                 const secondsLeft = Math.ceil(punyaTimer / 60);
-                const karmaPulse  = (Math.sin(frameNow / 150) + 1) / 2;
+                const pulse       = (Math.sin(frameNow / 150) + 1) / 2;
                 ctx.save();
-                ctx.textAlign    = "center";
-                ctx.textBaseline = "middle";
+                // pill background
+                ctx.beginPath();
+                ctx.roundRect(timerCx - PILL_W / 2, baseY - PILL_H / 2, PILL_W, PILL_H, PILL_R);
+                ctx.fillStyle = "rgba(0, 30, 0, 0.72)";
+                ctx.fill();
+                ctx.strokeStyle = "rgba(50, 255, 50, 0.35)";
+                ctx.lineWidth = 1; ctx.stroke();
                 // label
-                ctx.font         = "800 13px 'Orbitron', sans-serif";
-                ctx.shadowBlur   = 10; ctx.shadowColor = "#32ff32";
-                ctx.fillStyle    = "rgba(200, 255, 200, 0.9)";
-                ctx.fillText("पुण्य त्यागो (+" + pendingGoodKarmaCount + ")", timerCx, baseY - 20);
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.font      = "700 9px 'Orbitron', sans-serif";
+                ctx.fillStyle = "rgba(180, 255, 180, 0.85)";
+                ctx.shadowBlur = 0;
+                ctx.fillText("पुण्य +" + pendingGoodKarmaCount, timerCx, baseY - 13);
                 // countdown
-                ctx.font         = "900 " + (26 + karmaPulse * 4) + "px 'Orbitron', sans-serif";
-                ctx.fillStyle    = "#ffffff";
-                ctx.shadowBlur   = 20 + karmaPulse * 15; ctx.shadowColor = "#00ff00";
-                ctx.fillText(secondsLeft + "s", timerCx, baseY);
-                ctx.lineWidth    = 1.5;
-                ctx.strokeStyle  = "rgba(50, 255, 50, " + (0.8 + karmaPulse * 0.2) + ")";
-                ctx.strokeText(secondsLeft + "s", timerCx, baseY);
+                ctx.font      = "900 " + (20 + pulse * 3) + "px 'Orbitron', sans-serif";
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowBlur = 12 + pulse * 10; ctx.shadowColor = "#00ff00";
+                ctx.fillText(secondsLeft + "s", timerCx, baseY + 10);
+                ctx.lineWidth = 1.2;
+                ctx.strokeStyle = "rgba(50,255,50," + (0.7 + pulse * 0.3) + ")";
+                ctx.strokeText(secondsLeft + "s", timerCx, baseY + 10);
                 ctx.restore();
             }
 
             if (hasPrarabdha) {
-                const timerCx  = (hasPunya) ? cx + HALF_GAP : cx;
-                const secLeft  = Math.ceil(prarabdhaTimer / 60);
-                const bhogPulse = (Math.sin(frameNow / 150) + 1) / 2;
+                const timerCx = hasPunya ? cx + HALF_GAP : cx;
+                const secLeft = Math.ceil(prarabdhaTimer / 60);
+                const pulse   = (Math.sin(frameNow / 150) + 1) / 2;
                 ctx.save();
-                ctx.textAlign    = "center";
-                ctx.textBaseline = "middle";
+                // pill background
+                ctx.beginPath();
+                ctx.roundRect(timerCx - PILL_W / 2, baseY - PILL_H / 2, PILL_W, PILL_H, PILL_R);
+                ctx.fillStyle = "rgba(20, 0, 40, 0.72)";
+                ctx.fill();
+                ctx.strokeStyle = "rgba(167, 139, 250, 0.35)";
+                ctx.lineWidth = 1; ctx.stroke();
                 // label
-                ctx.font         = "800 13px 'Orbitron', sans-serif";
-                ctx.shadowBlur   = 10; ctx.shadowColor = "#a78bfa";
-                ctx.fillStyle    = "rgba(200, 180, 255, 0.9)";
-                ctx.fillText(`प्रारब्धं भुज्यते एव (${prarabdha} शेष)`, timerCx, baseY - 20);
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.font      = "700 9px 'Orbitron', sans-serif";
+                ctx.fillStyle = "rgba(200, 180, 255, 0.85)";
+                ctx.shadowBlur = 0;
+                ctx.fillText("प्रारब्ध " + prarabdha + " शेष", timerCx, baseY - 13);
                 // countdown
-                ctx.font         = "900 " + (26 + bhogPulse * 4) + "px 'Orbitron', sans-serif";
-                ctx.fillStyle    = "#ffffff";
-                ctx.shadowBlur   = 20 + bhogPulse * 15; ctx.shadowColor = "#a78bfa";
-                ctx.fillText(secLeft + "s", timerCx, baseY);
-                ctx.lineWidth    = 1.5;
-                ctx.strokeStyle  = "rgba(167, 139, 250, " + (0.8 + bhogPulse * 0.2) + ")";
-                ctx.strokeText(secLeft + "s", timerCx, baseY);
+                ctx.font      = "900 " + (20 + pulse * 3) + "px 'Orbitron', sans-serif";
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowBlur = 12 + pulse * 10; ctx.shadowColor = "#a78bfa";
+                ctx.fillText(secLeft + "s", timerCx, baseY + 10);
+                ctx.lineWidth = 1.2;
+                ctx.strokeStyle = "rgba(167,139,250," + (0.7 + pulse * 0.3) + ")";
+                ctx.strokeText(secLeft + "s", timerCx, baseY + 10);
                 ctx.restore();
             }
         }
@@ -692,7 +710,46 @@ export const Renderer = {
         ctx.restore();
 
         if (notifyTimer > 0) {
-            ctx.save(); let alpha = 1.0; if (notifyTimer < 50) { alpha = notifyTimer / 50; } ctx.globalAlpha = alpha; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "rgba(0, 0, 0, " + (alpha * 0.7) + ")"; ctx.fillRect(0, HEIGHT / 2 - 50, WIDTH, 100); ctx.fillStyle = "#ff6b6b"; ctx.font = "900 32px 'Orbitron', sans-serif"; ctx.shadowBlur = 25; ctx.shadowColor = "#ff3232"; ctx.fillText(notifyText, WIDTH / 2, HEIGHT / 2); ctx.restore();
+            ctx.save();
+
+            // ── alpha timeline (120 frames total) ──
+            // 0-20:  fade-in  (notifyTimer 120→100)
+            // 20-70: hold     (notifyTimer 100→50)
+            // 70-120: fade-out (notifyTimer 50→0)
+            let alpha = 1.0;
+            if (notifyTimer > 100) {
+                // fade-in: 120→100
+                alpha = (120 - notifyTimer) / 20;
+            } else if (notifyTimer < 50) {
+                // fade-out: 50→0
+                alpha = notifyTimer / 50;
+            }
+            alpha = Math.max(0, Math.min(1, alpha));
+
+            // ── centered pill background (full-screen overlay नहीं) ──
+            const PILL_W  = 340;
+            const PILL_H  = 56;
+            const PILL_X  = WIDTH  / 2 - PILL_W / 2;
+            const PILL_Y  = HEIGHT / 2 - PILL_H / 2;
+            ctx.globalAlpha = alpha * 0.88;
+            ctx.fillStyle   = "rgba(4, 4, 16, 0.82)";
+            ctx.beginPath();
+            ctx.roundRect(PILL_X, PILL_Y, PILL_W, PILL_H, 14);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+            ctx.lineWidth   = 1;
+            ctx.stroke();
+
+            // ── notify text ──
+            ctx.globalAlpha  = alpha;
+            ctx.textAlign    = "center";
+            ctx.textBaseline = "middle";
+            ctx.font         = "700 18px 'Orbitron', sans-serif";
+            ctx.shadowBlur   = 18;
+            ctx.shadowColor  = "#ffffff";
+            ctx.fillStyle    = "#ffffff";
+            ctx.fillText(notifyText, WIDTH / 2, HEIGHT / 2, PILL_W - 24);
+            ctx.restore();
         }
 
         let gatiRadius = (swaansaingSmoothSize / 2) + 5;   
@@ -908,11 +965,13 @@ export const Renderer = {
             let o = sortedOrbitIndices[si];
             let orbit = outerOrbits[o]; if (orbit.count > 0) {
                 ctx.save();
-                let extraGlow = (orbit.glowTimer && orbit.glowTimer > 0) ? (orbit.glowTimer / 60) * 22 : 0; 
+                let extraGlow = (orbit.glowTimer && orbit.glowTimer > 0) ? (orbit.glowTimer / 60) * 22 : 0;
                 // 📜 प्रारब्ध orbit — भोग-timer सक्रिय होने पर subtle pulse glow
                 if (o === 2 && prarabdhaTimer > 0) {
-                    extraGlow += (Math.sin(frameNow / 300) * 0.5 + 0.5) * 20;
+                    extraGlow += (Math.sin(frameNow / 300) * 0.5 + 0.5) * 12;
                 }
+                // extraGlow cap — over-bright orbit clutter रोकें
+                extraGlow = Math.min(extraGlow, 28);
                 ctx.shadowBlur = (orbit.glow || 6) + extraGlow;
                 ctx.shadowColor = orbit.color; let renderTime = frameNow / 1000;
                 let pulse = Math.sin(renderTime * 1.2 + o) * 2; let actualDist = baseDist + pulse; let visibleCount = Math.min(orbit.count, 36); let step = Math.max(1, Math.ceil(orbit.count / visibleCount)); let drawCount = Math.ceil(orbit.count / step);

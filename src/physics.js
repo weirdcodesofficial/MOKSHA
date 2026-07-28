@@ -115,18 +115,46 @@ export const PhysicsMixin = {
      * @param {Object} opts — { x, y, yOffset, alpha, vy, isBigName }
      */
     _addFloatingText(text, color, opts = {}) {
-        const baseX = opts.x ?? (this.player.x + this.player.width / 2);
-        const baseY = opts.y ?? this.player.y;
+        const baseX     = opts.x ?? (this.player.x + this.player.width / 2);
+        const baseY     = opts.y ?? this.player.y;
+        const targetY   = baseY + (opts.yOffset ?? 10);
+
+        // ── Overlap prevention: active slots की Y positions collect करें ──
+        const activeYs = [];
+        for (let i = 0; i < this.floatingTextPool.length; i++) {
+            if (this.floatingTextPool[i].active) {
+                activeYs.push(this.floatingTextPool[i].y);
+            }
+        }
+
+        // ── Y stagger: occupied Y के बहुत पास हो तो offset करो ──
+        const MIN_Y_GAP = 22; // px — दो texts के बीच minimum gap
+        let spawnY = targetY;
+        let attempts = 0;
+        while (attempts < 6) {
+            let tooClose = false;
+            for (let j = 0; j < activeYs.length; j++) {
+                if (Math.abs(activeYs[j] - spawnY) < MIN_Y_GAP) {
+                    tooClose = true; break;
+                }
+            }
+            if (!tooClose) break;
+            spawnY -= MIN_Y_GAP; // ऊपर की तरफ offset
+            attempts++;
+        }
+
+        // ── Slot खोजें और activate करें ──
         for (let i = 0; i < this.floatingTextPool.length; i++) {
             let ft = this.floatingTextPool[i];
             if (ft.active) continue;
             ft.active    = true;
-            ft.x         = baseX + (Math.random() * 20 - 10);
-            ft.y         = baseY + (opts.yOffset ?? 10);
+            // X jitter बढ़ाया — same-position clutter कम हो
+            ft.x         = baseX + (Math.random() * 56 - 28);
+            ft.y         = spawnY;
             ft.text      = text;
             ft.color     = color;
-            ft.alpha     = opts.alpha ?? 1.0;
-            ft.vy        = opts.vy ?? (-1 - Math.random() * 0.5);
+            ft.alpha     = Math.min(opts.alpha ?? 1.0, 1.2); // alpha cap
+            ft.vy        = opts.vy ?? (-1 - Math.random() * 0.8);
             ft.isBigName = opts.isBigName || false;
             // text cache invalidate — नया text होने पर width recalculate होगा
             if (ft._cachedText !== text) {

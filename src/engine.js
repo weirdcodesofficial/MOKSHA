@@ -68,6 +68,9 @@ export const KRIPA_SAMARPITA_MILESTONE = 30;
 /** प्रति प्रारब्ध unit भोगने हेतु frames (10s × 60fps) — "प्रारब्धं भुज्यते एव" */
 export const PRARABDHA_BHOG_FRAMES = 600;
 
+/** अधिकतम प्रारब्ध सीमा — इससे अधिक संचय नहीं (game unplayable रोकें) */
+export const MAX_PRARABDHA = 15;
+
 /** chakravaata का player-आकर्षण दायरा (px) */
 export const CHAKRAVAATA_PLAYER_PULL_RANGE = 160;
 
@@ -235,7 +238,6 @@ export class KarmaEngine {
         // ── Timer sound flags ────────────────────────────────
         this._timerSoundPlayed     = false;
         this._timerTickAccumulator = 0;
-        this._lastPunyaAlertSecond = -1;
         this._lastPrarabdhaAlertSecond = -1;
 
         // ── Contextual alert edge-detection (Issue #9) ───────
@@ -379,6 +381,8 @@ export class KarmaEngine {
         if (!this.gameOver && !this.chetanaaJaagrita &&
             this.samarpita >= CHETANA_JAGRITI_THRESHOLD) {
             this.chetanaaJaagrita = true;
+            // शास्त्र-संगत: चेतना-जागृति → कर्म-माया का प्रभाव नष्ट (गीता 4.37)
+            this.isKarmaImmune    = true;            
             this._cb.playSound?.('chetana');
             this._cb.stopSushuptiSwaansaLayer?.();
             this._cb.startJaagritaSwaansaLayer?.();
@@ -667,8 +671,7 @@ export class KarmaEngine {
             // activeNaam >= 10 होने पर prarabdhaTimer 2× गति से घटता है (§22.5)।
             if (this.naamaGhera > NAAMA_JAAP_MAX_RADIUS) {
                 this.isNaamaJaapa = false; this.naamaGhera = 0;
-                this._updateAlert("नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");
-                this.naamaJaapaPower = 0;
+                this._updateAlert("🌿 नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");                this.naamaJaapaPower = 0;
             }
         }
 
@@ -702,16 +705,8 @@ export class KarmaEngine {
         // ── 14. Pending punya timer ───────────────────────────
         if (this._pendingGoodKarma) {
             this._punyaTimer -= dt;
-            let secondsLeft = Math.ceil(this._punyaTimer / 60);
-            if (secondsLeft !== this._lastPunyaAlertSecond) {
-                this._lastPunyaAlertSecond = secondsLeft;
-                this._updateAlert(
-                    "⚠️ पुण्य प्रभाव (+" + this._pendingGoodKarmaCount +
-                    ")! समय: " + secondsLeft + "s | ⬇️ या S: वैराग्य ⚠️", "#ffd700"
-                );
-            }
+            // per-second alert हटाया — canvas pill timer पहले से countdown दिखाता है
             if (this._punyaTimer <= 0) {
-                this._lastPunyaAlertSecond    = -1;
                 let gained                    = this._pendingGoodKarmaCount;
                 this._pendingGoodKarma        = false;
                 this.shuvhaKarma              += gained;
@@ -725,9 +720,11 @@ export class KarmaEngine {
         // ── 15. Time / Samaya ─────────────────────────────────
         const ashuvhaTimeModifier = Math.pow(0.7, this.ashuvhaKarma);
         const shuvhaTimeModifier  = Math.pow(0.8, this.shuvhaKarma);
+        // प्रारब्ध-भोग penalty — endure करते समय samaya थोड़ा तेज़ घटे (×1.15)
+        const prarabdhaBhogModifier = this.prarabdhaTimer > 0 ? 1.15 : 1.0;
 
         if (!this.swaansaSamapta) {
-            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * dt;
+            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * prarabdhaBhogModifier * dt;
             this.swaansaTimer += dt;
             if (this.swaansaTimer >= 360) {
                 this.swaansaTimer -= 360;
@@ -855,26 +852,38 @@ export class KarmaEngine {
                 this._prarabdhaTimerPulseAccum -= 60;
                 if (this.outerOrbits[2]) this.outerOrbits[2].glowTimer = 18;
             }
-            // Alert box countdown — _punyaTimer pattern (step 14.5 से move किया)
-            const prarabdhaSecLeft = Math.ceil(this.prarabdhaTimer / 60);
-            if (prarabdhaSecLeft !== this._lastPrarabdhaAlertSecond) {
-                this._lastPrarabdhaAlertSecond = prarabdhaSecLeft;
-                this._updateAlert(`📜 प्रारब्ध भोग जारी — ${this.prarabdha} शेष | ⏱ ${prarabdhaSecLeft}s`, "#a78bfa");
-            }
-            // prarabdha unit घटाने का logic
+
+            // ── prarabdha unit घटाने का logic ──
             const prevPrarabdha = this.prarabdha;
+            // Bhog penalty: prarabdha endure करते समय samaya थोड़ा तेज़ घटे
             this.prarabdhaTimer = Math.max(0, this.prarabdhaTimer - dt);
-            const newPrarabdha  = this.prarabdhaTimer > 0 ? Math.ceil(this.prarabdhaTimer / PRARABDHA_BHOG_FRAMES) : 0;
+            const newPrarabdha  = this.prarabdhaTimer > 0
+                ? Math.ceil(this.prarabdhaTimer / PRARABDHA_BHOG_FRAMES) : 0;
+
             if (newPrarabdha < prevPrarabdha) {
                 this.prarabdha = newPrarabdha;
                 if (this.prarabdha > 0) {
-                    this._updateAlert(`📜 एक प्रारब्ध भोगा गया — ${this.prarabdha} शेष`, "#a78bfa");
+                    // ── unit घटा — explosion + alert (alert flooding नहीं, unit-change पर ही) ──
+                    this._createExplosion(
+                        this.player.x + this.player.width  / 2,
+                        this.player.y + this.player.height / 2,
+                        "#a78bfa"
+                    );
                     this._addFloatingText("-📜", "#a78bfa", { vy: -2.5, isBigName: true });
+                    this._updateAlert(`📜 एक प्रारब्ध भोगा — ${this.prarabdha} शेष`, "#a78bfa");
                     this._cb.playSound?.('bandhanaMukta');
                 } else {
+                    // ── पूर्ण मुक्ति ──
                     this.prarabdhaTimer = 0;
-                    this._updateAlert("🙏 प्रारब्ध से मुक्ति — पूर्ण भोग संपन्न 🙏", "#a78bfa");
+                    this._createExplosion(
+                        this.player.x + this.player.width  / 2,
+                        this.player.y + this.player.height / 2,
+                        "#e879f9"
+                    );
+                    this._addFloatingText("🙏 मुक्त!", "#e879f9", { vy: -2.8, isBigName: true });
+                    this._updateAlert("🙏 प्रारब्ध से मुक्ति — पूर्ण भोग संपन्न!", "#a78bfa");
                     this._cb.playSound?.('bandhanaMukta');
+                    this._triggerGlow("#e879f9");
                 }
             }
         }
@@ -1035,7 +1044,6 @@ export class KarmaEngine {
 
         // ── Timer flags reset ──
         this._timerSoundPlayed = false; this._timerTickAccumulator = 0;
-        this._lastPunyaAlertSecond = -1;
         this._lastPrarabdhaAlertSecond = -1;
 
         // ── Contextual alert flags reset (Issue #9) ──
@@ -1084,7 +1092,9 @@ export class KarmaEngine {
 
         // पुनर्जन्म पर पुराने alerts clear करें — नई शुरुआत, नया संदेश
         this.alertQueue = [];
-        this._updateAlert("♻️ पवित्र पुनर्जन्म: नया सफर शुरू होता है।", "#32ff32");        this.notifyTimer = 100; this.notifyText = "♻️ पवित्र पुनर्जन्म";
+        this._updateAlert("♻️ पवित्र पुनर्जन्म: नया सफर शुरू होता है।", "#32ff32");
+        this.notifyTimer = 120;
+        this.notifyText = "♻️ पवित्र पुनर्जन्म";
     }
 
     /**

@@ -334,10 +334,7 @@ window.addEventListener('gamepadconnected', (e) => {
     gamepadIndex = e.gamepad.index;
     gpButtonStates = {};
     console.log(`🎮 Gamepad जुड़ा: ${e.gamepad.id}`);
-    if (engine._UI?.alertBox) {
-        engine._UI.alertBox.innerText = "🎮 गेमपैड जुड़ा: नियंत्रण सक्रिय";
-        engine._UI.alertBox.style.color = "#32ff32";
-    }
+    engine.triggerAlert({ icon:"🎮", title:"गेमपैड जुड़ा", subtitle:"नियंत्रण सक्रिय", category:"achievement" });
 });
 window.addEventListener('gamepaddisconnected', (e) => {
     if (gamepadIndex === e.gamepad.index) {
@@ -355,7 +352,7 @@ document.addEventListener('visibilitychange', () => {
         if (UI.viraamaOverlay) UI.viraamaOverlay.style.display = 'flex';
         AM?.playSound('viraama');
         keys = {};
-        if (UI.alertBox) { UI.alertBox.innerText = "⏸️ खेल स्तम्भित: ध्यान भटका, टैब बदला गया।"; UI.alertBox.style.color = "#ffd700"; }
+        engine.triggerAlert({ icon:"⏸️", title:"खेल स्तम्भित", subtitle:"ध्यान भटका, टैब बदला गया।", category:"guidance" });
         AM?.updateAmbientVolumes();
     }
 });

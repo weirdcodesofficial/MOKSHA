@@ -169,7 +169,7 @@ class AudioManager {
             prarabdhaBandhana:  null,  // प्रारब्ध-बंधन
             paapaBandhana:      null,  // पाप-बंधन
             punyaBandhana:      null,  // पुण्य-बंधन
-            bandhanMukta:       null,  // बंधन-मुक्ति
+            bandhanaMukta:       null,  // बंधन-मुक्ति
             naamaDhwani:        null,  // नाम संग्रह ध्वनि
             jaapaDhwani:        null,  // नाम-जाप ध्वनि
             aakarshana:         null,  // माया-खिंचाव
@@ -672,8 +672,8 @@ class AudioManager {
 
             case 'bandhanaMukta':
                 // कर्म शून्य पर वापस — मुक्ति-ध्वनि
-                if (buf.bandhanMukta) {
-                    this._playBufferedSound(buf.bandhanMukta, ctx.destination, 0.6);
+                if (buf.bandhanaMukta) {
+                    this._playBufferedSound(buf.bandhanaMukta, ctx.destination, 0.6);
                 }
                 break;
 
@@ -1047,7 +1047,7 @@ class AudioManager {
             { url: './audio/prarabdhaBandhana.mp3', key: 'prarabdhaBandhana'},
             { url: './audio/paapaBandhana.mp3', key: 'paapaBandhana'},
             { url: './audio/punyaBandhana.mp3', key: 'punyaBandhana'},
-            { url: './audio/bandhanaMukta.mp3', key: 'bandhanMukta'},
+            { url: './audio/bandhanaMukta.mp3', key: 'bandhanaMukta'},
             { url: './audio/naamaDhwani.mp3', key: 'naamaDhwani'},
             { url: './audio/jaapaDhwani.mp3', key: 'jaapaDhwani'},
             { url: './audio/aakarshana.mp3', key: 'aakarshana'},

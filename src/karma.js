@@ -31,7 +31,7 @@
  * ============================================================
  */
 
-import { SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, RESOURCE_PICKUP_TABLE, PRARABDHA_BHOG_FRAMES } from './engine.js';
+import { SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, RESOURCE_PICKUP_TABLE, PRARABDHA_BHOG_FRAMES, MAX_PRARABDHA } from './engine.js';
 
 export const KarmaMixin = {
 
@@ -93,9 +93,16 @@ export const KarmaMixin = {
             this._pendingGoodKarmaCount = 0;
         }
         const sanchitaKarma = this.shuvhaKarma + this.ashuvhaKarma;
-        this.prarabdha += sanchitaKarma;
-        this.prarabdhaTimer += sanchitaKarma * PRARABDHA_BHOG_FRAMES;
+        // MAX_PRARABDHA cap — unbounded growth रोकें
+        const prevPrarabdhaBeforeRebirth = this.prarabdha;
+        this.prarabdha = Math.min(MAX_PRARABDHA, this.prarabdha + sanchitaKarma);
+        const actualAdded = this.prarabdha - prevPrarabdhaBeforeRebirth;
+        this.prarabdhaTimer += actualAdded * PRARABDHA_BHOG_FRAMES;
         if (gainedPrarabdha > 0) this._addFloatingText(`+${gainedPrarabdha} 📜`, "#a78bfa");
+        // cap hit होने पर player को सूचित करें
+        if (actualAdded < sanchitaKarma) {
+            this._updateAlert(`⚠️ प्रारब्ध सीमा: अधिकतम ${MAX_PRARABDHA} — शेष कर्म भस्म।`, "#f87171");
+        }
 
         this.ashuvhaKarma = 0; this.shuvhaKarma = 0;
         this.punaraJanmaCount++;
@@ -106,8 +113,8 @@ export const KarmaMixin = {
         this._timerTickAccumulator = 0;
         this._timerSoundPlayed     = false;
 
-        // पुनर्जन्म: इस जीवन की कर्म-रक्षा और समर्पण-अवस्था नए जीवन में नहीं जाती
-        this.isKarmaImmune  = false;
+        // चेतना जागृत है तो पुनर्जन्म पर भी कर्म-रक्षा बनी रहे
+        this.isKarmaImmune  = this.chetanaaJaagrita;
         this.purnaSamarpana = false;
         
         if (isApavitra) {
@@ -117,7 +124,7 @@ export const KarmaMixin = {
             this._updateAlert("♻️ पवित्र पुनर्जन्म: कर्म शुद्ध था, परंतु यात्रा अधूरी रही।", "#ffd700");
             this.notifyText = "♻️ पवित्र पुनर्जन्म";
         }
-        this.notifyTimer = 100;
+        this.notifyTimer = 120;
 
         // कृपा-जन्म-बोनस (शास्त्र-संगत)
         if (earnsKripaOnRebirth) {
@@ -337,7 +344,6 @@ export const KarmaMixin = {
             this.isNaamaJaapa = true;
             this.naamaGhera   = this.smoothSize / 2;
             this._cb.playSound?.('jaapa');
-            this._updateAlert("🌿 नाम जपते मंगल दिसि दसहूँ 🌿", "#ffff00");
             this._addFloatingText(this.jaapaNaama, "#ffff00", { yOffset:-10, alpha:1.5, vy:-2, isBigName:true });
         } else if (this.activeNaam === 0 && !this.isNaamaJaapa) {
             this._updateAlert("❌ नाम जाप के लिए नाम की आवश्यकता है!", "#ff3232");

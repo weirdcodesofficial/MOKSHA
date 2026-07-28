@@ -33,7 +33,7 @@ export const StateMixin = {
      * category: 'achievement' | 'guidance' | 'warning' | 'info'
      */
     triggerAlert({ icon = '', title = '', subtitle = '', category = 'info' } = {}) {
-        const MAX_ALERTS = 4;
+        const MAX_ALERTS = 3;
         // Cap enforce: सबसे पुराना हटाएँ
         if (this.alertQueue.length >= MAX_ALERTS) {
             this.alertQueue.shift();
