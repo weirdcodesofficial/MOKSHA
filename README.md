@@ -31,8 +31,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 |---|---|---|
 | **पुण्य** (Good Karma) | `shuvhaKarma` | Slows chariot; auto-binds if not released in time |
 | **पाप** (Bad Karma) | `ashuvhaKarma` | Slows + strikes chariot (vision distortion) |
-| **प्रारब्ध** (Past Life Karma) | `prarabdha` | Accumulates on rebirth (max 15); endured over time — speeds samaya decay ×1.15; 10 Naam accelerates bhog 2× |
-| **समर्पित** (Surrendered) | `samarpita` | ≥50 triggers चेतना-जागृति (Awakening) |
+| **प्रारब्ध** (Past Life Karma) | `prarabdha` | +1 per rebirth only (regardless of sanchita karma amount); endured over time — speeds samaya decay ×1.15; 10 Naam accelerates bhog 2×; max 15 || **समर्पित** (Surrendered) | `samarpita` | ≥50 triggers चेतना-जागृति (Awakening) |
 | **चेतना-जागृति** (Awakening) | `chetanaaJaagrita` | **True gate for Moksha** — also grants `isKarmaImmune` (गीता 4.37) || **कृपा** (Grace) | `kripa` | Earned through surrender; frees karma-bondage |
 | **शंख** (Conch) | `shankha` | Dispels chakravaata (तूफ़ान) of Maya when Naam is unavailable then Shanka (यंत्र-मार्ग) |
 | **ज्योति** (Lamp) | `jyoti` | Restores vision in the darkness of bad karma |
@@ -173,8 +172,7 @@ MOKSHA/
 |---|---|---|
 | **पुण्य** (शुभ कर्म) | `shuvhaKarma`, `pendingGoodKarma` | गति को मंद करता है; मोहक प्रलोभन — समय रहते त्याग न करने पर स्वतः बंध |
 | **पाप** (अशुभ कर्म) | `ashuvhaKarma` | गति मंद + रथ पर आघात (कंपन/दृष्टि-भ्रम) |
-| **प्रारब्ध** | `prarabdha` | पुनर्जन्म पर जुड़ता है (MAX_PRARABDHA=15 cap); भोग से घटता है (×1.15 samaya penalty); 10 नाम से 2× गति || **समर्पित** | `samarpita` | जब >= CHETANA_JAGRITI_THRESHOLD (50), चेतना-जागृति ट्रिगर |
-| **चेतना-जागृति** | `chetanaaJaagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` ट्रिगर; जागृति पर `isKarmaImmune = true` (गीता 4.37) || **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म, 10=प्रारब्ध भस्म |
+| **प्रारब्ध** | `prarabdha` | प्रति पुनर्जन्म केवल +1 (संचित कर्म कितना भी हो); MAX_PRARABDHA=15 cap; भोग से घटता है (×1.15 samaya penalty); 10 नाम से 2× गति || **समर्पित** | `samarpita` | जब >= CHETANA_JAGRITI_THRESHOLD (50), चेतना-जागृति ट्रिगर || **चेतना-जागृति** | `chetanaaJaagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` ट्रिगर; जागृति पर `isKarmaImmune = true` (गीता 4.37) || **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म, 10=प्रारब्ध भस्म |
 | **कृपा** | `kripa` | बंधन हो → kripa-- व कर्म समर्पित में; बंधन न हो → kripa++ |
 | **शंख** | `shankha` | Y/gamepad — chakravaata-शमन हेतु |
 | **ज्योति** | `jyoti` | B/gamepad — पाप-अंधकार में दृष्टि हेतु |
