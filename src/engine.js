@@ -238,6 +238,13 @@ export class KarmaEngine {
         this._lastPunyaAlertSecond = -1;
         this._lastPrarabdhaAlertSecond = -1;
 
+        // ── Contextual alert edge-detection (Issue #9) ───────
+        this._prevSamaya200       = false;  // samaya < 200 one-shot warning
+        this._prevSamaya100Guided = false;  // samaya < 100 guidance one-shot
+        this._prevChetanaAlert    = false;  // chetana-jagriti first-time achievement
+        this._chakravaataGuided   = false;  // chakravaata nearby guidance one-shot
+        this._samarpitaMilestones = new Set(); // milestone tracking: 10, 25, 50
+        
         // ── HUD animation state ──────────────────────────────
         this._oldStats = { naama:-1, punya:-1, paap:-1, prarabdha:-1, samarpita:-1,
                            punaraJanma:-1, gatee:"-1", kripa:-1, chetana:"",
@@ -435,8 +442,89 @@ export class KarmaEngine {
         if (!isDrishtiClear && this._prevDrishtiClear) {
             this._cb.playSound?.('andhakaara');
             this._addFloatingText("⚫", "#888888", { alpha:1.5, vy:-3, isBigName:true });
+            // ── Guidance: drishti blocked → ज्योति जलाओ ──
+            if (this.jyoti > 0) {
+                this._updateAlert("⚫ दृष्टि अवरुद्ध: B दबाएँ — ज्योति से अंधकार भगाएँ।", "#ffe932");
+            } else {
+                this._updateAlert("⚫ दृष्टि अवरुद्ध: ज्योति संग्रह करें — पाप का अंधकार बढ़ा।", "#888888");
+            }
         }
         this._prevDrishtiClear = isDrishtiClear;
+
+        // ── Issue #9: Contextual Alert Triggers ─────────────
+
+        // 1. समय < 200 — एक-बार चेतावनी
+        if (this.samaya < 200 && this.samaya > 0 && !this.swaansaSamapta
+                && !this._prevSamaya200) {
+            this._prevSamaya200 = true;
+            this._updateAlert("⏳ समय समाप्त होने वाला है — शीघ्र समर्पण करें!", "#ffd700");
+        }
+
+        // 2. समय < 100 — नाम-समर्पण guidance (एक-बार)
+        if (this.samaya < 100 && this.samaya > 0 && !this.swaansaSamapta
+                && !this._prevSamaya100Guided) {
+            this._prevSamaya100Guided = true;
+            if (this.activeNaam > 0 && this.playerInTunnel) {
+                this._updateAlert("🌿 अंतिम चरण: W दबाएँ — नाम समर्पण करें!", "#32ff32");
+            } else if (this.activeNaam > 0) {
+                this._updateAlert("🌿 अंतिम चरण: भक्ति-मार्ग में जाएँ, W दबाएँ।", "#ffd700");
+            } else {
+                this._updateAlert("⚠️ अंतिम चरण: नाम संग्रह नहीं — ॐ एकत्र करें!", "#ff3232");
+            }
+        }
+
+        // 3. चेतना-जागृति — पहली बार achievement
+        if (this.chetanaaJaagrita && !this._prevChetanaAlert) {
+            this._prevChetanaAlert = true;
+            this.triggerAlert({
+                icon:     "👁️",
+                title:    "चेतना जागृत!",
+                subtitle: "सारथी ने माया का भेद जान लिया।",
+                category: "achievement",
+            });
+        }
+
+        // 4. समर्पित milestones — 10 / 25 / 50
+        const SAMARPITA_MILESTONES = [10, 25, 50];
+        for (const ms of SAMARPITA_MILESTONES) {
+            if (this.samarpita >= ms && !this._samarpitaMilestones.has(ms)) {
+                this._samarpitaMilestones.add(ms);
+                this.triggerAlert({
+                    icon:     "🙏",
+                    title:    `${ms} समर्पित!`,
+                    subtitle: ms === 50 ? "अद्भुत! पूर्ण वैराग्य की ओर।"
+                            : ms === 25 ? "शाबाश! निष्काम कर्म जारी रखें।"
+                            :             "प्रथम मील का पत्थर — समर्पण का मार्ग खुला।",
+                    category: "achievement",
+                });
+            }
+        }
+
+        // 5. Chakravaata nearby — शंख guidance (edge-detection)
+        {
+            let chakravaataActive = false;
+            const bodyCx = this.player.x + this.smoothSize / 2;
+            const bodyCy = this.player.y + this.smoothSize / 2;
+            for (let i = 0; i < this.mayaPool.length; i++) {
+                const m = this.mayaPool[i];
+                if (!m.active || m.type !== 'chakravaata') continue;
+                const dist = Math.hypot(
+                    (m.x + m.width  / 2) - bodyCx,
+                    (m.y + m.height / 2) - bodyCy
+                );
+                if (dist < 220) { chakravaataActive = true; break; }
+            }
+            if (chakravaataActive && !this._chakravaataGuided) {
+                this._chakravaataGuided = true;
+                if (this.shankha > 0) {
+                    this._updateAlert("🌪️ चक्रवात निकट: Y दबाएँ — शंख-ध्वनि से नष्ट करें!", "#7dd3fc");
+                } else {
+                    this._updateAlert("🌪️ चक्रवात निकट: शंख संग्रह करें — अभी सुरक्षा नहीं।", "#aaaaaa");
+                }
+            }
+            // chakravaata दूर जाने पर flag reset — अगली बार फिर guide करे
+            if (!chakravaataActive) this._chakravaataGuided = false;
+        }
 
         if (this.notifyTimer > 0) {
             this.notifyTimer -= dt;
@@ -950,6 +1038,13 @@ export class KarmaEngine {
         this._lastPunyaAlertSecond = -1;
         this._lastPrarabdhaAlertSecond = -1;
 
+        // ── Contextual alert flags reset (Issue #9) ──
+        this._prevSamaya200       = false;
+        this._prevSamaya100Guided = false;
+        this._prevChetanaAlert    = false;
+        this._chakravaataGuided   = false;
+        this._samarpitaMilestones = new Set();
+        
         // ── Physics reset ──
         this.swaansaTimer = 0; this.gameOver = false; this.isPaused = false;
         this.won = false; this.swaansaSamapta = false; this._spawnTimer = 0;

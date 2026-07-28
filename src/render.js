@@ -570,31 +570,59 @@ export const Renderer = {
             }
             ctx.textAlign = "left";
         });
-        // punyaTimer
-        if (pendingGoodKarma && !gameOver) {
-            ctx.save(); let secondsLeft = Math.ceil(punyaTimer / 60); let karmaPulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let py = player.y + 40 + smoothSize + 30; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#32ff32"; ctx.fillStyle = "rgba(200, 255, 200, 0.9)"; ctx.fillText("पुण्य त्यागो (+" + pendingGoodKarmaCount + ")", cx, py - 20); ctx.font = "900 " + (26 + karmaPulse * 4) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + karmaPulse * 15; ctx.shadowColor = "#00ff00"; ctx.fillText(secondsLeft + "s", cx, py); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(50, 255, 50, " + (0.8 + karmaPulse * 0.2) + ")"; ctx.strokeText(secondsLeft + "s", cx, py); ctx.restore();
-        }
+        // ── punyaTimer + prarabdhaTimer — side-by-side जब दोनों active हों ──
+        {
+            const hasPunya     = pendingGoodKarma && !gameOver;
+            const hasPrarabdha = prarabdhaTimer > 0 && prarabdha > 0 && !gameOver;
+            // दोनों active → side-by-side; अकेला → center
+            const HALF_GAP  = 54;  // center से किनारे की दूरी (px)
+            const baseY     = player.y + 40 + smoothSize + 30;
 
-        // ── prarabdhaTimer canvas countdown (punyaTimer pattern) ──
-        if (state.prarabdhaTimer > 0 && state.prarabdha > 0 && !gameOver) {
-            ctx.save();
-            let secLeft    = Math.ceil(state.prarabdhaTimer / 60);
-            let bhogPulse  = (Math.sin(frameNow / 150) + 1) / 2;
-            let py         = player.y + 40 + smoothSize + 30;
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.font       = "800 13px 'Orbitron', sans-serif";
-            ctx.shadowBlur = 10; ctx.shadowColor = "#a78bfa";
-            ctx.fillStyle  = "rgba(200, 180, 255, 0.9)";
-            ctx.fillText(`प्रारब्धं भुज्यते एव (${state.prarabdha} शेष)`, cx, py - 20);
-            ctx.font       = "900 " + (26 + bhogPulse * 4) + "px 'Orbitron', sans-serif";
-            ctx.fillStyle  = "#ffffff";
-            ctx.shadowBlur = 20 + bhogPulse * 15;
-            ctx.shadowColor = "#a78bfa";
-            ctx.fillText(secLeft + "s", cx, py);
-            ctx.lineWidth  = 1.5;
-            ctx.strokeStyle = "rgba(167, 139, 250, " + (0.8 + bhogPulse * 0.2) + ")";
-            ctx.strokeText(secLeft + "s", cx, py);
-            ctx.restore();
+            if (hasPunya) {
+                const timerCx    = (hasPrarabdha) ? cx - HALF_GAP : cx;
+                const secondsLeft = Math.ceil(punyaTimer / 60);
+                const karmaPulse  = (Math.sin(frameNow / 150) + 1) / 2;
+                ctx.save();
+                ctx.textAlign    = "center";
+                ctx.textBaseline = "middle";
+                // label
+                ctx.font         = "800 13px 'Orbitron', sans-serif";
+                ctx.shadowBlur   = 10; ctx.shadowColor = "#32ff32";
+                ctx.fillStyle    = "rgba(200, 255, 200, 0.9)";
+                ctx.fillText("पुण्य त्यागो (+" + pendingGoodKarmaCount + ")", timerCx, baseY - 20);
+                // countdown
+                ctx.font         = "900 " + (26 + karmaPulse * 4) + "px 'Orbitron', sans-serif";
+                ctx.fillStyle    = "#ffffff";
+                ctx.shadowBlur   = 20 + karmaPulse * 15; ctx.shadowColor = "#00ff00";
+                ctx.fillText(secondsLeft + "s", timerCx, baseY);
+                ctx.lineWidth    = 1.5;
+                ctx.strokeStyle  = "rgba(50, 255, 50, " + (0.8 + karmaPulse * 0.2) + ")";
+                ctx.strokeText(secondsLeft + "s", timerCx, baseY);
+                ctx.restore();
+            }
+
+            if (hasPrarabdha) {
+                const timerCx  = (hasPunya) ? cx + HALF_GAP : cx;
+                const secLeft  = Math.ceil(prarabdhaTimer / 60);
+                const bhogPulse = (Math.sin(frameNow / 150) + 1) / 2;
+                ctx.save();
+                ctx.textAlign    = "center";
+                ctx.textBaseline = "middle";
+                // label
+                ctx.font         = "800 13px 'Orbitron', sans-serif";
+                ctx.shadowBlur   = 10; ctx.shadowColor = "#a78bfa";
+                ctx.fillStyle    = "rgba(200, 180, 255, 0.9)";
+                ctx.fillText(`प्रारब्धं भुज्यते एव (${prarabdha} शेष)`, timerCx, baseY - 20);
+                // countdown
+                ctx.font         = "900 " + (26 + bhogPulse * 4) + "px 'Orbitron', sans-serif";
+                ctx.fillStyle    = "#ffffff";
+                ctx.shadowBlur   = 20 + bhogPulse * 15; ctx.shadowColor = "#a78bfa";
+                ctx.fillText(secLeft + "s", timerCx, baseY);
+                ctx.lineWidth    = 1.5;
+                ctx.strokeStyle  = "rgba(167, 139, 250, " + (0.8 + bhogPulse * 0.2) + ")";
+                ctx.strokeText(secLeft + "s", timerCx, baseY);
+                ctx.restore();
+            }
         }
 
         if (samaya < 100 && samaya > 0 && !swaansaSamapta && !gameOver) {

@@ -67,7 +67,8 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 - 🎮 **Full Gamepad Support** — Xbox/generic controller with deadzone handling
 - ⚡ **60fps Performance** — Pool-based architecture (no GC pressure), sprite caching, emoji sprite cache, gradient buckets
 - 📜 **In-Game Shastra** — Full philosophical treatise accessible via ESC
-- 🧩 **ES6 Modular Architecture** — KarmaEngine, AudioManager, Renderer — fully separated concerns
+- 🔔 **Canvas Alert Queue** — Contextual slide-in alert cards (top-right), category-colored, auto-dismiss (Issue #9 + #10)
+- 🧩 **ES6 Modular Architecture** — KarmaEngine split into 4 mixins: KarmaMixin, PhysicsMixin, StateMixin + Renderer
 
 ---
 
@@ -142,16 +143,17 @@ gameReadinessMode = (audioLoadFailures.length === 0) ? 'high' : 'low'
 
 ```
 MOKSHA/
-├── index.html        — HTML shell + start screen (212 lines)
-├── style.css         — All UI styles, extracted from index.html (517 lines)
+├── index.html        — HTML shell + start screen
+├── style.css         — All UI styles, extracted from index.html
 ├── audio/            — 28 .mp3 ambient & SFX files
 └── src/
-    ├── audio.js      — AudioManager: 28-mp3 preload, ambient layers, duck system (1276 lines)
-    ├── engine.js     — KarmaEngine: core loop, state, pools, HUD (1044 lines)
-    ├── karma.js      — KarmaMixin: Vedic logic, maya, kripa, actions (449 lines)
-    ├── physics.js    — PhysicsMixin: glow-rings, particles, pool helpers (162 lines)
-    ├── render.js     — Renderer: Canvas draw functions, sprite caches (780 lines)
-    └── main.js       — Orchestrator: wires all modules, gameLoop, input (524 lines)
+    ├── audio.js      — AudioManager: 28-mp3 preload, ambient layers, duck system
+    ├── engine.js     — KarmaEngine: slim orchestrator, core loop, pools, state transitions
+    ├── karma.js      — KarmaMixin: Vedic logic, maya spawn, kripa, keyboard actions
+    ├── physics.js    — PhysicsMixin: glow-rings, particles, floating text, pool helpers
+    ├── state.js      — StateMixin: HUD updates, alert queue, triggerAlert, animations
+    ├── render.js     — Renderer: Canvas draw functions, alert cards, sprite caches
+    └── main.js       — Orchestrator: wires all modules, gameLoop, input, gamepad
 ```
 
 ---
@@ -159,7 +161,7 @@ MOKSHA/
 # 📖 मोक्ष — प्रोजेक्ट संदर्भ-दस्तावेज़ (Developer Reference)
 
 > **उद्देश्य:** यह दस्तावेज़ मोक्ष codebase के लिए एक स्थायी संदर्भ (reference) है।
-> **अंतिम अपडेट आधार:** v0.0.6 — engine.js → KarmaMixin + PhysicsMixin split (~4223 lines across 6 src files + style.css)
+> **अंतिम अपडेट आधार:** v0.0.7 — StateMixin (state.js) split + Canvas Alert Queue (Issue #10) + Contextual Alerts (Issue #9) (~4500 lines across 7 src files + style.css)
 > **भाषा/स्टैक:** HTML5 Canvas, Vanilla JS ES6 Modules (no build tooling, no TypeScript, no framework), Web Audio API, Gamepad API
 
 ---
