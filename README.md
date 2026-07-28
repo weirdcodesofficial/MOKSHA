@@ -31,10 +31,9 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 |---|---|---|
 | **पुण्य** (Good Karma) | `shuvhaKarma` | Slows chariot; auto-binds if not released in time |
 | **पाप** (Bad Karma) | `ashuvhaKarma` | Slows + strikes chariot (vision distortion) |
-| **प्रारब्ध** (Past Life Karma) | `prarabdha` | Accumulates on rebirth; only 10 Naam can burn it |
+| **प्रारब्ध** (Past Life Karma) | `prarabdha` | Accumulates on rebirth (max 15); endured over time — speeds samaya decay ×1.15; 10 Naam accelerates bhog 2× |
 | **समर्पित** (Surrendered) | `samarpita` | ≥50 triggers चेतना-जागृति (Awakening) |
-| **चेतना-जागृति** (Awakening) | `chetanaaJaagrita` | **True gate for Moksha** |
-| **कृपा** (Grace) | `kripa` | Earned through surrender; frees karma-bondage |
+| **चेतना-जागृति** (Awakening) | `chetanaaJaagrita` | **True gate for Moksha** — also grants `isKarmaImmune` (गीता 4.37) || **कृपा** (Grace) | `kripa` | Earned through surrender; frees karma-bondage |
 | **शंख** (Conch) | `shankha` | Dispels chakravaata (तूफ़ान) of Maya when Naam is unavailable then Shanka (यंत्र-मार्ग) |
 | **ज्योति** (Lamp) | `jyoti` | Restores vision in the darkness of bad karma |
 
@@ -67,7 +66,9 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 - 🎮 **Full Gamepad Support** — Xbox/generic controller with deadzone handling
 - ⚡ **60fps Performance** — Pool-based architecture (no GC pressure), sprite caching, emoji sprite cache, gradient buckets
 - 📜 **In-Game Shastra** — Full philosophical treatise accessible via ESC
-- 🔔 **Canvas Alert Queue** — Contextual slide-in alert cards (top-right), category-colored, auto-dismiss (Issue #9 + #10)
+- 🔔 **Canvas Alert Queue** — Contextual slide-in alert cards (top-right), category-colored, auto-dismiss; de-duplicated (no per-second flood)
+- ⚖️ **Prarabdha Bhog System** — Endure past karma over time; unit-break explosion; MAX 15 cap; samaya penalty ×1.15
+- 🧘 **Chetanaa Immunity** — चेतना-जागृति grants karma immunity (गीता 4.37 — ज्ञानाग्निः सर्वकर्माणि भस्मसात्)
 - 🧩 **ES6 Modular Architecture** — KarmaEngine split into 4 mixins: KarmaMixin, PhysicsMixin, StateMixin + Renderer
 
 ---
@@ -161,7 +162,7 @@ MOKSHA/
 # 📖 मोक्ष — प्रोजेक्ट संदर्भ-दस्तावेज़ (Developer Reference)
 
 > **उद्देश्य:** यह दस्तावेज़ मोक्ष codebase के लिए एक स्थायी संदर्भ (reference) है।
-> **अंतिम अपडेट आधार:** v0.0.7 — StateMixin (state.js) split + Canvas Alert Queue (Issue #10) + Contextual Alerts (Issue #9) (~4500 lines across 7 src files + style.css)
+> **अंतिम अपडेट आधार:** v0.0.9 — Prarabdha mechanic refinements + Alert system fixes + chetanaaJaagrita → isKarmaImmune (~4700 lines across 7 src files + style.css)
 > **भाषा/स्टैक:** HTML5 Canvas, Vanilla JS ES6 Modules (no build tooling, no TypeScript, no framework), Web Audio API, Gamepad API
 
 ---
@@ -172,10 +173,8 @@ MOKSHA/
 |---|---|---|
 | **पुण्य** (शुभ कर्म) | `shuvhaKarma`, `pendingGoodKarma` | गति को मंद करता है; मोहक प्रलोभन — समय रहते त्याग न करने पर स्वतः बंध |
 | **पाप** (अशुभ कर्म) | `ashuvhaKarma` | गति मंद + रथ पर आघात (कंपन/दृष्टि-भ्रम) |
-| **प्रारब्ध** | `prarabdha` | पुनर्जन्म पर भारी होकर जुड़ता है; 10 नाम से भस्म होता है |
-| **समर्पित** | `samarpita` | जब >= CHETANA_JAGRITI_THRESHOLD (50), चेतना-जागृति ट्रिगर |
-| **चेतना-जागृति** | `chetanaaJaagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` केवल ट्रिगर |
-| **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म, 10=प्रारब्ध भस्म |
+| **प्रारब्ध** | `prarabdha` | पुनर्जन्म पर जुड़ता है (MAX_PRARABDHA=15 cap); भोग से घटता है (×1.15 samaya penalty); 10 नाम से 2× गति || **समर्पित** | `samarpita` | जब >= CHETANA_JAGRITI_THRESHOLD (50), चेतना-जागृति ट्रिगर |
+| **चेतना-जागृति** | `chetanaaJaagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` ट्रिगर; जागृति पर `isKarmaImmune = true` (गीता 4.37) || **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म, 10=प्रारब्ध भस्म |
 | **कृपा** | `kripa` | बंधन हो → kripa-- व कर्म समर्पित में; बंधन न हो → kripa++ |
 | **शंख** | `shankha` | Y/gamepad — chakravaata-शमन हेतु |
 | **ज्योति** | `jyoti` | B/gamepad — पाप-अंधकार में दृष्टि हेतु |
@@ -554,8 +553,7 @@ AM.updateAmbientVolumes();
 ### src/engine.js (~1044 lines) — Slim Orchestrator
 | पंक्ति | फ़ंक्शन/सेक्शन |
 |---|---|
-| ~1 | Imports: KarmaMixin, PhysicsMixin |
-| ~25 | Exported constants (SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, etc.) |
+| ~1 | Imports: KarmaMixin, PhysicsMixin, StateMixin || ~25 | Exported constants (SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, etc.) |
 | ~65 | `KarmaEngine` class constructor — सभी state properties |
 | ~220 | `setCallbacks()`, `setUI()` |
 | ~240 | `init()` — pool + stars initialization |
