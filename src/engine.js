@@ -713,7 +713,7 @@ export class KarmaEngine {
                 this._pendingGoodKarmaCount   = 0;
                 this._addFloatingText(`+${gained} 🌿`, "#32ff32");
                 this._triggerBlast("#32ff32");
-                this._updateAlert("🔥 पुण्य अवशोषित: सारथी के मन ने अच्छे कर्म स्वीकार किए।", "#32ff32");
+                this._updateAlert("🌿 पुण्य कमाया: सारथी के मन ने अच्छे कर्म स्वीकार किए।", "#32ff32");
             }
         }
 
@@ -744,8 +744,7 @@ export class KarmaEngine {
 
             if (this.samaya <= 0) {
                 this.samaya = 0; this.swaansa = 0; this.swaansaSamapta = true;
-                this._updateAlert("ब्रह्मांडीय क्षितिज पर पहुंचे। समय स्थिर है।", "#ffffff");
-            }
+                this._updateAlert("🕉️ ब्रह्मांडीय क्षितिज: समय स्थिर है — निर्णय का क्षण।", "#ffffff");            }
         } else {
             // ── 16. ब्रह्मांडीय क्षितिज — मोक्ष-निर्णय (karma.js) ──
             this._checkMokhsha();
@@ -870,7 +869,7 @@ export class KarmaEngine {
                         "#a78bfa"
                     );
                     this._addFloatingText("-📜", "#a78bfa", { vy: -2.5, isBigName: true });
-                    this._updateAlert(`📜 एक प्रारब्ध भोगा — ${this.prarabdha} शेष`, "#a78bfa");
+                    this._updateAlert(`📜🔥 एक प्रारब्ध भोग लिया — ${this.prarabdha} शेष`, "#a78bfa");
                     this._cb.playSound?.('bandhanaMukta');
                 } else {
                     // ── पूर्ण मुक्ति ──
@@ -880,8 +879,8 @@ export class KarmaEngine {
                         this.player.y + this.player.height / 2,
                         "#e879f9"
                     );
-                    this._addFloatingText("🙏 मुक्त!", "#e879f9", { vy: -2.8, isBigName: true });
-                    this._updateAlert("🙏 प्रारब्ध से मुक्ति — पूर्ण भोग संपन्न!", "#a78bfa");
+                    this._addFloatingText("📜🔥 मुक्त!", "#e879f9", { vy: -2.8, isBigName: true });
+                    this._updateAlert("📜🔥 प्रारब्ध से मुक्ति — पूर्ण भोग संपन्न!", "#a78bfa");
                     this._cb.playSound?.('bandhanaMukta');
                     this._triggerGlow("#e879f9");
                 }

@@ -137,8 +137,7 @@ export const KarmaMixin = {
             this._addFloatingText("✋", "#ffe9a8", { alpha:1.3, vy:-1.6, isBigName:true });
             if (this.activeNaam  >= 20) this._addFloatingText("ॐ", "#ffffff", { alpha:1.5, vy:-2.2, isBigName:true });
             if (this.samarpita   >= 30) this._addFloatingText("🙏", "#fb923c", { alpha:1.5, vy:-2.2, isBigName:true });
-            this._updateAlert("🙏 अतिरिक्त कृपा लेकर नए जीवन में प्रवेश!", "#ffe9a8");
-            this._triggerGlow("#ffe9a8");
+            this._updateAlert("✋ अतिरिक्त कृपा लेकर नए जीवन में प्रवेश!", "#ffe9a8");            this._triggerGlow("#ffe9a8");
             this._cb.playSound?.('kripa');
         }
         this._cb.playSound?.('punaha');
@@ -202,14 +201,28 @@ export const KarmaMixin = {
                 // शास्त्र-संगत क्रम: पुण्य → पाप → प्रारब्ध
                 if (this.shuvhaKarma > 0 && this.activeNaam >= 1) {
                     this.activeNaam--; this.shuvhaKarma--; this.samarpita++;
-                    this._addFloatingText("🌸", "#32ff32");
+                    this._addFloatingText("🌿🌸", "#32ff32");
                     this._triggerGlow("#32ff32");
                     this._cb.playSound?.('samarpita');
+                    this._cb.playSound?.('bandhanaMukta');
+                    this._updateAlert(
+                        this.shuvhaKarma === 0
+                            ? "🌿🌸 पुण्य-बंधन मुक्त: शुभ कर्म भस्म — चित्त निर्मल हुआ।"
+                            : `🌿🌸 पुण्य-बंधन: ${this.shuvhaKarma} शेष — नाम-जाप जारी रखें।`,
+                        "#32ff32"
+                    );
                 } else if (this.ashuvhaKarma > 0 && this.activeNaam >= 5) {
                     this.activeNaam -= 5; this.ashuvhaKarma--; this.samarpita++;
-                    this._addFloatingText("💧", "#ff3232");
+                    this._addFloatingText("🥀🔥", "#ff3232");
                     this._triggerGlow("#ff3232");
                     this._cb.playSound?.('samarpita');
+                    this._cb.playSound?.('bandhanaMukta');
+                    this._updateAlert(
+                        this.ashuvhaKarma === 0
+                            ? "🥀🔥 पाप-बंधन मुक्त: अशुभ कर्म भस्म — आत्मा शुद्ध हुई।"
+                            : `🥀🔥 पाप-बंधन: ${this.ashuvhaKarma} शेष — ५ नाम और चाहिए।`,
+                        "#ff3232"
+                    );
                 }
             }
         } else if (m.type === "kripa") {
@@ -256,8 +269,7 @@ export const KarmaMixin = {
                 this._addFloatingText("🥀", "#ff3232", { x: m.x + m.width / 2, y: m.y });
                 this._triggerBlast("#ff3232");
                 this._cb.playSound?.('ashuvha');
-                this._updateAlert("🚨 पाप हमला!", "#ff3232");
-            }
+                this._updateAlert("🥀 पाप कमाया: अशुभ कर्म का आघात!", "#ff3232");            }
         }
         m.active = false;
     },
@@ -361,8 +373,7 @@ export const KarmaMixin = {
             this.glowRings.shankha.active = true;
             this.glowRings.shankha.radius = 0;
             this._cb.playSound?.('shankhaDhwani');
-            this._updateAlert("🐚 शंख-ध्वनि: श्वेत प्रकाश फैल रहा है...", "#ffffff");
-        } else {
+            this._updateAlert("🐚 शंख-ध्वनि: श्वेत प्रकाश फैल रहा है...", "#7dd3fc");        } else {
             this._updateAlert("❌ शंख-शक्ति समाप्त — पहले शंख संग्रह करें।", "#ff3232");
             this._cb.playSound?.('ashuvha');
         }
@@ -429,8 +440,7 @@ export const KarmaMixin = {
             this._addFloatingText(`+${gained} 🙏`, "#fb923c");
             this._triggerBlast("#32ff32");
             this._cb.playSound?.('samarpita');
-            this._updateAlert("🛑 वैराग्य: सारथी ने पुण्य का प्रलोभन ठुकराया।", "#ff3232");
-        } else {
+            this._updateAlert("🪷 वैराग्य: सारथी ने पुण्य का प्रलोभन ठुकराया।", "#ffd700");        } else {
             this._cb.playSound?.('ashuvha');
         }
     },
