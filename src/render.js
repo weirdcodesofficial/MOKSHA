@@ -190,6 +190,108 @@ function drawYantraPolygon(cx, cy, radius, sides, rotation, strokeStyle, lineWid
     ctx.restore();
 }
 
+// ====================== 🔔 Alert Queue Renderer (Issue #10) ======================
+
+/**
+ * Canvas पर stacked alert cards draw करें।
+ * हर card: top-right corner से slide-in, opacity fade, colored left border।
+ *
+ * @param {Array}  alertQueue — engine.alertQueue snapshot
+ * @param {number} WIDTH      — canvas width
+ */
+function drawAlerts(alertQueue, WIDTH) {
+    if (!alertQueue || alertQueue.length === 0) return;
+
+    /** category → left-border color */
+    const CATEGORY_COLOR = {
+        achievement: '#22c55e',  // हरा   — पुण्य/प्राप्ति
+        guidance:    '#f97316',  // नारंगी — मार्गदर्शन
+        warning:     '#ef4444',  // लाल   — चेतावनी
+        info:        '#94a3b8',  // नीला-ग्रे — सामान्य
+    };
+
+    const CARD_W      = 220;
+    const CARD_H      = 68;
+    const CARD_GAP    = 8;
+    const CARD_RIGHT  = 10;          // canvas right-edge से distance
+    const CARD_TOP    = 12;          // canvas top से पहले card का Y
+    const BORDER_W    = 4;           // left colored border width
+    const RADIUS      = 6;           // rounded corner radius
+
+    for (let i = 0; i < alertQueue.length; i++) {
+        const a = alertQueue[i];
+        if (a.opacity <= 0) continue;
+
+        const color = CATEGORY_COLOR[a.category] ?? CATEGORY_COLOR.info;
+
+        // ── position (slideX से right-side offset) ──
+        const cardX = WIDTH - CARD_RIGHT - CARD_W - a.slideX;
+        const cardY = CARD_TOP + i * (CARD_H + CARD_GAP);
+
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, a.opacity);
+
+        // ── drop shadow ──
+        ctx.shadowBlur  = 18;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+
+        // ── background rounded rect ──
+        ctx.fillStyle = 'rgba(8, 8, 20, 0.88)';
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, CARD_W, CARD_H, RADIUS);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // ── outer border (subtle) ──
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth   = 1;
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, CARD_W, CARD_H, RADIUS);
+        ctx.stroke();
+
+        // ── left colored accent border ──
+        ctx.fillStyle = color;
+        ctx.shadowBlur  = 8;
+        ctx.shadowColor = color;
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY + RADIUS, BORDER_W, CARD_H - RADIUS * 2, 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // ── icon ──
+        const iconX = cardX + BORDER_W + 12;
+        const iconY = cardY + CARD_H / 2;
+        if (a.icon) {
+            ctx.font          = "22px 'Noto Sans Devanagari', sans-serif";
+            ctx.textAlign     = 'center';
+            ctx.textBaseline  = 'middle';
+            ctx.fillStyle     = '#ffffff';
+            ctx.shadowBlur    = 6;
+            ctx.shadowColor   = color;
+            ctx.fillText(a.icon, iconX, iconY);
+            ctx.shadowBlur    = 0;
+        }
+
+        // ── title ──
+        const textX = cardX + BORDER_W + (a.icon ? 30 : 12);
+        ctx.textAlign    = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.font         = "700 11px 'Orbitron', sans-serif";
+        ctx.fillStyle    = '#ffffff';
+        ctx.shadowBlur   = 0;
+        ctx.fillText(a.title, textX, cardY + (a.subtitle ? CARD_H * 0.38 : CARD_H / 2), CARD_W - BORDER_W - 44);
+
+        // ── subtitle ──
+        if (a.subtitle) {
+            ctx.font      = "400 9.5px 'Orbitron', sans-serif";
+            ctx.fillStyle = 'rgba(200, 200, 220, 0.85)';
+            ctx.fillText(a.subtitle, textX, cardY + CARD_H * 0.65, CARD_W - BORDER_W - 44);
+        }
+
+        ctx.restore();
+    }
+}
+
 // ====================== 🎬 मुख्य रेंडरर मॉड्यूल (Main Renderer Module) ======================
 
 export const Renderer = {
@@ -210,7 +312,8 @@ export const Renderer = {
             isPaused, gameOver, mayaPool, pendingGoodKarma, punyaTimer,
             pendingGoodKarmaCount, floatingTextPool, isNaamaJaapa, naamaGhera,
             outerOrbits, notifyTimer, notifyText, swaansaTimer, swaansa,
-            naamaGlowTimer, bodyGlowTimer, bodyGlowColor, prarabdhaTimer
+            naamaGlowTimer, bodyGlowTimer, bodyGlowColor, prarabdhaTimer,
+            alertQueue
         } = state;
 
         let totalKarma = shuvhaKarma + ashuvhaKarma;
@@ -809,5 +912,8 @@ export const Renderer = {
             ctx.restore();
         }
         ctx.restore();
+
+        // ── Alert Queue — सबसे ऊपर (HUD के नीचे नहीं दबें) ──
+        drawAlerts(alertQueue ?? [], WIDTH);
     }
 };

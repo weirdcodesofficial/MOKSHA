@@ -64,7 +64,7 @@ export const KRIPA_NAAM_MILESTONE = 20;
 export const KRIPA_SAMARPITA_MILESTONE = 30;
 
 /** प्रति प्रारब्ध unit भोगने हेतु frames (10s × 60fps) — "प्रारब्धं भुज्यते एव" */
-export const PRARABDHA_BHOG_FRAMES = 1800;
+export const PRARABDHA_BHOG_FRAMES = 600;
 
 /** chakravaata का player-आकर्षण दायरा (px) */
 export const CHAKRAVAATA_PLAYER_PULL_RANGE = 160;
@@ -247,6 +247,12 @@ export class KarmaEngine {
                            punaraJanma:0, gatee:0, kripa:0, chetana:0,
                            shankha:0, drishti:0, purnaSamarpana:0, jyoti:0 };
 
+        // ── Alert Queue System (Issue #10) ───────────────────
+        /** Canvas alert queue — max 4 active cards */
+        this.alertQueue   = [];
+        /** Monotonic ID counter — हर alert को unique id */
+        this._nextAlertId = 0;
+        
         // ── Injected dependencies ────────────────────────────
         this._cb = {};   // callbacks — see setCallbacks()
         this._UI = null; // DOM references — see setUI()
@@ -785,7 +791,31 @@ export class KarmaEngine {
 
         this.smoothSize += ((this.playerInTunnel ? 30 : 60) - this.smoothSize) * 0.18 * dt;
 
-        // ── 23. HUD scale/glow animations ────────────────────
+        // ── 23. Alert Queue aging (Issue #10) ─────────────────
+        // हर alert की opacity और slideX animate करें; expire होने पर हटाएँ।
+        {
+            const FADE_IN  = 12;   // frames: 0→opacity 1
+            const HOLD     = 108;  // frames: opacity 1 रहे
+            const FADE_OUT = 30;   // frames: opacity 1→0 (total maxAge = 150)
+            for (let i = this.alertQueue.length - 1; i >= 0; i--) {
+                const a = this.alertQueue[i];
+                a.age += dt;
+                // opacity timeline
+                if (a.age < FADE_IN) {
+                    a.opacity = a.age / FADE_IN;
+                } else if (a.age < FADE_IN + HOLD) {
+                    a.opacity = 1;
+                } else {
+                    a.opacity = Math.max(0, 1 - (a.age - FADE_IN - HOLD) / FADE_OUT);
+                }
+                // slideX: 80→0 during fade-in
+                a.slideX = Math.max(0, 80 * (1 - Math.min(1, a.age / FADE_IN)));
+                // expired → remove
+                if (a.age >= a.maxAge) this.alertQueue.splice(i, 1);
+            }
+        }
+
+        // ── 24. HUD scale/glow animations ────────────────────
         this._updateHUDAnimations(dt);
         this._updateUIStats();
     }
@@ -894,6 +924,8 @@ export class KarmaEngine {
         this.prarabdha = 0; this.prarabdhaTimer = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
         this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;
         this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
+        // ── Alert queue reset ──
+        this.alertQueue = []; this._nextAlertId = 0;
         if(this.outerOrbits[2]) this.outerOrbits[2].glowTimer = 0;
         // ── Time reset ──
         this.samaya = SAMAYA_PRAARAMBHIKA; this.swaansa = 10;
@@ -953,8 +985,9 @@ export class KarmaEngine {
         // ── Player position reset ──
         this.player.x = this.WIDTH / 2 - 30;
 
-        this._updateAlert("♻️ पवित्र पुनर्जन्म: नया सफर शुरू होता है।", "#32ff32");
-        this.notifyTimer = 100; this.notifyText = "♻️ पवित्र पुनर्जन्म";
+        // पुनर्जन्म पर पुराने alerts clear करें — नई शुरुआत, नया संदेश
+        this.alertQueue = [];
+        this._updateAlert("♻️ पवित्र पुनर्जन्म: नया सफर शुरू होता है।", "#32ff32");        this.notifyTimer = 100; this.notifyText = "♻️ पवित्र पुनर्जन्म";
     }
 
     /**
@@ -1009,6 +1042,7 @@ export class KarmaEngine {
             // Orbits & rings
             outerOrbits:         this.outerOrbits,
             glowRings:           this.glowRings,
+            alertQueue:          this.alertQueue,
             chainSlots:          this.chainSlots,
             finalHorsePositions: this.finalHorsePositions,
             pulledHorseIndex:    this.pulledHorseIndex,
@@ -1020,11 +1054,56 @@ export class KarmaEngine {
     // ====================== UI HELPERS ======================
     // (state.js として切り出し可能 — 将来の refactor で StateMixin へ)
 
-    /** Alert box DOM update */
+    /**
+     * Legacy wrapper — सभी पुराने _updateAlert() calls को
+     * triggerAlert() पर delegate करता है (backward compatible)।
+     * color → category detection यहाँ होती है।
+     */
     _updateAlert(text, color) {
-        if (!this._UI?.alertBox) return;
-        this._UI.alertBox.innerText   = text;
-        this._UI.alertBox.style.color = color;
+        // ── color से category detect करें ──
+        let category = 'info';
+        if      (color === '#32ff32' || color === '#00ff00') category = 'achievement';
+        else if (color === '#ffd700' || color === '#ffe932' || color === '#ffa600') category = 'guidance';
+        else if (color === '#ff3232' || color === '#ff0000' || color === '#f87171') category = 'warning';
+        // '#7dd3fc', '#a78bfa', '#ffffff' → 'info' (default)
+
+        // ── text से leading emoji icon extract करें ──
+        const iconMatch = text.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u);
+        const icon      = iconMatch ? iconMatch[1] : '';
+        const remaining = iconMatch ? text.slice(iconMatch[0].length) : text;
+
+        // ── title: पहले ':' तक; subtitle: बाकी ──
+        const colonIdx = remaining.indexOf(':');
+        const title    = colonIdx !== -1 ? remaining.slice(0, colonIdx).trim() : remaining.trim();
+        const subtitle = colonIdx !== -1 ? remaining.slice(colonIdx + 1).trim() : '';
+
+        this.triggerAlert({ icon, title, subtitle, category });
+    }
+
+    /**
+     * Canvas alert queue में नया alert push करें।
+     * यह primary API है — _updateAlert() इसे internally call करती है।
+     *
+     * @param {{ icon:string, title:string, subtitle:string, category:string }} opts
+     * category: 'achievement' | 'guidance' | 'warning' | 'info'
+     */
+    triggerAlert({ icon = '', title = '', subtitle = '', category = 'info' } = {}) {
+        const MAX_ALERTS = 4;
+        // Cap enforce: सबसे पुराना हटाएँ
+        if (this.alertQueue.length >= MAX_ALERTS) {
+            this.alertQueue.shift();
+        }
+        this.alertQueue.push({
+            id:       this._nextAlertId++,
+            icon,
+            title,
+            subtitle,
+            category,   // 'achievement' | 'guidance' | 'warning' | 'info'
+            age:      0,
+            maxAge:   150,  // 2.5s @ 60fps
+            opacity:  0,    // 0→1→0 (animated)
+            slideX:   80,   // 80→0 (right-side slide-in)
+        });
     }
 
     /** HUD stat update — dirty-check, pulse animation trigger */
