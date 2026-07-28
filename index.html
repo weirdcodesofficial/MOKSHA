@@ -1,0 +1,2236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="author" content="PS">
+    <meta name="description" content="Control Your Senses — एक आध्यात्मिक गेम जो सनातन शास्त्र पर आधारित है।">
+    <meta charset="UTF-8">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http:
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Your Senses</title>
+    
+    <link rel="preconnect" href="https:
+    <link rel="preconnect" href="https:
+    <link rel="preload"
+        href="https:
+        as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link
+            href="https:
+            rel="stylesheet">
+    </noscript>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Rajdhani', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #gameContainer {
+            position: relative;
+            width: 600px;
+            height: 680px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.98) 65%);
+            border-radius: 12px;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.08);
+            transform-origin: center center;
+            flex-shrink: 0;
+            overflow: hidden;
+            will-change: transform;
+        }
+        canvas {
+            display: block;
+            will-change: transform;
+            image-rendering: auto;
+        }
+        #ui-overlay {
+            position: absolute;
+            bottom: 60px;
+            left: auto;
+            width: 100%;
+            height: auto;
+            background: rgba(6, 6, 10, 0.1);
+            
+            padding: 18px 16px 6px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            z-index: 5;
+            backdrop-filter: blur(6px);
+        }
+        #ui-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: rgba(6, 6, 10, 1);
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            box-sizing: border-box;
+            z-index: 5;
+        }
+        
+        #hud-controls {
+            position: fixed;
+            bottom: 3px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            
+            padding: 0 16px;
+            box-sizing: border-box;
+            z-index: 55;
+        }
+        .hud-right-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .hud-icon-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 215, 0, 0.25);
+            color: #FFD700;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 0;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        
+        button.hud-icon-btn:hover {
+            background: rgba(255, 215, 0, 0.18);
+            
+            filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.5));
+        }
+        
+        .stat-row {
+            display: flex;
+            gap: 9px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        #music-volume-slider {
+            width: 56px;
+            height: 14px;
+            accent-color: #FFD700;
+            cursor: pointer;
+            opacity: 0.55;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+            margin-bottom: 5px;
+        }
+        #music-volume-slider:hover {
+            opacity: 1;
+        }
+        .stat-line {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 5px 9px 4px 9px;
+            line-height: 1;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            will-change: transform;
+        }
+        #gameContainer::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            pointer-events: none;
+            box-shadow: inset 0 0 28px rgba(255, 255, 255, 0.05), inset 0 0 120px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
+            z-index: 1;
+        }
+        
+        #viraama-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(1px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+        }
+        .viraama-content {
+            text-align: center;
+            background: rgba(10, 10, 20, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+        }
+        .viraama-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #FFD700;
+            margin: 0 0 20px 0;
+            font-size: 28px;
+            letter-spacing: 4px;
+        }
+        .viraama-content button {
+            background: rgba(255, 215, 0, 0.1);
+            color: #FFD700;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            padding: 10px 20px;
+            margin: 8px;
+            cursor: pointer;
+            border-radius: 5px;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .viraama-content button:hover {
+            background: rgba(255, 215, 0, 0.3);
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+        }
+        
+        #shastra-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(15px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 60;
+            padding: 40px;
+            box-sizing: border-box;
+            
+        }
+        .shastra-content {
+            position: relative;
+            
+            width: 100%;
+            height: 100%;
+            background: rgba(6, 6, 12, 0.95);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.15);
+            padding: 30px;
+            color: #FFD700;
+            font-family: 'Rajdhani', Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        
+        #shastra-close-btn {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            color: #FFD700;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 1;
+        }
+        #shastra-close-btn:hover {
+            background: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+        }
+        .shastra-header {
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .shastra-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            margin: 0;
+            letter-spacing: 6px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+        .shastra-header p {
+            margin: 5px 0 0 0;
+            color: #ccc;
+            font-style: italic;
+        }
+        .shastra-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 20px;
+            color: #fff;
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: left;
+            scroll-behavior: smooth;
+        }
+        .shastra-body::-webkit-scrollbar {
+            display: none;
+        }
+        .shastra-body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .shastra-page {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .shastra-page.active {
+            display: block;
+        }
+        .shastra-page h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #FFD700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .shastra-page p strong {
+            color: #FFD700;
+        }
+        .shastra-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        .shastra-footer button {
+            background: rgba(255, 215, 0, 0.15);
+            color: #FFD700;
+            font-family: 'Orbitron', sans-serif;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            padding: 8px 24px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: 0.2s;
+            min-width: 200px;
+            text-align: center;
+        }
+        .shastra-footer button:hover {
+            background: rgba(255, 215, 0, 0.3);
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes breathPulse {
+            0%,
+            100% {
+                opacity: 0.6;
+                text-shadow: 0 0 8px rgba(147, 197, 253, 0.5);
+            }
+            50% {
+                opacity: 1;
+                text-shadow: 0 0 23px rgba(147, 197, 253, 1);
+            }
+        }
+        .breathing-text {
+            animation: breathPulse 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <main id="gameContainer">
+        <div id="start-screen"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,1); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:50;">
+            <h1
+                style="color:#ffd700; font-size:64px; margin-bottom:10px; text-shadow: 0 0 20px #ffd700; font-family:'Noto Sans Devanagari', sans-serif;">
+                मोक्ष</h1>
+            <p style="color:#aaa; margin-bottom:40px; text-align:center; max-width:80%; font-size:18px;">अपनी इंद्रियों को वश में करें।<br>क्या आप तैयार हैं?</p>
+            <button id="start-btn"
+                style="padding:15px 40px; font-size:24px; font-weight:bold; background:#3b82f6; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Noto Sans Devanagari', sans-serif; box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); transition: transform 0.2s;">खेल
+                प्रारंभ करें</button>
+            <div id="credits"
+                style="position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.55); font-family: 'Rajdhani', sans-serif; font-size: 12px; pointer-events: none;">
+                Developed by PS
+            </div>
+        </div>
+        <div id="ui-overlay">
+            <div class="stat-row" style="justify-content:center;">
+                <div class="stat-line" id="naama" title="नाम"
+                    style="color:#fff; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15);">🕉️
+                    0</div>
+                <div class="stat-line" id="punya" title="पुण्य"
+                    style="color:#32ff32; background:rgba(50,255,50,0.07); border:1px solid rgba(50,255,50,0.2);">🌿 0
+                </div>
+                <div class="stat-line" id="paap" title="पाप"
+                    style="color:#ff3232; background:rgba(255,50,50,0.07); border:1px solid rgba(255,50,50,0.2);">⛓️ 0
+                </div>
+                <div class="stat-line" id="kripa" title="कृपा"
+                    style="color:#ffe9a8; background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.25); font-size:9.5px; padding:4px 7px; opacity:0.9;">
+                    ✋ 0</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-line" id="ui-gatee" title="गति"
+                    style="color:#e9d5ff; background:rgba(233,213,255,0.07); border:1px solid rgba(233,213,255,0.2);">🌀
+                    100%</div>
+                <div class="stat-line" id="ui-samaya" title="समय"
+                    style="color:#ffffff; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.2);">⏳
+                    <span id="ui-samaya-val"
+                        style="display:inline-block; width:38px; text-align:center; font-weight:800; text-shadow:0 0 10px rgba(255,255,255,0.4);">1440s</span>
+                </div>
+                <div class="stat-line" id="ui-swaansa" title="श्वास"
+                    style="color:#93c5fd; background:rgba(147,197,253,0.07); border:1px solid rgba(147,197,253,0.2);">
+                    🌬️ <span id="ui-swaansa-val" class="breathing-text"
+                        style="display:inline-block; width:26px; text-align:center; font-weight:800;">5</span>
+            </div>
+            <div class="stat-row">
+                <div class="stat-line" id="prarabdha" title="प्रारब्ध"
+                    style="color:#a78bfa; background:rgba(167,139,250,0.07); border:1px solid rgba(167,139,250,0.2); font-size:9.5px; padding:4px 7px; opacity:0.9;">
+                    📜 0</div>
+                <div class="stat-line" id="samarpita" title="समर्पित"
+                    style="color:#fb923c; background:rgba(251,146,60,0.07); border:1px solid rgba(251,146,60,0.2); font-size:9.5px; padding:4px 7px; opacity:0.9;">
+                    🙌 0 / 30</div>
+                <div class="stat-line" id="punaraJanma" title="पुनर्जन्म"
+                    style="color:#f87171; background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.2); font-size:9.5px; padding:4px 7px; opacity:0.9;">
+                    ♻️ 0</div>
+                <div class="stat-line" id="chetana" title="चेतना"
+                    style="color:#93c5fd; background:rgba(147,197,253,0.07); border:1px solid rgba(147,197,253,0.2); font-size:9.5px; padding:4px 7px; opacity:0.9;">
+                    😴</div>
+            </div>
+        </div>
+        
+        <div id="hud-controls">
+            <div class="hud-right-group">
+                <input type="range" id="music-volume-slider" min="0" max="100" value="100" title="संगीत वॉल्यूम"
+                    aria-label="Background Music Volume">
+                <button id="music-toggle-btn" class="hud-icon-btn"
+                    title="पृष्ठभूमि ध्वनि म्यूट/अनम्यूट करें">🔊</button>
+                <button id="shastra-help-btn" class="hud-icon-btn" title="शास्त्र पढ़ें (खेल की जानकारी)">❓</button>
+                <div id="hud-credits" class="hud-icon-btn" style="cursor: default;" title="Developed by PS">🪶</div>
+            </div>
+        </div>
+        <canvas id="gameCanvas" width="600" height="680"></canvas>
+        <div id="ui-footer"></div>
+        <div id="alert-box"
+            style="position:absolute; bottom: 30px; left:0; width:100%; font-family:'Orbitron', sans-serif; font-size:9.5px; color:rgb(255, 255, 255); font-weight:600; text-align:center; text-transform:uppercase; letter-spacing:1.2px; background:rgba(0,0,0,0.85); padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.06); z-index: 4;">
+            सारथी ⬅️ ➡️ या A/D से घोड़ों को संचालित करे। पुण्य से वैराग्य के लिए ⬇️ या S दबाएं।
+        </div>
+        <div id="screen-overlay"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; z-index:10;">
+            <h1 id="overlay-title"
+                style="font-family:'Orbitron', sans-serif; font-size:36px; font-weight:900; margin-bottom:14px; letter-spacing:12px; text-shadow:0 0 30px currentColor;">
+                मोक्ष</h1>
+            <p id="overlay-subtitle"
+                style="font-family:'Rajdhani', sans-serif; font-size:15px; line-height:1.8; color:rgba(255,255,255,0.55); max-width:80%; font-weight:500;">
+            </p>
+            <p
+                style="font-family:'Orbitron', sans-serif; color:rgba(255,255,255,0.2); margin-top:32px; font-size:10px; letter-spacing:3px; font-weight:700; text-transform:uppercase;">
+                'R' दबाएं जीवन रथ को पुनः आरंभ करने के लिए</p>
+        </div>
+        <div id="viraama-overlay">
+            <div class="viraama-content">
+                <h2>॥ स्तम्भन ॥</h2>
+                <button id="resume-btn">जारी रखें</button>
+                <button id="restart-btn">पुनः आरंभ</button>
+                <button id="quit-btn">छोड़ें</button>
+            </div>
+        </div>
+        <div id="shastra-overlay">
+            <div class="shastra-content">
+                <button id="shastra-close-btn" title="बंद करें">✕</button>
+                <div class="shastra-header">
+                    <h2>॥ शास्त्र ॥</h2>
+                    <p>रथ का ज्ञान</p>
+                </div>
+                <div class="shastra-body" id="shastra-body">
+                    <div class="shastra-page active" id="shastra-page-1">
+                        <h3>🌀 ब्रह्मांड विज्ञान 🌀</h3>
+                        <p>समय और अंतरिक्ष की आपकी यात्रा दिव्य रथ द्वारा निर्देशित है। यह रथ आत्मा के मोक्ष की ओर बढ़ने
+                            वाले मार्ग का प्रतीक है, जो संसार की कर्मिक हवाओं को पार करता है। <i>Samsara</i>.</p>
+                        <p>आपके द्वारा किया गया प्रत्येक कर्म — पुण्य हो या पाप — <strong>समय विकृति (गति)</strong> के
+                            रूप में फल लाता है। <strong>पुण्य और पाप दोनों ही गति को मंद करते हैं</strong> — दोनों ही
+                            बंधन हैं, चाहे सुखद हो या दुःखद। पाप सीधे रथ पर आघात करता है (कंपन व दृष्टि-भ्रम), जबकि
+                            पुण्य मोहक प्रलोभन देकर मन को बहकाता है। यह विकृति तब तक बढ़ती रहती है जब तक आप
+                            <strong>ब्रह्मांडीय क्षितिज</strong> (समय = 0) तक नहीं पहुँच जाते।
+                        </p>
+                        <p><strong>🌬️ श्वास :</strong> यह आयु-शेष का प्रतीक है — इस जीवन-चक्र में बचे शेष श्वासों की
+                            गिनती, जो प्रत्येक सांस-चक्र (breath-cycle) के साथ क्षीण होती जाती है, ठीक उसी प्रकार जैसे
+                            जीवन की हर सांस अंतिम सांस की ओर ले जाती है।</p>
+                        <p><strong>⚖️ ब्रह्मांडीय क्षितिज — निर्णय का क्षण :</strong> जब समय शून्य पर पहुँचता है, यही
+                            निर्णय का क्षण है। यदि उस क्षण आत्मा सर्वथा निष्कर्म हो (पुण्य, पाप, प्रारब्ध व नाम — सभी
+                            शून्य) और पर्याप्त समर्पित (≥30) अर्जित हो, तो <strong>मोक्ष</strong> प्राप्त होता है।
+                            अन्यथा, अनसुलझा कर्म <strong>प्रारब्ध</strong> बन जाता है (भारी होकर अगले जीवन में जुड़ जाता
+                            है) और रथ <strong>पुनर्जन्म</strong> लेता है — समय फिर से 1440 से आरंभ होता है।</p>
+                    </div>
+                    <div class="shastra-page" id="shastra-page-2">
+                        <h3>⚙️ यंत्रिकी ⚙️</h3>
+                        <p><strong>☸️ ⬅️ ➡️ | DPAD_LEFT/RIGHT | A/D (रथ संचालन) :</strong> रथ का संचालन करें। बाधाओं से
+                            बचें या पवित्र नामों का संग्रह करें।</p>
+                        <p><strong>📿 (नाम जाप) : DPAD_RT/R1 | SPACE :</strong> 1 नाम व्यय कर एक फैलती हुई आभा (aura)
+                            उत्पन्न करें। यह टकराई हुई <i>शुभ/अशुभ माया</i> को स्वतः <i>समर्पित</i> में परिवर्तित कर
+                            देती है, जबकि नाम-गोलक स्वयं अतिरिक्त <i>नाम</i> के रूप में जुड़ जाते हैं।</p>
+                        <p><strong>🪷 (वैराग्य)/(आसक्ति त्याग) : ⬇️ DPAD_X | S :</strong> आसक्ति त्यागें। आगत को मुक्त
+                            करें। पुण्य का प्रलोभन क्षणिक होता है — कुछ ही क्षणों में निर्णय लें: ग्रहण करें (निष्क्रिय
+                            रहें) या वैराग्य धारण करें (S/⬇️)। निर्णय न लेने पर पुण्य स्वतः बंध जाता है।</p>
+                        <p><strong>🌊 (प्रलय) : LB/L1 | Q :</strong> महाप्रलय का आह्वान। सारथी स्वेच्छा से रथ का त्याग
+                            करता है। आत्मा अप्रकट अंधकार में विलीन हो जाती है और घोड़े उसे एक नए शरीर की ओर खींच ले जाते
+                            हैं। <i>यह पलायन नहीं, विसर्जन है।</i></p>
+                        <p><strong>♻️ (पवित्र पुनर्जन्म) : LT/L2 | R :</strong> आत्मा स्वेच्छा से पुनः संसार-चक्र में
+                            प्रवेश करती है — समस्त कर्म-भार, प्रारब्ध और बंधन शून्य होकर नया जीवन-रथ आरंभ होता है। <i>यह
+                                पराजय नहीं, नई चेतना का उदय है।</i></p>
+                        <p><strong>📖 (शास्त्र) : BACK | ESC :</strong> यात्रा के बीच ब्रह्म-ज्ञान का द्वार खोलें। समय
+                            स्थिर हो जाता है और सारथी शास्त्र का ध्यान करता है। <i>रुककर जानना भी साधना है।</i></p>
+                        <p><strong>⏸️ (स्तम्भन) : START | F :</strong> ब्रह्मांडीय प्रवाह को क्षण-भर थामें। रथ, घोड़े और
+                            माया — सब स्थिर। <i>विराम भी यात्रा का अंग है — ध्यान के बिना गति अंधी होती है।</i></p>
+                        <br>
+                        <h3>🏔️ अंतिम चरण 🏔️</h3>
+                        <p><strong>🙌 समर्पित (30) :</strong> जब समर्पित की संख्या 30 तक पहुँचती है, <i>चेतना जागृत</i>
+                            होती है — आत्मा स्वप्न-श्वास से अंतरिक्ष-श्वास की अवस्था में प्रवेश करती है, मोक्ष-पथ की ओर
+                            एक कदम और निकट।</p>
+                        <p><strong>🌌 मोक्ष-मार्ग :</strong> सुरंग के भीतर नाम-संग्रहण शुद्धिकरण का द्वार खोलता
+                            है।<br><strong>1 नाम</strong> से <strong>पुण्य</strong> भस्म<br><strong>5 नाम</strong> से
+                            <strong>पाप</strong> भस्म<br><strong>10 नाम</strong> से <strong>प्रारब्ध</strong> (सबसे भारी
+                            बंधन) भस्म होता है। <span style="color:#ff3232;">जैसे नाम-स्मरण संचित कर्मों को भस्म करता
+                                है।</span>
+                        </p>
+                        <p><strong>🕉️ 🙌 नाम समर्पण : ⬆️ | DPAD_RB/R2 | W :</strong> केंद्रीय सुरंग के भीतर जाकर समस्त
+                            'नाम' समर्पित करें। <span style="color:#ff3232;">⚠️ यह क्रिया केवल 'अंतिम चरण' (समय &lt;
+                                100s) में ही सक्रिय होती है।</span></p>
+                        <br>
+                        <h3>⏳ कर्मफल ⏳</h3>
+                        <p><strong>🌿 पुण्य :</strong> अच्छे कर्म। ये गति को मंद करते हैं और मन को बांधते हैं — सुखद
+                            होते हुए भी बंधन हैं।</p>
+                        <p><strong>⛓️ पाप :</strong> बुरे कर्म। ये भी गति को मंद करते हैं, परंतु साथ ही रथ पर सीधा आघात
+                            करते हैं (कंपन) और दृष्टि को धुंधला कर देते हैं।</p>
+                        <p><strong>🕉️ नाम :</strong> मोक्ष प्राप्ति का सबसे बड़ा सहायक।</p>
+                        <p><strong>✋ कृपा :</strong> २० नाम एकत्रित होने पर १ कृपा प्राप्त होती है। कृपा बढ़ने से संसार
+                            में पाप माया घटती है और पुण्य व नाम अधिक प्रकट होते हैं। २ कृपा एकत्रित होने पर सबसे भारी
+                            कर्म 'प्रारब्ध' स्वतः भस्म हो जाता है (इस प्रक्रिया में कृपा व्यय होती है)।</p>
+                    </div>
+                    <div class="shastra-page" id="shastra-page-3">
+                        <h3>👁️ प्रतीकवाद 👁️</h3>
+                        <p><strong>🐎 छह घोड़े (छह इंद्रियाँ) :</strong> स्वचालित रूप से सांसारिक वस्तुओं की ओर खींचते
+                            हैं।</p>
+                        <p><strong>🪢 लगाम (मन) :</strong> स्थूल शरीर में हृदयस्थित, सूक्ष्म शरीर (संकल्प-विकल्पात्मक
+                            तत्त्व) जो अपने षडिन्द्रिय रूप (छः इन्द्रियों का पूर्ण संतुलन) को प्राप्त करने की ओर यात्रा
+                            करता है।</p>
+                        <p><strong>☸️ रथ (शरीर) :</strong> आत्मा को ले जाने वाला स्थूल रूप, अनसुलझे कर्म के भार से भारी
+                            होता जा रहा है।</p>
+                        <p><strong>🪈 सारथी (मन) :</strong> इंद्रियों की लगाम थामे हुए सक्रिय सारथी।</p>
+                        <p><strong>🪔 यात्री (आत्मा) :</strong> कारण शरीर (स्वभाव) में स्थित दिव्य सूक्ष्मतम चेतन ऊर्जा,
+                            जो मोक्ष की ओर यात्रा करती है।</p>
+                        <p><strong>🕉️ नाम (आत्म स्मरण) :</strong> अतीत के प्रारब्ध को भस्म करने के लिए आवश्यक शुद्ध
+                            ऊर्जा।</p>
+                        <p><strong>🌬️ श्वास (आयु-शेष) :</strong> इस जीवन-चक्र में शेष बचे क्षणों का प्रतीक — हर सांस
+                            अंतिम सांस के निकट ले जाती है।</p>
+                    </div>
+                </div>
+                <div class="shastra-footer" style="justify-content:center;">
+                    <button id="shastra-nav-btn">अगला &nbsp;[ 1 / 3 ]</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const UI = {
+            container: document.getElementById('gameContainer'),
+            naama: document.getElementById('naama'),
+            punya: document.getElementById('punya'),
+            paap: document.getElementById('paap'),
+            prarabdha: document.getElementById('prarabdha'),
+            samarpita: document.getElementById('samarpita'),
+            punaraJanma: document.getElementById('punaraJanma'),
+            kripa: document.getElementById('kripa'),
+            chetana: document.getElementById('chetana'),
+            samayaVal: document.getElementById('ui-samaya-val'),
+            swaansaVal: document.getElementById('ui-swaansa-val'),
+            gatee: document.getElementById('ui-gatee'),
+            alertBox: document.getElementById('alert-box'),
+            overlay: document.getElementById('screen-overlay'),
+            overlayTitle: document.getElementById('overlay-title'),
+            overlaySubtitle: document.getElementById('overlay-subtitle'),
+            viraamaOverlay: document.getElementById('viraama-overlay'),
+            shastraOverlay: document.getElementById('shastra-overlay')
+        };
+        const WIDTH = 600;
+        const HEIGHT = 680;
+        const TUNNEL_WIDTH = 180;
+        const TUNNEL_X = (WIDTH - TUNNEL_WIDTH) / 2;
+        let player = { x: WIDTH / 2 - 30, y: HEIGHT - 250, width: 60, height: 60, baseSpeed: 8 };
+        let mayaPool = []; for (let i = 0; i < 50; i++) { mayaPool.push({ active: false, x: 0, y: 0, width: 20, height: 24, type: "ashuvha", isPulling: false }); } let stars = [];
+        
+        
+        let particlePool = []; for (let i = 0; i < 50; i++) { particlePool.push({ active: false, x: 0, y: 0, vx: 0, vy: 0, radius: 0, color: "#ffffff", alpha: 0 }); }
+        let tunnelSparkles = []; let floatingTexts = [];
+        let activeGoodKarma = 0; let activeBadKarma = 0; let activeNaam = 0;
+        let prarabdha = 0; let samarpita = 0; let punaraJanmaCount = 0; let isKarmaImmune = false;
+        let kripa = 0; 
+        let oldStats = { naama: 0, punya: 0, paap: 0, prarabdha: 0, samarpita: 0, punaraJanma: 0, gatee: "100%", kripa: 0, chetana: "" };
+        let uiScales = { naama: 1, punya: 1, paap: 1, prarabdha: 1, samarpita: 1, punaraJanma: 1, gatee: 1, kripa: 1, chetana: 1 };
+        let uiGlows = { naama: 0, punya: 0, paap: 0, prarabdha: 0, samarpita: 0, punaraJanma: 0, gatee: 0, kripa: 0, chetana: 0 };
+        
+        let samaya = 1440; let swaansa = 5; let swaansaTimer = 0;
+        let gameOver = false; let isPaused = false; let won = false; let spawnTimer = 0; let keys = {};
+        let shakeTimer = 0; let swaansaSamapta = false; let naamaGlowTimer = 0; let bodyGlowTimer = 0;
+        let smoothSize = 60; let bodyGlowColor = "#ffffff"; let playerInTunnel = false; let frameNow = 0;
+        let currentBorderColor = "";
+        let cachedBreathGrad = null; let cachedBreathGradBucket = -1;     
+        let cachedTunnelGrad = null; let cachedTunnelGradBucket = -1;     
+        let isNaamaJaapa = false;
+        let naamaGhera = 0;
+        let jaapaNaama = "राधा";
+        let chetanaaJagrita = false;
+        let timerSoundPlayed = false;   
+        let timerTickAccumulator = 0;
+        let lastTime = 0;
+        let prevKripaForBurn = 0;             
+        const orbits = [
+            { count: 0, color: "#ffffff", speed: 1.0 },
+            { count: 0, color: "#ffe9a8", speed: 0.7 },   
+            { count: 0, color: "#32ff32", speed: 0.8 },
+            { count: 0, color: "#ff3232", speed: -0.9 },
+            { count: 0, color: "#a78bfa", speed: 0.6 },
+            { count: 0, color: "#f87171", speed: -0.5 },
+            { count: 0, color: "#fb923c", speed: 1.1 }
+        ];
+        let pendingGoodKarma = false; let punyaTimer = 0; let pendingGoodKarmaCount = 0;
+        let pulledHorseIndex = -1; let pulledHorseX = 0; let pulledHorseY = 0;
+        let prevPulledHorseIndex = -1;   
+        let mayaConsumedWhilePulling = false;  
+        let lastPunyaAlertSecond = -1;    
+        let prevGoodKarmaForSound = 0;   
+        let prevBadKarmaForSound = 0;    
+        let prevPrarabdhaForSound = 0;   
+        let notifyTimer = 0; let notifyText = "♻️ पवित्र पुनर्जन्म"; 
+        let isShastraVisible = false;
+        let currentShastraPage = 1;
+        const SHASTRA_SCROLL_SPEED = 6;          
+        
+        
+        let shastraKeyState = { up: false, down: false };
+        
+        let gamepadIndex = null;          
+        let gpButtonStates = {};          
+        const GAMEPAD_DEADZONE = 0.18;    
+        
+        const GAMEPAD_BUTTON = {
+            Y: 0,           
+            B: 1,           
+            X: 2,           
+            A: 3,           
+            LB: 4,          
+            RB: 5,          
+            LT: 6,          
+            RT: 7,          
+            BACK: 8,        
+            START: 9,       
+            DPAD_UP: 12,    
+            DPAD_DOWN: 13,  
+            DPAD_LEFT: 14,  
+            DPAD_RIGHT: 15  
+        };
+        window.addEventListener('wheel', (e) => {
+            if (!isShastraVisible) return;
+            e.preventDefault();
+            const body = document.getElementById('shastra-body');
+            
+            
+            
+            
+            
+            body.scrollTop += e.deltaY;
+        }, { passive: false });
+        let audioCtx = null;
+        let audioUnlocked = false;
+        
+        
+        
+        
+        let audioBuffers = {
+            bgMusic: null,          
+            naamaSamarpita: null,   
+            samarpita: null,        
+            chetnaJagrita: null,    
+            punarJanma: null,       
+            pralaya: null,          
+            runningHorses: null,    
+            spaceBreath: null,      
+            dreamBreath: null,
+            timer: null,
+            prarabdhaBandhana: null,
+            paapaBandhana: null,
+            punyaBandhana: null,
+            bandhanMukta: null,
+            naamaDhwani: null,       
+            moksha: null,
+            aakarshana: null,
+            tyaaga: null,
+            jaapaDhwani: null,       
+            antimCharana: null,
+            kripaDhwani: null
+        };
+        let bgMusicSourceNode = null;          
+        let bgMusicMp3Gain = null;             
+        const BG_MUSIC_MP3_LAYER_VOLUME = 0.01 
+        
+        let runningHorsesSourceNode = null;
+        let runningHorsesGain = null;
+        const RUNNING_HORSES_VOLUME = 0.16; 
+        
+        let spaceBreathSourceNode = null;
+        let spaceBreathGain = null;
+        const SPACE_BREATH_VOLUME = 0.22; 
+        
+        let dreamBreathSourceNode = null;
+        let dreamBreathGain = null;
+        const DREAM_BREATH_VOLUME = 1; 
+        let lastSamarpitaSoundTime = 0;        
+        const SAMARPITA_SOUND_COOLDOWN = 90;   
+        function debounce(func, delay) { let timeoutId; return function () { clearTimeout(timeoutId); timeoutId = setTimeout(func, delay); }; }
+        
+        async function loadAudioBuffer(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const arrayBuffer = await response.arrayBuffer();
+                return await audioCtx.decodeAudioData(arrayBuffer);
+            } catch (err) {
+                console.warn(`⚠️ ऑडियो लोड विफल (${url}):`, err);
+                return null; 
+            }
+        }
+        
+        
+        
+        
+        
+        async function loadAllAudioBuffers() {
+            if (!audioCtx) return;
+            loadCriticalAudioBuffers();
+            loadDeferredAudioBuffers();
+        }
+        
+        
+        async function loadCriticalAudioBuffers() {
+            const [
+                naamaSamarpita, samarpita, punarJanma,
+                runningHorses, dreamBreath, timer, prarabdhaBandhana, paapaBandhana, punyaBandhana, bandhanMukta,
+                naama, jaapa, aakarshana, tyaaga, kripa
+            ] = await Promise.all([
+                loadAudioBuffer('./audio/naamaSamarpita.mp3'),
+                loadAudioBuffer('./audio/samarpita.mp3'),
+                loadAudioBuffer('./audio/punarJanma.mp3'),
+                loadAudioBuffer('./audio/runningHorses.mp3'),
+                loadAudioBuffer('./audio/dreamBreath.mp3'),
+                loadAudioBuffer('./audio/timer.mp3'),
+                loadAudioBuffer('./audio/prarabdhaBandhana.mp3'),
+                loadAudioBuffer('./audio/paapaBandhana.mp3'),
+                loadAudioBuffer('./audio/punyaBandhana.mp3'),
+                loadAudioBuffer('./audio/bandhanaMukta.mp3'),
+                loadAudioBuffer('./audio/naamaDhwani.mp3'),
+                loadAudioBuffer('./audio/jaapaDhwani.mp3'),
+                loadAudioBuffer('./audio/aakarshana.mp3'),
+                loadAudioBuffer('./audio/tyaaga.mp3'),
+                loadAudioBuffer('./audio/kripaDhwani.mp3')
+            ]);
+            audioBuffers.naamaSamarpita = naamaSamarpita;
+            audioBuffers.samarpita = samarpita;
+            audioBuffers.punarJanma = punarJanma;
+            audioBuffers.runningHorses = runningHorses;
+            audioBuffers.dreamBreath = dreamBreath;
+            audioBuffers.timer = timer;
+            audioBuffers.prarabdhaBandhana = prarabdhaBandhana;
+            audioBuffers.paapaBandhana = paapaBandhana;
+            audioBuffers.punyaBandhana = punyaBandhana;
+            audioBuffers.bandhanMukta = bandhanMukta;
+            audioBuffers.naamaDhwani = naama;
+            audioBuffers.jaapaDhwani = jaapa;
+            audioBuffers.aakarshana = aakarshana;
+            audioBuffers.tyaaga = tyaaga;
+            audioBuffers.kripaDhwani = kripa;
+            
+            if (bgMusicStarted) {
+                startRunningHorsesLayer();
+                if (!chetanaaJagrita) startDreamBreathLayer();
+            }
+        }
+        
+        
+        async function loadDeferredAudioBuffers() {
+            const [bg, chetna, pralaya, spaceBreath, moksha, antimCharana] = await Promise.all([
+                loadAudioBuffer('./audio/bgMusic.mp3'),
+                loadAudioBuffer('./audio/chetnaJagrita.mp3'),
+                loadAudioBuffer('./audio/pralaya.mp3'),
+                loadAudioBuffer('./audio/spaceBreath.mp3'),
+                loadAudioBuffer('./audio/moksha.mp3'),
+                loadAudioBuffer('./audio/antimCharana.mp3')
+            ]);
+            audioBuffers.bgMusic = bg;
+            audioBuffers.chetnaJagrita = chetna;
+            audioBuffers.pralaya = pralaya;
+            audioBuffers.spaceBreath = spaceBreath;
+            audioBuffers.moksha = moksha;
+            audioBuffers.antimCharana = antimCharana;
+            
+            if (bgMusicStarted) {
+                startBgMusicMp3Layer();
+            }
+        }
+        
+        function playBufferedSound(buffer, destination, gainVal = 0.6, loop = false) {
+            if (!audioCtx || !buffer) return null;
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.loop = loop;
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+            source.connect(gainNode);
+            gainNode.connect(destination || audioCtx.destination);
+            source.start(0);
+            return { source, gainNode };
+        }
+        
+        
+        function startBgMusicMp3Layer() {
+            if (!bgMasterGain || !audioBuffers.bgMusic || bgMusicSourceNode) return; 
+            const now = audioCtx.currentTime;
+            bgMusicMp3Gain = audioCtx.createGain();
+            bgMusicMp3Gain.gain.setValueAtTime(BG_MUSIC_MP3_LAYER_VOLUME, now);
+            bgMusicMp3Gain.connect(bgMasterGain); 
+            bgMusicSourceNode = audioCtx.createBufferSource();
+            bgMusicSourceNode.buffer = audioBuffers.bgMusic;
+            bgMusicSourceNode.loop = true;
+            bgMusicSourceNode.connect(bgMusicMp3Gain);
+            bgMusicSourceNode.start(now);
+        }
+        
+        
+        function startRunningHorsesLayer() {
+            if (!bgMasterGain || !audioBuffers.runningHorses || runningHorsesSourceNode) return;
+            const now = audioCtx.currentTime;
+            runningHorsesGain = audioCtx.createGain();
+            
+            
+            const initialVol = isActiveGameplay() ? RUNNING_HORSES_VOLUME : 0;
+            runningHorsesGain.gain.setValueAtTime(initialVol, now);
+            runningHorsesGain.connect(bgMasterGain);
+            runningHorsesSourceNode = audioCtx.createBufferSource();
+            runningHorsesSourceNode.buffer = audioBuffers.runningHorses;
+            runningHorsesSourceNode.loop = true;
+            runningHorsesSourceNode.connect(runningHorsesGain);
+            runningHorsesSourceNode.start(now);
+        }
+        
+        function startSpaceBreathLayer() {
+            if (!bgMasterGain || !audioBuffers.spaceBreath || spaceBreathSourceNode) return;
+            const now = audioCtx.currentTime;
+            spaceBreathGain = audioCtx.createGain();
+            
+            
+            
+            const initialSpaceVol = isActiveGameplay() ? SPACE_BREATH_VOLUME : 0;
+            spaceBreathGain.gain.setValueAtTime(initialSpaceVol, now);
+            spaceBreathGain.connect(bgMasterGain);
+            spaceBreathSourceNode = audioCtx.createBufferSource();
+            spaceBreathSourceNode.buffer = audioBuffers.spaceBreath;
+            spaceBreathSourceNode.loop = true;
+            spaceBreathSourceNode.connect(spaceBreathGain);
+            spaceBreathSourceNode.start(now);
+        }
+        
+        function stopSpaceBreathLayer() {
+            if (spaceBreathSourceNode) {
+                try { spaceBreathSourceNode.stop(); } catch (err) { }
+                spaceBreathSourceNode.disconnect();
+                spaceBreathSourceNode = null;
+            }
+        }
+        
+        
+        function startDreamBreathLayer() {
+            if (!bgMasterGain || !audioBuffers.dreamBreath || dreamBreathSourceNode) return;
+            const now = audioCtx.currentTime;
+            dreamBreathGain = audioCtx.createGain();
+            
+            
+            
+            
+            const initialDreamVol = isActiveGameplay() ? DREAM_BREATH_VOLUME : 0;
+            dreamBreathGain.gain.setValueAtTime(initialDreamVol, now);
+            dreamBreathGain.connect(bgMasterGain);
+            dreamBreathSourceNode = audioCtx.createBufferSource();
+            dreamBreathSourceNode.buffer = audioBuffers.dreamBreath;
+            dreamBreathSourceNode.loop = true;
+            dreamBreathSourceNode.connect(dreamBreathGain);
+            dreamBreathSourceNode.start(now);
+        }
+        
+        
+        function stopDreamBreathLayer() {
+            if (dreamBreathSourceNode) {
+                try { dreamBreathSourceNode.stop(); } catch (err) { }
+                dreamBreathSourceNode.disconnect();
+                dreamBreathSourceNode = null;
+            }
+        }
+        function ensureAudio() {
+            try {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) return;
+                    audioCtx = new AudioContextClass();
+                    
+                    
+                    setTimeout(() => loadAllAudioBuffers(), 0);
+                }
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                audioUnlocked = true;
+                startBackgroundMusic();   
+            } catch (err) { console.warn('Audio init failed:', err); }
+        }
+        function playTone(freq, duration = 0.08, type = 'sine', gain = 0.04, endFreq = null) {
+            if (!audioUnlocked || !audioCtx) return; const now = audioCtx.currentTime; const osc = audioCtx.createOscillator(); const amp = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, now); if (endFreq !== null) { osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFreq), now + duration); }
+            amp.gain.setValueAtTime(0.0001, now); amp.gain.exponentialRampToValueAtTime(gain, now + 0.01); amp.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            osc.connect(amp); amp.connect(audioCtx.destination); osc.start(now); osc.stop(now + duration + 0.03);
+        }
+        function playSound(name) {
+            
+            if (DUCK_STRENGTH[name] !== undefined) duckBackgroundMusic(DUCK_STRENGTH[name]);
+            switch (name) {
+                case 'shuvha': playTone(523.25, 0.07, 'triangle', 0.035, 783.99); vibrateGamepad(0.15, 0.10, 90); break;        
+                case 'ashuvha': playTone(155.56, 0.10, 'sawtooth', 0.03, 92.5); vibrateGamepad(0.50, 0.70, 160); break;         
+                
+                case 'jaapa':
+                    if (audioBuffers.jaapaDhwani) { playBufferedSound(audioBuffers.jaapaDhwani, audioCtx.destination, 0.6); }
+                    else { playTone(880, 0.09, 'sine', 0.03, 1320); }
+                    vibrateGamepad(0.10, 0.05, 50);
+                    break;
+                
+                case 'naamaSamarpita':
+                    if (audioBuffers.naamaSamarpita) { playBufferedSound(audioBuffers.naamaSamarpita, audioCtx.destination, 0.6); }
+                    else { playTone(880, 0.09, 'sine', 0.03, 1320); }
+                    vibrateGamepad(0.10, 0.05, 50);
+                    break;
+                
+                case 'kripa':
+                    if (audioBuffers.kripaDhwani) { playBufferedSound(audioBuffers.kripaDhwani, audioCtx.destination, 0.6); }
+                    else { playTone(1046.50, 0.15, 'sine', 0.04, 1318.51); } vibrateGamepad(0.15, 0.20, 80);
+                    break;
+                
+                
+                
+                case 'antimCharana':
+                    if (audioBuffers.antimCharana) {
+                        const acNow = audioCtx.currentTime;
+                        const acSrc = audioCtx.createBufferSource();
+                        acSrc.buffer = audioBuffers.antimCharana;
+                        const acGain = audioCtx.createGain();
+                        const acPeakGain = 0.35;                         
+                        const acDuration = acSrc.buffer.duration;
+                        acGain.gain.setValueAtTime(0.0001, acNow);
+                        acGain.gain.exponentialRampToValueAtTime(acPeakGain, acNow + 0.08);   
+                        const acPeakHoldTime = Math.max(acNow + 0.08, acNow + acDuration - 0.15);
+                        acGain.gain.setValueAtTime(acPeakGain, acPeakHoldTime);
+                        
+                        
+                        
+                        const acFadeOutTime = Math.max(acPeakHoldTime + 0.02, acNow + acDuration - 0.02);
+                        acGain.gain.exponentialRampToValueAtTime(0.0001, acFadeOutTime); 
+                        acSrc.connect(acGain);
+                        acGain.connect(audioCtx.destination);
+                        acSrc.start(acNow);
+                    } else {
+                        console.warn('⚠️ antimCharana.mp3 लोड नहीं हुई — ./audio/antimCharana.mp3 path जाँचें');
+                    }
+                    vibrateGamepad(0.25, 0.30, 140);
+                    break;
+                
+                case 'samarpita': {
+                    const nowMs = performance.now();
+                    if (nowMs - lastSamarpitaSoundTime >= SAMARPITA_SOUND_COOLDOWN) {
+                        lastSamarpitaSoundTime = nowMs;
+                        if (audioBuffers.samarpita) { playBufferedSound(audioBuffers.samarpita, audioCtx.destination, 0.6); }
+                        else { playTone(659.25, 0.12, 'triangle', 0.04, 987.77); setTimeout(() => playTone(987.77, 0.08, 'sine', 0.025, 1318.51), 55); }
+                    }
+                    vibrateGamepad(0.20, 0.15, 100);
+                    break;
+                }
+                
+                case 'aakarshana':
+                    if (audioBuffers.aakarshana) { playBufferedSound(audioBuffers.aakarshana, audioCtx.destination, 0.5); }
+                    else { playTone(440, 0.07, 'sine', 0.025, 660); }
+                    vibrateGamepad(0.08, 0.05, 40);
+                    break;          
+                
+                case 'tyaaga':
+                    if (audioBuffers.tyaaga) { playBufferedSound(audioBuffers.tyaaga, audioCtx.destination, 0.5); }
+                    else { playTone(392, 0.08, 'square', 0.025, 329.63); }
+                    vibrateGamepad(0.10, 0.06, 60);
+                    break;
+                case 'punaha':
+                    if (audioBuffers.punarJanma) { playBufferedSound(audioBuffers.punarJanma, audioCtx.destination, 0.7); }
+                    else { playTone(329.63, 0.06, 'triangle', 0.025, 523.25); setTimeout(() => playTone(659.25, 0.07, 'triangle', 0.025, 987.77), 60); }
+                    vibrateGamepad(0.60, 0.85, 280);
+                    break;
+                case 'viraama': playTone(220, 0.05, 'sine', 0.02, 196); break;                                                  
+                case 'resume': playTone(196, 0.05, 'sine', 0.02, 220); break;                                                   
+                
+                case 'takraava':
+                    if (audioBuffers.pralaya) { playBufferedSound(audioBuffers.pralaya, audioCtx.destination, 0.7); }
+                    else { playTone(110, 0.08, 'square', 0.03, 82.41); }
+                    vibrateGamepad(0.60, 0.90, 220);
+                    break;
+                case 'vijaya':
+                    
+                    if (audioBuffers.moksha) {
+                        playBufferedSound(audioBuffers.moksha, audioCtx.destination, 0.7);
+                    } else {
+                        playTone(523.25, 0.12, 'sine', 0.03, 783.99); setTimeout(() => playTone(659.25, 0.12, 'sine', 0.03, 987.77), 70); setTimeout(() => playTone(783.99, 0.14, 'sine', 0.03, 1174.66), 140);
+                    }
+                    vibrateGamepad(0.3, 0.3, 150); setTimeout(() => vibrateGamepad(0.3, 0.3, 150), 200); setTimeout(() => vibrateGamepad(0.4, 0.5, 300), 400);
+                    break;
+                
+                
+                
+                case 'chetna':
+                    if (audioBuffers.chetnaJagrita) {
+                        const chetnaNow = audioCtx.currentTime;
+                        const chetnaSrc = audioCtx.createBufferSource();
+                        chetnaSrc.buffer = audioBuffers.chetnaJagrita;
+                        const chetnaGain = audioCtx.createGain();
+                        chetnaGain.gain.setValueAtTime(0.0001, chetnaNow);
+                        chetnaGain.gain.exponentialRampToValueAtTime(0.7, chetnaNow + 0.05); 
+                        chetnaSrc.connect(chetnaGain);
+                        chetnaGain.connect(audioCtx.destination);
+                        chetnaSrc.start(chetnaNow);
+                    } else {
+                        console.warn('⚠️ chetnaJagrita.mp3 लोड नहीं हुई — ./audio/chetnaJagrita.mp3 path जाँचें');
+                    }
+                    break;
+                
+                case 'timer':
+                    if (audioBuffers.timer) { playBufferedSound(audioBuffers.timer, audioCtx.destination, 0.6); }
+                    break;
+                
+                case 'prarabdhaBandhana':
+                    if (audioBuffers.prarabdhaBandhana) { playBufferedSound(audioBuffers.prarabdhaBandhana, audioCtx.destination, 0.6); }
+                    break;
+                
+                case 'paapaBandhana':
+                    if (audioBuffers.paapaBandhana) { playBufferedSound(audioBuffers.paapaBandhana, audioCtx.destination, 0.6); }
+                    break;
+                
+                case 'punyaBandhana':
+                    if (audioBuffers.punyaBandhana) { playBufferedSound(audioBuffers.punyaBandhana, audioCtx.destination, 0.6); }
+                    break;
+                
+                case 'bandhanaMukta':
+                    if (audioBuffers.bandhanMukta) { playBufferedSound(audioBuffers.bandhanMukta, audioCtx.destination, 0.6); }
+                    break;
+                
+                
+                case 'naama':
+                    if (audioBuffers.naamaDhwani) { playBufferedSound(audioBuffers.naamaDhwani, audioCtx.destination, 0.6); }
+                    else { playTone(880, 0.09, 'sine', 0.03, 1320); }
+                    vibrateGamepad(0.10, 0.05, 50);
+                    break;
+            }
+        }
+        
+        
+        
+        
+        let bgMusicStarted = false;     
+        let bgMusicMuted = false;       
+        let breathPulseGlobal = 0;
+        let audioThrottleCounter = 0;          
+        const AUDIO_THROTTLE_FRAMES = 4;       
+        let bgMasterGain = null;        
+        const BG_BREATH_MOD_RANGE = 0.3; 
+        
+        
+        
+        
+        
+        let duckLevel = 0;                          
+        let lastDuckCheckTime = 0;                  
+        const DUCK_DECAY_PER_SEC = 1.8;             
+        const BG_MUSIC_DUCK_REDUCTION = 0.75; 
+        const RUNNING_HORSES_DUCK_REDUCTION = 0.15; 
+        const SPACE_BREATH_DUCK_REDUCTION = 0.55; 
+        const DREAM_BREATH_DUCK_REDUCTION = 0.20; 
+        
+        
+        
+        const DUCK_STRENGTH = {
+            shuvha: 0.5, ashuvha: 0.55, jaapa: 0.55, samarpita: 0.45, naamaSamarpita: 0.55,
+            aakarshana: 0.25, tyaaga: 0.25, punaha: 0.7, viraama: 0.2, resume: 0.15,
+            takraava: 0.7, vijaya: 0.65, chetna: 0.65, timer: 0.3,
+            prarabdhaBandhana: 0.4, paapaBandhana: 0.4, punyaBandhana: 0.4,
+            bandhanaMukta: 0.35, naama: 0.45, antimCharana: 0.35, kripa: 0.5
+        };
+        
+        function duckBackgroundMusic(strength) {
+            if (strength > duckLevel) duckLevel = strength;
+        }
+        
+        
+        function updateDuckDecay() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            if (lastDuckCheckTime === 0) { lastDuckCheckTime = now; return; }
+            const elapsedSec = now - lastDuckCheckTime;
+            lastDuckCheckTime = now;
+            if (duckLevel > 0) { duckLevel -= DUCK_DECAY_PER_SEC * elapsedSec; if (duckLevel < 0) duckLevel = 0; }
+        }
+        let bgMusicVolume = 1.0;         
+        
+        function startBackgroundMusic() {
+            if (bgMusicStarted || !audioCtx) return;
+            bgMusicStarted = true;
+            
+            
+            bgMasterGain = audioCtx.createGain();
+            bgMasterGain.gain.setValueAtTime(bgMusicMuted ? 0 : 1, audioCtx.currentTime);
+            bgMasterGain.connect(audioCtx.destination);
+            startBgMusicMp3Layer();      
+            startRunningHorsesLayer();   
+            if (!chetanaaJagrita) startDreamBreathLayer(); 
+        }
+        
+        
+        
+        function isActiveGameplay() {
+            return isGameStarted && !gameOver && !won && !isPaused && !isShastraVisible;
+        }
+        
+        
+        
+        function updateAmbientVolumes() {
+            if (!bgMasterGain) return;
+            
+            bgMasterGain.gain.value = bgMusicMuted ? 0 : 1;
+            if (bgMusicMuted) return; 
+            
+            const bgMusicDuckMul = 1 - (duckLevel * BG_MUSIC_DUCK_REDUCTION);
+            const runningHorsesDuckMul = 1 - (duckLevel * RUNNING_HORSES_DUCK_REDUCTION);
+            const spaceBreathDuckMul = 1 - (duckLevel * SPACE_BREATH_DUCK_REDUCTION);
+            const dreamBreathDuckMul = 1 - (duckLevel * DREAM_BREATH_DUCK_REDUCTION); 
+            
+            
+            
+            if (bgMusicMp3Gain) bgMusicMp3Gain.gain.value = BG_MUSIC_MP3_LAYER_VOLUME * bgMusicDuckMul * bgMusicVolume;
+            
+            
+            const activeGameplayNow = isActiveGameplay();
+            
+            
+            
+            
+            if (runningHorsesGain) {
+                const targetVol = RUNNING_HORSES_VOLUME * runningHorsesDuckMul * bgMusicVolume * (activeGameplayNow ? 1 : 0);
+                runningHorsesGain.gain.setTargetAtTime(targetVol, audioCtx.currentTime, 0.08);
+            }
+            
+            
+            
+            if (spaceBreathGain) {
+                const breathVolume = SPACE_BREATH_VOLUME * (1 - BG_BREATH_MOD_RANGE + breathPulseGlobal * BG_BREATH_MOD_RANGE);
+                const targetSpaceVol = breathVolume * spaceBreathDuckMul * bgMusicVolume * (activeGameplayNow ? 1 : 0);
+                spaceBreathGain.gain.setTargetAtTime(targetSpaceVol, audioCtx.currentTime, 0.08);
+            }
+            
+            
+            
+            if (dreamBreathGain) {
+                const dreamVolume = DREAM_BREATH_VOLUME * (1 - BG_BREATH_MOD_RANGE + breathPulseGlobal * BG_BREATH_MOD_RANGE);
+                const targetDreamVol = dreamVolume * dreamBreathDuckMul * bgMusicVolume * (activeGameplayNow ? 1 : 0);
+                dreamBreathGain.gain.setTargetAtTime(targetDreamVol, audioCtx.currentTime, 0.08);
+            }
+        }
+        
+        function toggleBgMusic() {
+            bgMusicMuted = !bgMusicMuted;
+            const btn = document.getElementById('music-toggle-btn');
+            if (btn) btn.textContent = bgMusicMuted ? '🔇' : '🔊';
+            updateAmbientVolumes();
+        }
+        
+        
+        function dispatchKey(type, key) {
+            window.dispatchEvent(new KeyboardEvent(type, { key: key, bubbles: true, cancelable: true }));
+        }
+        
+        function vibrateGamepad(weakMagnitude, strongMagnitude, duration) {
+            const MIN_PERCEPTIBLE_STRONG_MAGNITUDE = 0.18; 
+            strongMagnitude = Math.max(strongMagnitude, MIN_PERCEPTIBLE_STRONG_MAGNITUDE * (strongMagnitude > 0 ? 1 : 0));
+            if (gamepadIndex === null) return;
+            const gp = navigator.getGamepads()[gamepadIndex];
+            if (gp && gp.vibrationActuator && typeof gp.vibrationActuator.playEffect === 'function') {
+                gp.vibrationActuator.playEffect('dual-rumble', {
+                    startDelay: 0, duration: duration,
+                    weakMagnitude: weakMagnitude, strongMagnitude: strongMagnitude
+                }).catch(() => { }); 
+            }
+        }
+        
+        
+        function handleDiscreteButton(gp, buttonIndex, keyName) {
+            const btn = gp.buttons[buttonIndex];
+            const isPressed = !!(btn && btn.pressed);
+            const wasPressed = !!gpButtonStates[buttonIndex];
+            if (isPressed && !wasPressed) dispatchKey('keydown', keyName);
+            if (!isPressed && wasPressed) dispatchKey('keyup', keyName);
+            gpButtonStates[buttonIndex] = isPressed;
+        }
+        
+        
+        function handleShastraDirection(stateKey, isActiveNow, onRise) {
+            const wasActive = !!gpButtonStates[stateKey];
+            if (isActiveNow && !wasActive) onRise();
+            gpButtonStates[stateKey] = isActiveNow;
+        }
+        
+        
+        
+        function handleShastraGamepadNav(gp) {
+            const stickX = gp.axes[0] || 0;
+            const stickY = gp.axes[1] || 0;
+            const dpadLeft = gp.buttons[GAMEPAD_BUTTON.DPAD_LEFT] && gp.buttons[GAMEPAD_BUTTON.DPAD_LEFT].pressed;
+            const dpadRight = gp.buttons[GAMEPAD_BUTTON.DPAD_RIGHT] && gp.buttons[GAMEPAD_BUTTON.DPAD_RIGHT].pressed;
+            const dpadUp = gp.buttons[GAMEPAD_BUTTON.DPAD_UP] && gp.buttons[GAMEPAD_BUTTON.DPAD_UP].pressed;
+            const dpadDown = gp.buttons[GAMEPAD_BUTTON.DPAD_DOWN] && gp.buttons[GAMEPAD_BUTTON.DPAD_DOWN].pressed;
+            const left = (stickX < -GAMEPAD_DEADZONE) || !!dpadLeft;
+            const right = (stickX > GAMEPAD_DEADZONE) || !!dpadRight;
+            handleShastraDirection('shastra_left', left, () => dispatchKey('keydown', 'ArrowLeft'));
+            handleShastraDirection('shastra_right', right, () => dispatchKey('keydown', 'ArrowRight'));
+            
+            
+            
+            handleShastraDirection('shastra_dpad_up', !!dpadUp, () => dispatchKey('keydown', 'PageUp'));
+            handleShastraDirection('shastra_dpad_down', !!dpadDown, () => dispatchKey('keydown', 'PageDown'));
+            
+            
+            
+            
+            if (stickY < -GAMEPAD_DEADZONE || stickY > GAMEPAD_DEADZONE) {
+                const body = document.getElementById('shastra-body');
+                if (body) body.scrollTop += stickY * SHASTRA_SCROLL_SPEED * 2; 
+            }
+        }
+        
+        function pollGamepad() {
+            
+            
+            if (gamepadIndex === null) {
+                const pads = navigator.getGamepads();
+                for (let i = 0; i < pads.length; i++) { if (pads[i]) { gamepadIndex = pads[i].index; break; } }
+                if (gamepadIndex === null) return;
+            }
+            const gp = navigator.getGamepads()[gamepadIndex];
+            if (!gp) { gamepadIndex = null; return; }
+            const stickX = gp.axes[0] || 0;
+            const stickY = gp.axes[1] || 0;
+            const dpadLeft = gp.buttons[GAMEPAD_BUTTON.DPAD_LEFT] && gp.buttons[GAMEPAD_BUTTON.DPAD_LEFT].pressed;
+            const dpadRight = gp.buttons[GAMEPAD_BUTTON.DPAD_RIGHT] && gp.buttons[GAMEPAD_BUTTON.DPAD_RIGHT].pressed;
+            const dpadUp = gp.buttons[GAMEPAD_BUTTON.DPAD_UP] && gp.buttons[GAMEPAD_BUTTON.DPAD_UP].pressed;
+            const dpadDown = gp.buttons[GAMEPAD_BUTTON.DPAD_DOWN] && gp.buttons[GAMEPAD_BUTTON.DPAD_DOWN].pressed;
+            if (isShastraVisible) {
+                
+                handleShastraGamepadNav(gp);
+                
+                keys['arrowleft'] = false; keys['arrowright'] = false;
+            } else {
+                
+                keys['arrowleft'] = (stickX < -GAMEPAD_DEADZONE) || !!dpadLeft;
+                keys['arrowright'] = (stickX > GAMEPAD_DEADZONE) || !!dpadRight;
+            }
+            
+            
+            
+            handleDiscreteButton(gp, GAMEPAD_BUTTON.RT, ' ');          
+            handleDiscreteButton(gp, GAMEPAD_BUTTON.RB, 'ArrowUp');    
+            handleDiscreteButton(gp, GAMEPAD_BUTTON.X, 'ArrowDown');  
+            handleDiscreteButton(gp, GAMEPAD_BUTTON.LB, 'q');          
+            handleDiscreteButton(gp, GAMEPAD_BUTTON.LT, 'r');          
+            handleDiscreteButton(gp, GAMEPAD_BUTTON.START, 'f');          
+            handleDiscreteButton(gp, GAMEPAD_BUTTON.BACK, 'Escape');     
+        }
+        
+        
+        
+        function continuousShastraScrollLoop() {
+            if (isShastraVisible && (shastraKeyState.up || shastraKeyState.down)) {
+                
+                const body = document.getElementById('shastra-body');
+                if (body) {
+                    if (shastraKeyState.up) body.scrollTop -= SHASTRA_SCROLL_SPEED * 2; 
+                    if (shastraKeyState.down) body.scrollTop += SHASTRA_SCROLL_SPEED * 2;
+                }
+            }
+            requestAnimationFrame(continuousShastraScrollLoop);
+        }
+        requestAnimationFrame(continuousShastraScrollLoop);
+        for (let i = 0; i < 35; i++) { stars.push({ x: Math.random() * WIDTH, y: Math.random() * HEIGHT, speed: Math.random() * 1.5 + 0.5, size: Math.random() * 1.0 + 0.3 }); }
+        for (let i = 0; i < 20; i++) { tunnelSparkles.push({ x: TUNNEL_X + Math.random() * TUNNEL_WIDTH, y: Math.random() * HEIGHT, speed: Math.random() * 1.2 + 0.6, size: Math.random() * 1.5 + 0.5, alpha: Math.random() * 0.7 + 0.3, fadeSpeed: 0.01 + Math.random() * 0.02 }); }
+        function addFloatingText(text, color, opts = {}) { floatingTexts.push({ x: player.x + player.width / 2 + (Math.random() * 20 - 10), y: player.y + (opts.yOffset ?? 10), text: text, color: color, alpha: opts.alpha ?? 1.0, vy: opts.vy ?? (-1 - Math.random() * 0.5), isBigName: opts.isBigName || false }); }
+        
+        
+        
+        function updateStatWithPulse(el, key, newVal, icon, suffix = "") { if (!el) return; if (oldStats[key] !== newVal) { el.innerText = `${icon} ${newVal}${suffix}`; uiScales[key] = 1.15; uiGlows[key] = 1.0; oldStats[key] = newVal; } }
+        function updateUIStats() {
+            updateStatWithPulse(UI.naama, 'naama', activeNaam, '🕉️'); updateStatWithPulse(UI.punya, 'punya', activeGoodKarma, '🌿'); updateStatWithPulse(UI.paap, 'paap', activeBadKarma, '⛓️');
+            updateStatWithPulse(UI.prarabdha, 'prarabdha', prarabdha, '📜'); updateStatWithPulse(UI.samarpita, 'samarpita', samarpita, '🙌', ' / 30'); updateStatWithPulse(UI.punaraJanma, 'punaraJanma', punaraJanmaCount, '♻️');
+            updateStatWithPulse(UI.kripa, 'kripa', kripa, '✋');
+            let chetanaEmoji = chetanaaJagrita ? "👁️" : "😴";
+            updateStatWithPulse(UI.chetana, 'chetana', chetanaEmoji, "");
+        }
+        function updateAlert(text, color) { UI.alertBox.innerText = text; UI.alertBox.style.color = color; }
+        function isPlayerInsideTunnel() { let buffer = 4; return (player.x >= (TUNNEL_X - buffer) && (player.x + player.width) <= (TUNNEL_X + TUNNEL_WIDTH + buffer)); }
+        
+        function createExplosion(x, y, color) {
+            let spawned = 0;
+            for (let i = 0; i < particlePool.length && spawned < 10; i++) {
+                let p = particlePool[i];
+                if (!p.active) {
+                    p.active = true; p.x = x; p.y = y;
+                    p.vx = (Math.random() - 0.5) * 5; p.vy = (Math.random() - 0.5) * 5;
+                    p.radius = Math.random() * 1.8 + 0.5; p.color = color; p.alpha = 1;
+                    spawned++;
+                }
+            }
+        }
+        function triggerGlow(color) { bodyGlowTimer = 40; bodyGlowColor = color; }
+        function triggerBlast(color) { createExplosion(player.x + player.width / 2, player.y + player.height / 2, color); triggerGlow("#fb923c"); }
+        
+        
+        
+        function grantKripa(x, y) {
+            kripa++;
+            let hadKarma = (activeGoodKarma > 0 || activeBadKarma > 0);
+            activeGoodKarma = 0; activeBadKarma = 0;
+            createExplosion(x ?? (player.x + player.width / 2), y ?? (player.y + player.height / 2), "#ffffff");
+            triggerGlow("#ffe9a8");
+            addFloatingText("✋", "#ffe9a8", { alpha: 1.3, vy: -1.6, isBigName: true });
+            playSound('kripa');
+            updateAlert(hadKarma ? "✋ कृपा: सारथी के सभी सांसारिक पुण्य-पाप क्षणभर में भस्म हुए।" : "✋ कृपा प्राप्त हुई।", "#ffe9a8");
+        }
+        
+        
+        
+        
+        const mayaSpriteCache = {};
+        function getMayaSprite(type, bScale) {
+            const key = type + '_' + bScale.toFixed(2);
+            if (mayaSpriteCache[key]) return mayaSpriteCache[key];
+            const baseSize = 20; 
+            const w = baseSize * bScale;
+            const r = (w / 2) * 1.2;
+            const pad = 4; 
+            const canvasSize = Math.ceil((r * 2) + pad * 2);
+            const off = document.createElement('canvas');
+            off.width = canvasSize; off.height = canvasSize;
+            const octx = off.getContext('2d');
+            const cx = canvasSize / 2, cy = canvasSize / 2;
+            const isShuvha = type === 'shuvha';
+            const midColor = isShuvha ? '#32ff32' : '#ff3232';
+            const darkColor = isShuvha ? '#004400' : '#440000';
+            const strokeColor = isShuvha ? 'rgba(50, 255, 50, 0.8)' : 'rgba(255, 50, 50, 0.8)';
+            
+            const symbol = isShuvha ? '' : '';
+            const grad = octx.createRadialGradient(cx, cy - r * 0.3, 0, cx, cy, r);
+            grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.4, midColor); grad.addColorStop(1, darkColor);
+            octx.fillStyle = grad;
+            octx.beginPath(); octx.arc(cx, cy, r, 0, Math.PI * 2); octx.fill();
+            octx.strokeStyle = strokeColor; octx.lineWidth = 1.5; octx.stroke();
+            octx.fillStyle = '#ffffff';
+            
+            
+            octx.font = Math.max(14, 18 * bScale) + "px 'Orbitron', sans-serif";
+            octx.textAlign = 'center'; octx.textBaseline = 'middle';
+            octx.fillText(symbol, cx, cy);
+            mayaSpriteCache[key] = { canvas: off, size: canvasSize };
+            return mayaSpriteCache[key];
+        }
+        
+        
+        function drawKarmaChain(cx, baseY, color, strength = 1, isHeavy = false) {
+            ctx.save();
+            
+            let swayPeriod = isHeavy ? 480 : 200;
+            let pulse = Math.sin(frameNow / swayPeriod) * (isHeavy ? 7 : 5);
+            
+            let weightDropOffset = isHeavy ? (strength * 12) : 0;
+            let y = baseY + pulse + weightDropOffset;
+            
+            let fontSize = isHeavy ? (32 + strength * 16) : (22 + strength * 14);
+            ctx.font = `${fontSize}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            
+            ctx.shadowColor = color;
+            ctx.shadowBlur = isHeavy ? (35 + strength * 30) : (25 + strength * 20);
+            ctx.fillText(isHeavy ? "📜" : "⛓️", cx, y);   
+            
+            ctx.shadowBlur = isHeavy ? 18 : 12;
+            ctx.fillText(isHeavy ? "📜" : "⛓️", cx, y);
+            ctx.restore();
+        }
+        function setContainerBorderColor(color) { if (currentBorderColor !== color) { UI.container.style.borderColor = color; currentBorderColor = color; } }
+        function updateShastraPage() {
+            document.getElementById('shastra-page-1').classList.remove('active');
+            document.getElementById('shastra-page-2').classList.remove('active');
+            document.getElementById('shastra-page-3').classList.remove('active');
+            document.getElementById(`shastra-page-${currentShastraPage}`).classList.add('active');
+            const navBtn = document.getElementById('shastra-nav-btn');
+            navBtn.textContent = currentShastraPage < 3
+                ? `अगला  [ ${currentShastraPage} / 3 ]`
+                : `पिछला  [ ${currentShastraPage} / 3 ]`;
+        }
+        document.getElementById('shastra-nav-btn').addEventListener('click', () => { currentShastraPage = currentShastraPage < 3 ? currentShastraPage + 1 : 1; updateShastraPage(); document.getElementById('shastra-body').scrollTop = 0; });
+        document.getElementById('resume-btn').addEventListener('click', () => { isPaused = false; UI.viraamaOverlay.style.display = 'none'; lastTime = performance.now(); playSound('resume'); });
+        document.getElementById('restart-btn').addEventListener('click', () => { UI.viraamaOverlay.style.display = 'none'; punahaPrarambha(); lastTime = performance.now(); });
+        document.getElementById('quit-btn').addEventListener('click', () => { UI.viraamaOverlay.style.display = 'none'; gameOver = true; showEndScreen("FORCE STOPPED"); playSound('takraava'); });
+        document.getElementById('music-toggle-btn').addEventListener('click', () => { ensureAudio(); toggleBgMusic(); });
+        
+        document.getElementById('shastra-help-btn').addEventListener('click', () => { ensureAudio(); toggleShastra(); });
+        document.getElementById('shastra-close-btn').addEventListener('click', () => { toggleShastra(); });
+        document.getElementById('music-volume-slider').addEventListener('input', (e) => {
+            bgMusicVolume = e.target.value / 100;   
+            updateAmbientVolumes();                 
+        });
+        
+        
+        function toggleShastra() {
+            
+            if (UI.viraamaOverlay.style.display === 'flex') {
+                isPaused = true;
+                UI.viraamaOverlay.style.display = 'none';
+                lastTime = performance.now();
+            }
+            isShastraVisible = !isShastraVisible;
+            UI.shastraOverlay.style.display = isShastraVisible ? 'flex' : 'none';
+            if (isShastraVisible) {
+                currentShastraPage = 1; updateShastraPage();
+                isPaused = true;
+                playSound('viraama');
+                keys = {};
+            } else {
+                isPaused = false;
+                keys = {};
+                lastTime = performance.now();
+                playSound('resume');
+            }
+            
+            updateAmbientVolumes();
+        }
+        window.addEventListener('keydown', (e) => {
+            let key = e.key.toLowerCase();
+            
+            
+            
+            
+            
+            
+            
+            if (!isGameStarted && key !== 'escape' && !isShastraVisible) return;
+            ensureAudio();
+            if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'q', 'f', 'r', 'escape', 'pageup', 'pagedown'].includes(key)) { e.preventDefault(); }
+            if (key === 'escape') {
+                toggleShastra(); 
+                return;
+            }
+            if (isShastraVisible) {
+                const body = document.getElementById('shastra-body');
+                if (key === 'arrowleft' && currentShastraPage > 1) { currentShastraPage--; updateShastraPage(); body.scrollTop = 0; }
+                if (key === 'arrowright' && currentShastraPage < 3) { currentShastraPage++; updateShastraPage(); body.scrollTop = 0; }
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                if (key === 'arrowup') shastraKeyState.up = true;
+                if (key === 'arrowdown') shastraKeyState.down = true;
+                if (key === 'pageup') body.scrollTop -= body.clientHeight * 0.9;
+                if (key === 'pagedown') body.scrollTop += body.clientHeight * 0.9;
+                return;
+            }
+            keys[key] = true;
+            if (key === 'r') {
+                punahaPrarambha();
+                return;
+            }
+            if (key === 'q' && !gameOver) {
+                gameOver = true; won = false; showEndScreen("FORCE STOPPED"); playSound('takraava');
+                return;
+            }
+            if (key === 'f') {
+                if (gameOver || won) return;
+                isPaused = !isPaused;
+                UI.viraamaOverlay.style.display = isPaused ? 'flex' : 'none';
+                if (isPaused) {
+                    playSound('viraama');
+                    keys = {};
+                } else {
+                    lastTime = performance.now(); playSound('resume');
+                }
+                
+                updateAmbientVolumes();
+                return;
+            }
+            if (key === ' ') {
+                if (!gameOver && !isPaused) {
+                    if (activeNaam >= 1 && !isNaamaJaapa) {
+                        activeNaam--;
+                        isNaamaJaapa = true;
+                        naamaGhera = smoothSize / 2;
+                        playSound('jaapa');
+                        updateAlert("🌿 नाम जपते मंगल दिसि दसहूँ 🌿", "#ffff00");
+                        updateUIStats();
+                        floatingTexts.push({ x: player.x + player.width / 2 + (Math.random() * 20 - 10), y: player.y - 10, text: jaapaNaama, color: "#ffff00", alpha: 1.5, vy: -2, isBigName: true })
+                    } else if (activeNaam === 0 && !isNaamaJaapa) {
+                        updateAlert("❌ नाम जाप के लिए नाम की आवश्यकता है!", "#ff3232");
+                    }
+                }
+                return;
+            }
+            
+            if ((key === 'arrowup' || key === 'w') && !gameOver && !isPaused) {
+                if (samaya >= 100) { updateAlert("❌ नाम समर्पण केवल 'अंतिम चरण' में संभव है।", "#ff3232"); return; }
+                if (activeNaam === 0) { updateAlert("❌ समर्पण हेतु नाम शेष नहीं है।", "#ff3232"); return; }
+                if (!playerInTunnel) { updateAlert("❌ नाम समर्पण करने के लिए आपको सुरंग के अंदर होना चाहिए।", "#ff3232"); return; }
+                let gained = activeNaam * 3; samarpita += activeNaam * 3; activeNaam = 0; isKarmaImmune = true;
+                addFloatingText(`+${gained} 🕉️🙌`, "#ffff00", { alpha: 1.5, vy: -2, isBigName: true, yOffset: -10 });
+                updateAlert("🌿 नाम समर्पित: +" + gained + " मिले।", "#ffff00");
+                playSound('naamaSamarpita'); updateUIStats(); return;
+            }
+            if (!gameOver && !isPaused && (key === 'arrowdown' || key === 's')) {
+                if (pendingGoodKarma) {
+                    let gained = pendingGoodKarmaCount; samarpita += pendingGoodKarmaCount;
+                    pendingGoodKarma = false; punyaTimer = 0; pendingGoodKarmaCount = 0;
+                    addFloatingText(`+${gained} 🙌`, "#fb923c"); triggerBlast("#32ff32");
+                    playSound('samarpita'); updateAlert("🛑 वैराग्य: सारथी ने पुण्य का प्रलोभन ठुकराया।", "#ff3232");
+                }
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+            
+            const upKey = e.key.toLowerCase();
+            if (upKey === 'arrowup') shastraKeyState.up = false;
+            if (upKey === 'arrowdown') shastraKeyState.down = false;
+        });
+        window.addEventListener('blur', () => { keys = {}; });
+        window.addEventListener('pointerdown', ensureAudio, { passive: true });
+        window.addEventListener('gamepadconnected', (e) => {
+            gamepadIndex = e.gamepad.index;
+            gpButtonStates = {};
+            console.log(`🎮 Gamepad जुड़ा: ${e.gamepad.id} (mapping: ${e.gamepad.mapping || 'generic'})`);
+            updateAlert("🎮 गेमपैड जुड़ा: नियंत्रण सक्रिय", "#32ff32");
+        });
+        window.addEventListener('gamepaddisconnected', (e) => {
+            if (gamepadIndex === e.gamepad.index) {
+                gamepadIndex = null;
+                keys['arrowleft'] = false; keys['arrowright'] = false; 
+            }
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                
+                
+                
+                if (isGameStarted && !gameOver && !won && !isPaused && !isShastraVisible) {
+                    isPaused = true;
+                    UI.viraamaOverlay.style.display = 'flex';
+                    playSound('viraama');
+                    keys = {};
+                    updateAlert("⏸️ खेल स्तम्भित: ध्यान भटका, टैब बदला गया।", "#ffd700");
+                    
+                    updateAmbientVolumes();
+                }
+            }
+        });
+        function update(dt = 1) {
+            if (gameOver || isPaused || isShastraVisible) return;
+            
+            while (activeNaam >= 20) {
+                activeNaam -= 20;
+                kripa++;
+                updateAlert("🌿 अपार नाम-बल से कृपा प्राप्त हुई!", "#ffe9a8");
+                triggerGlow("#ffe9a8");
+                playSound('kripa');
+            }
+            
+            if (kripa !== prevKripaForBurn) {
+                prevKripaForBurn = kripa;
+                while (kripa >= 2 && prarabdha > 0) {
+                    kripa -= 2;
+                    prarabdha -= 1;
+                    updateAlert("🔥 ईश्वरीय कृपा से एक प्रारब्ध भस्म हुआ!", "#a78bfa");
+                    triggerBlast("#a78bfa");
+                    playSound('bandhanaMukta');
+                }
+            }
+            updateUIStats();
+            while (samarpita >= 100) {
+                samarpita -= 100;
+                kripa++;
+                addFloatingText("✋", "#ffe9a8", { alpha: 1.3, vy: -1.6 });
+                playSound('kripa');
+            }
+            if (!gameOver && !chetanaaJagrita && samarpita >= 30) {
+                chetanaaJagrita = true;
+                playSound('chetna'); 
+                stopDreamBreathLayer();       
+                startSpaceBreathLayer();      
+                floatingTexts.push({ x: player.x + player.width / 2 + (Math.random() * 20 - 10), y: player.y - 10, text: "👁️", color: "#ffffff", alpha: 1.5, vy: -3, isBigName: true })
+            }
+            
+            
+            
+            if (activeGoodKarma > 0 && prevGoodKarmaForSound === 0) playSound('punyaBandhana');   
+            if (activeBadKarma > 0 && prevBadKarmaForSound === 0) playSound('paapaBandhana');   
+            if (activeGoodKarma === 0 && prevGoodKarmaForSound > 0) playSound('bandhanaMukta');    
+            if (activeBadKarma === 0 && prevBadKarmaForSound > 0) playSound('bandhanaMukta');    
+            prevGoodKarmaForSound = activeGoodKarma;
+            prevBadKarmaForSound = activeBadKarma;
+            if (prarabdha > 0 && prevPrarabdhaForSound === 0) playSound('prarabdhaBandhana');      
+            prevPrarabdhaForSound = prarabdha;
+            if (notifyTimer > 0) { notifyTimer -= dt; if (notifyTimer < 0) notifyTimer = 0; }
+            let currentSpeed = player.baseSpeed * dt;
+            const now = frameNow;
+            if (keys['arrowleft'] || keys['a']) player.x -= currentSpeed;
+            if (keys['arrowright'] || keys['d']) player.x += currentSpeed;
+            if (player.x < 0) player.x = 0;
+            if (player.x > WIDTH - player.width) player.x = WIDTH - player.width;
+            playerInTunnel = isPlayerInsideTunnel();
+            let isAlreadyPulled = false; let pullRange = 160; pulledHorseIndex = -1;
+            for (let i = 0; i < mayaPool.length; i++) { mayaPool[i].isPulling = false; }
+            
+            
+            
+            
+            let bodyRadius = smoothSize / 2; let cx = player.x + bodyRadius; let cy = player.y + bodyRadius;
+            let horseCount = 6; let horseSpacing = 10; let startX = cx - ((horseCount - 1) * horseSpacing) / 2;
+            for (let i = 0; i < mayaPool.length; i++) {
+                let m = mayaPool[i]; if (!m || !m.active) continue; let mCx = m.x + m.width / 2; let mCy = m.y + m.height / 2;
+                
+                if (!isAlreadyPulled && !chetanaaJagrita && m.y < cy - bodyRadius) {
+                    let closestIdx = -1; let minDistance = Infinity; let targetHx = 0, targetHy = 0; for (let h = 0; h < horseCount; h++) {
+                        let hx = startX + h * horseSpacing;
+                        let runningWavelength = Math.sin((now / 70) + h) * 3;
+                        let hy = cy - bodyRadius - 18 + runningWavelength;
+                        let d = Math.hypot(hx - mCx, hy - mCy);
+                        if (d < minDistance) { minDistance = d; closestIdx = h; targetHx = hx; targetHy = hy; }
+                    }
+                    if (minDistance < pullRange) {
+                        isAlreadyPulled = true; m.isPulling = true; pulledHorseIndex = closestIdx;
+                        let targetX = targetHx + (mCx - targetHx) * 0.45; let targetY = targetHy + (mCy - targetHy) * 0.45;
+                        pulledHorseX += (targetX - pulledHorseX) * 0.3 * dt; pulledHorseY += (targetY - pulledHorseY) * 0.3 * dt;
+                        if (cx < mCx) player.x += 1.8 * dt; else if (cx > mCx) player.x -= 1.8 * dt;
+                    }
+                }
+            }
+            
+            
+            if (pulledHorseIndex !== -1 && prevPulledHorseIndex === -1) {
+                playSound('aakarshana');
+            } else if (pulledHorseIndex === -1 && prevPulledHorseIndex !== -1) {
+                
+                
+                if (!mayaConsumedWhilePulling) {
+                    playSound('tyaaga');
+                }
+                mayaConsumedWhilePulling = false; 
+            }
+            prevPulledHorseIndex = pulledHorseIndex;
+            if (isNaamaJaapa) {
+                naamaGhera += 22 * dt;
+                let takraavaMaya = false;
+                for (let i = 0; i < mayaPool.length; i++) {
+                    let m = mayaPool[i]; if (!m.active) continue;
+                    let mCx = m.x + m.width / 2;
+                    let mCy = m.y + m.height / 2;
+                    let dist = Math.hypot(mCx - cx, mCy - cy);
+                    let explColor = m.type === 'shuvha' ? '#32ff32' : m.type === 'ashuvha' ? '#ff3232' : '#ffffff';
+                    if (dist <= naamaGhera) {
+                        if (m.isPulling) mayaConsumedWhilePulling = true; 
+                        if (m.type === 'naama') {
+                            
+                            
+                            
+                            activeNaam++; addFloatingText("🕉️", "#ffffff"); naamaGlowTimer = 40; triggerGlow("#ffffff"); playSound('naama'); takraavaMaya = true;
+                            m.active = false; continue;
+                        } else if (m.type === 'kripa') {
+                            
+                            grantKripa(mCx, mCy);
+                            takraavaMaya = true;
+                            m.active = false; continue;
+                        } else {
+                            createExplosion(mCx, mCy, explColor);
+                            addFloatingText("🙌", "#fb923c");
+                            samarpita++;
+                            takraavaMaya = true;
+                            m.active = false; continue;
+                        }
+                    }
+                }
+                if (takraavaMaya) {
+                    playSound('samarpita');
+                }
+                if (naamaGhera > 1000) {
+                    isNaamaJaapa = false;
+                    naamaGhera = 0;
+                    updateAlert("नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");
+                }
+            }
+            if (pendingGoodKarma) {
+                punyaTimer -= dt;
+                let secondsLeft = Math.ceil(punyaTimer / 60);
+                
+                if (secondsLeft !== lastPunyaAlertSecond) {
+                    lastPunyaAlertSecond = secondsLeft;
+                    updateAlert("⚠️ पुण्य प्रभाव (+" + pendingGoodKarmaCount + ")! समय: " + secondsLeft + "s | ⬇️ या S: वैराग्य ⚠️", "#ffd700");
+                }
+                if (punyaTimer <= 0) {
+                    lastPunyaAlertSecond = -1; 
+                    let gained = pendingGoodKarmaCount; pendingGoodKarma = false; activeGoodKarma += pendingGoodKarmaCount; pendingGoodKarmaCount = 0;
+                    addFloatingText(`+${gained} 🌿`, "#32ff32"); triggerBlast("#32ff32");
+                    updateAlert("🔥 पुण्य अवशोषित: सारथी के मन ने अच्छे कर्म स्वीकार किए।", "#32ff32");
+                }
+            }
+            let ashuvhaTimeModifier = Math.pow(0.7, activeBadKarma);
+            let shuvhaTimeModifier = Math.pow(0.8, activeGoodKarma);
+            if (!swaansaSamapta) {
+                let currentTimelineSpeed = 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier;
+                samaya -= currentTimelineSpeed * dt;
+                swaansaTimer += dt;
+                if (swaansaTimer >= 360) { swaansaTimer -= 360; if (swaansa > 0) swaansa--; }
+                const samayaDisplay = `${Math.max(0, Math.ceil(samaya))}s`;
+                const swaansaDisplay = `${Math.max(0, Math.ceil(swaansa))}`;
+                if (UI.samayaVal.innerText !== samayaDisplay) UI.samayaVal.innerText = samayaDisplay;
+                if (UI.swaansaVal.innerText !== swaansaDisplay) UI.swaansaVal.innerText = swaansaDisplay;
+                let currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * 100).toFixed(0);
+                updateStatWithPulse(UI.gatee, 'gatee', currentWarpVal, '🌀', '%');
+                if (samaya <= 0) { samaya = 0; swaansa = 0; swaansaSamapta = true; updateAlert("ब्रह्मांडीय क्षितिज पर पहुंचे। समय स्थिर है।", "#ffffff"); }
+            } else {
+                if (activeGoodKarma === 0 && activeBadKarma === 0 && !pendingGoodKarma && prarabdha === 0 && activeNaam === 0 && samarpita >= 30) {
+                    UI.samayaVal.innerText = `मोक्ष 🌿`; UI.swaansaVal.innerText = `0`;
+                    if (!gameOver) { gameOver = true; won = true; showEndScreen(); } return;
+                } else {
+                    
+                    
+                    let isApavitra = (activeGoodKarma > 0 || activeBadKarma > 0 || prarabdha > 0);
+                    
+                    
+                    let earnsKripaOnRebirth = (activeNaam > 0 || samarpita > 0);
+                    
+                    let gainedPrarabdha = (activeGoodKarma + activeBadKarma) + (pendingGoodKarma ? pendingGoodKarmaCount : 0);
+                    if (pendingGoodKarma) { prarabdha += pendingGoodKarmaCount; pendingGoodKarma = false; punyaTimer = 0; pendingGoodKarmaCount = 0; }
+                    prarabdha += (activeGoodKarma + activeBadKarma);
+                    
+                    if (gainedPrarabdha > 0) {
+                        addFloatingText(`+${gainedPrarabdha} प्रारब्ध 📜`, "#a78bfa"); 
+                    }
+                    activeBadKarma = 0; activeGoodKarma = 0; punaraJanmaCount++; isKarmaImmune = false;
+                    triggerBlast("#f87171"); samaya = 1440; swaansa = 5; swaansaSamapta = false;
+                    timerTickAccumulator = 0; 
+                    timerSoundPlayed = false; 
+                    if (isApavitra) {
+                        
+                        updateAlert("♻️ अपवित्र पुनर्जन्म: कर्म असंतुलित रह गया, चक्र जारी है...", "#ff3232");
+                        notifyText = "♻️ अपवित्र पुनर्जन्म";
+                    } else {
+                        
+                        updateAlert("♻️ पवित्र पुनर्जन्म: कर्म शुद्ध था, परंतु यात्रा अधूरी रही। चक्र जारी है...", "#ffd700");
+                        notifyText = "♻️ पवित्र पुनर्जन्म";
+                    }
+                    notifyTimer = 100;
+                    
+                    
+                    if (earnsKripaOnRebirth) {
+                        kripa++;
+                        addFloatingText("✋", "#ffe9a8", { alpha: 1.2, vy: -1.4, yOffset: -30 });
+                    }
+                    playSound('punaha');
+                }
+            }
+            
+            
+            
+            let samayaAntimaCharana = (samaya < 100 && samaya > 0 && !swaansaSamapta); 
+            let antimaCharana = samayaAntimaCharana || pendingGoodKarma;
+            
+            if (samayaAntimaCharana && !timerSoundPlayed) {
+                timerSoundPlayed = true;
+                playSound('antimCharana');
+            }
+            if (antimaCharana) {
+                timerTickAccumulator += dt;
+                if (timerTickAccumulator >= 60) {           
+                    timerTickAccumulator -= 60;
+                    playSound('timer');
+                }
+            } else {
+                timerTickAccumulator = 0;                    
+            }
+            stars.forEach(star => {
+                if (!swaansaSamapta) {
+                    star.y += star.speed * (ashuvhaTimeModifier * shuvhaTimeModifier + 0.1) * dt;
+                    if (star.y > HEIGHT) { star.y = 0; star.x = Math.random() * WIDTH; }
+                }
+            });
+            tunnelSparkles.forEach(sparkle => {
+                if (!swaansaSamapta) {
+                    sparkle.y -= sparkle.speed * (ashuvhaTimeModifier * shuvhaTimeModifier + 0.2) * dt;
+                    sparkle.alpha += sparkle.fadeSpeed * dt;
+                    if (sparkle.alpha > 0.9 || sparkle.alpha < 0.2) sparkle.fadeSpeed = -sparkle.fadeSpeed;
+                    if (sparkle.y < 0) { sparkle.y = HEIGHT; sparkle.x = TUNNEL_X + Math.random() * TUNNEL_WIDTH; sparkle.alpha = Math.random() * 0.5 + 0.2; }
+                }
+            });
+            
+            for (let i = 0; i < particlePool.length; i++) { let p = particlePool[i]; if (!p.active) continue; p.x += p.vx * dt; p.y += p.vy * dt; p.alpha -= 0.03 * dt; if (p.alpha <= 0) p.active = false; }
+            for (let i = floatingTexts.length - 1; i >= 0; i--) { let ft = floatingTexts[i]; ft.y += ft.vy * dt; ft.alpha -= 0.015 * dt; if (ft.alpha <= 0) floatingTexts.splice(i, 1); }
+            spawnTimer += dt;
+            let spawnRate = swaansaSamapta ? 35 : 45;
+            if (spawnTimer > spawnRate) {
+                spawnTimer = 0; let rand = Math.random(); let type = "ashuvha"; let xPos;
+                
+                let kripaFactor = kripa * 0.05; 
+                
+                let shuvhaThreshold = Math.max(0.10, 0.425 - (kripaFactor * 1.5));
+                
+                let naamaThreshold = Math.max(0.40, 0.85 - kripaFactor);
+                
+                if (rand > 0.985) { type = "kripa"; xPos = Math.random() * (WIDTH - 110) + 40; }
+                else if (rand > naamaThreshold) { type = "naama"; xPos = TUNNEL_X + Math.random() * (TUNNEL_WIDTH - 20); }
+                else if (rand > shuvhaThreshold) { type = "shuvha"; xPos = Math.random() * (WIDTH - 110) + 40; }
+                else { type = "ashuvha"; xPos = Math.random() * (WIDTH - 110) + 40; }
+                for (let i = 0; i < mayaPool.length; i++) { if (!mayaPool[i].active) { mayaPool[i].active = true; mayaPool[i].x = xPos; mayaPool[i].y = -30; mayaPool[i].width = type === "naama" ? 36 : (type === "kripa" ? 32 : 20); mayaPool[i].height = type === "naama" ? 36 : (type === "kripa" ? 32 : 24); mayaPool[i].type = type; mayaPool[i].isPulling = false; break; } }
+            }
+            let mayaSpeed = 4 * ashuvhaTimeModifier * shuvhaTimeModifier; if (mayaSpeed < 1.2) mayaSpeed = 1.2;
+            for (let i = 0; i < mayaPool.length; i++) {
+                let m = mayaPool[i]; if (!m.active) continue; m.y += mayaSpeed * dt;
+                if (m.y > HEIGHT) { m.active = false; continue; }
+                if (m.x < player.x + player.width && m.x + m.width > player.x && m.y < player.y + player.height && m.y + m.height > player.y) {
+                    if (m.isPulling) mayaConsumedWhilePulling = true; 
+                    if (isKarmaImmune) { createExplosion(m.x, m.y, "#ffffff"); m.active = false; continue; }
+                    shakeTimer = 8;
+                    if (m.type === "naama") {
+                        activeNaam++; addFloatingText("🕉️", "#ffffff"); naamaGlowTimer = 40; triggerGlow("#ffffff"); playSound('naama');
+                        updateAlert("🌿 नाम सिमरन: शुद्धिकरण...", "#ffff00");
+                        if (playerInTunnel) {
+                            if (activeGoodKarma > 0 && activeNaam >= 1) { activeNaam -= 1; samarpita += activeGoodKarma; activeGoodKarma = 0; addFloatingText("🌸", "#32ff32"); triggerBlast("#32ff32"); }
+                            else if (activeBadKarma > 0 && activeNaam >= 5) { activeNaam -= 5; samarpita += activeBadKarma; activeBadKarma = 0; addFloatingText("💧", "#ff3232"); triggerBlast("#ff3232"); }
+                            else if (prarabdha > 0 && activeNaam >= 10) { activeNaam -= 10; samarpita += prarabdha; prarabdha = 0; addFloatingText("⚖️", "#a78bfa"); triggerBlast("#a78bfa"); }
+                        }
+                    } else if (m.type === "kripa") {
+                        
+                        
+                        grantKripa(m.x, m.y);
+                    } else if (playerInTunnel) {
+                        samarpita++; addFloatingText("🙌", "#fb923c"); triggerGlow("#fb923c"); playSound('samarpita'); updateAlert("🌿 समर्पित: विलीन हो रहा है...", "#ffffff");
+                    } else if (m.type === "shuvha") {
+                        if (!pendingGoodKarma) { pendingGoodKarma = true; punyaTimer = 180; } pendingGoodKarmaCount++; playSound('shuvha');
+                    } else {
+                        activeBadKarma++; addFloatingText("⛓️", "#ff3232"); triggerBlast("#ff3232"); playSound('ashuvha'); updateAlert("🚨 पाप हमला!", "#ff3232");
+                    }
+                    m.active = false; continue;
+                }
+            }
+            if (shakeTimer > 0) shakeTimer -= dt; if (naamaGlowTimer > 0) naamaGlowTimer -= dt; if (bodyGlowTimer > 0) bodyGlowTimer -= dt;
+            smoothSize += ((playerInTunnel ? 30 : 60) - smoothSize) * 0.18 * dt;
+            const uiKeys = ['naama', 'punya', 'paap', 'prarabdha', 'samarpita', 'punaraJanma', 'gatee', 'chetana'];
+            for (let key of uiKeys) {
+                if (Math.abs(uiScales[key] - 1.0) > 0.001) { uiScales[key] += (1.0 - uiScales[key]) * 0.15 * dt; if (Math.abs(uiScales[key] - 1.0) < 0.01) uiScales[key] = 1.0; }
+                if (uiGlows[key] > 0) { uiGlows[key] -= 0.025 * dt; if (uiGlows[key] < 0) uiGlows[key] = 0; }
+                if (UI[key]) {
+                    let currentGlow = uiGlows[key] * 15;
+                    let newTransform = `scale(${uiScales[key].toFixed(4)})`;
+                    let newShadow = currentGlow < 0.1 ? '' : `0 0 ${currentGlow.toFixed(1)}px currentColor`;
+                    if (UI[key]._lastTransform !== newTransform) { UI[key].style.transform = newTransform; UI[key]._lastTransform = newTransform; }
+                    if (UI[key]._lastShadow !== newShadow) { UI[key].style.boxShadow = newShadow; UI[key]._lastShadow = newShadow; }
+                }
+            }
+        }
+        function draw() {
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+            ctx.shadowBlur = 0; ctx.shadowColor = "transparent"; ctx.save();
+            if (shakeTimer > 0) { const sv = (Math.random() - 0.5) * 5; ctx.translate(sv, -sv); }
+            ctx.fillStyle = "#000000"; ctx.fillRect(0, 0, WIDTH, HEIGHT);
+            if (samaya < 100 && !swaansaSamapta) { ctx.fillStyle = "rgba(255, 0, 0, " + (1 - samaya / 100) * 0.35 + ")"; ctx.fillRect(0, 0, WIDTH, HEIGHT); }
+            ctx.save();
+            let worldBreathPhase = swaansaTimer / 360;
+            let worldBreathPulse = (Math.sin(worldBreathPhase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+            breathPulseGlobal = worldBreathPulse;
+            updateDuckDecay();          
+            updateAmbientVolumes();     
+            ctx.globalCompositeOperation = 'screen';
+            
+            
+            let breathGradBucket = Math.round(worldBreathPulse * 24);
+            if (breathGradBucket !== cachedBreathGradBucket || !cachedBreathGrad) {
+                cachedBreathGradBucket = breathGradBucket;
+                cachedBreathGrad = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 120 + worldBreathPulse * 180, WIDTH / 2, HEIGHT / 2, WIDTH * 0.8);
+                cachedBreathGrad.addColorStop(0, "rgba(147, 197, 253, 0)"); cachedBreathGrad.addColorStop(1, "rgba(147, 197, 253, " + (0.1 + worldBreathPulse * 0.4) + ")");
+            }
+            ctx.fillStyle = cachedBreathGrad; ctx.fillRect(0, 0, WIDTH, HEIGHT); ctx.restore();
+            ctx.save(); let edgeIntensity = (samaya < 100) ? (1 - samaya / 100) : 0;
+            
+            
+            let tunnelGradBucket = Math.round(edgeIntensity * 24);
+            if (tunnelGradBucket !== cachedTunnelGradBucket || !cachedTunnelGrad) {
+                cachedTunnelGradBucket = tunnelGradBucket;
+                cachedTunnelGrad = ctx.createLinearGradient(TUNNEL_X, 0, TUNNEL_X + TUNNEL_WIDTH, 0);
+                cachedTunnelGrad.addColorStop(0, "rgba(255, 255, 255, " + (0.01 + edgeIntensity * 0.1) + ")");
+                cachedTunnelGrad.addColorStop(0.5, "rgba(255, 255, 255, " + (0.08 + edgeIntensity * 0.4) + ")");
+                cachedTunnelGrad.addColorStop(1, "rgba(255, 255, 255, " + (0.01 + edgeIntensity * 0.1) + ")");
+            }
+            ctx.fillStyle = cachedTunnelGrad; ctx.fillRect(TUNNEL_X, 0, TUNNEL_WIDTH, HEIGHT);
+            ctx.save(); ctx.shadowBlur = 8; ctx.shadowColor = "#ffffff";
+            tunnelSparkles.forEach(sparkle => {
+                ctx.fillStyle = "rgba(255, 255, 255, " + sparkle.alpha + ")"; ctx.beginPath();
+                if (Math.floor(sparkle.x + sparkle.y) % 2 === 0) { ctx.arc(sparkle.x, sparkle.y, sparkle.size, 0, Math.PI * 2); } else { ctx.rect(sparkle.x, sparkle.y, sparkle.size * 1.5, sparkle.size * 1.5); }
+                ctx.fill();
+            }); ctx.restore();
+            ctx.shadowBlur = 15 + (edgeIntensity * 25); ctx.shadowColor = "#ffffff";
+            ctx.strokeStyle = "rgba(255, 255, 255, " + (0.5 + edgeIntensity * 0.5) + ")"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(TUNNEL_X, 0); ctx.lineTo(TUNNEL_X, HEIGHT); ctx.moveTo(TUNNEL_X + TUNNEL_WIDTH, 0); ctx.lineTo(TUNNEL_X + TUNNEL_WIDTH, HEIGHT); ctx.stroke();
+            let scanY = (frameNow * 0.15) % HEIGHT; ctx.fillStyle = "rgba(255, 255, 255, " + (0.15 + edgeIntensity * 0.3) + ")"; ctx.shadowBlur = 10; ctx.fillRect(TUNNEL_X, scanY, TUNNEL_WIDTH, 3);
+            ctx.shadowBlur = 0;
+            ctx.restore();
+            ctx.fillStyle = "rgba(255, 255, 255, 0.25)"; ctx.beginPath(); stars.forEach(star => { ctx.moveTo(star.x + star.size, star.y); ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2); }); ctx.fill();
+            particlePool.forEach(p => { if (!p.active) return; ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1.0;
+            if (swaansaSamapta) { ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, player.y - 10); ctx.lineTo(WIDTH, player.y - 10); ctx.stroke(); }
+            if (pendingGoodKarma) { setContainerBorderColor("#ffd700"); } else if (activeBadKarma > 0) { setContainerBorderColor("#ff3232"); } else if (activeGoodKarma > 0) { setContainerBorderColor("#32ff32"); } else { setContainerBorderColor(swaansaSamapta ? "#ffffff" : "#222"); }
+            let scale = smoothSize / 60; let cx = player.x + smoothSize / 2; let cy = player.y + smoothSize / 2; let totalKarma = activeGoodKarma + activeBadKarma;
+            if (isNaamaJaapa) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cx, cy, naamaGhera, 0, Math.PI * 2);
+                ctx.lineWidth = 3 + (naamaGhera * 0.005);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = "#ffffff";
+                ctx.stroke();
+                ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.fill();
+                ctx.restore();
+            }
+            let sharirPulseScale = 1 + (worldBreathPulse * 0.28);
+            
+            {
+                const CHAIN_GAP = 44; 
+                const chains = [];
+                if (activeGoodKarma > 0) chains.push({ color: "#32ff32", strength: Math.min(1, activeGoodKarma / 5), isHeavy: false });
+                if (activeBadKarma > 0) chains.push({ color: "#ff3232", strength: Math.min(1, activeBadKarma / 5), isHeavy: false });
+                if (prarabdha > 0) chains.push({ color: "#8b0000", strength: Math.min(1, prarabdha / 10), isHeavy: true });
+                const totalWidth = (chains.length - 1) * CHAIN_GAP;
+                const startCx = cx - totalWidth / 2;
+                chains.forEach((c, i) => {
+                    const chainCx = startCx + i * CHAIN_GAP;
+                    const chainCy = cy + 50; 
+                    drawKarmaChain(chainCx, chainCy, c.color, c.strength, c.isHeavy);
+                });
+            }
+            let breathingSmoothSize = smoothSize * sharirPulseScale; let sharirGlow = 8 + worldBreathPulse * 28; let sharirAlpha = 0.4 + worldBreathPulse * 0.6;
+            if (naamaGlowTimer > 0) { let a = naamaGlowTimer / 40; ctx.save(); ctx.shadowBlur = 18; ctx.shadowColor = "rgba(255, 255, 255, " + a + ")"; ctx.fillStyle = "rgba(255, 255, 255, " + a + ")"; ctx.beginPath(); ctx.arc(cx, cy, (breathingSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+            if (bodyGlowTimer > 0) { ctx.save(); ctx.globalAlpha = bodyGlowTimer / 40; ctx.shadowBlur = 18; ctx.shadowColor = bodyGlowColor; ctx.fillStyle = bodyGlowColor; ctx.beginPath(); ctx.arc(cx, cy, (breathingSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+            ctx.save(); ctx.shadowBlur = sharirGlow; ctx.shadowColor = `rgba(255,255,255,${sharirAlpha})`; ctx.strokeStyle = `rgba(255,255,255,${sharirAlpha})`; ctx.lineWidth = (1 + worldBreathPulse * 2.5) * (smoothSize / 60); ctx.beginPath(); ctx.arc(cx, cy, breathingSmoothSize / 2, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+            let sRadius = breathingSmoothSize / 4.6; let sCy = cy - (breathingSmoothSize / 8); ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(cx, sCy, sRadius, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "rgba(255, 255, 255, 0.8)"; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.arc(cx, sCy, sRadius, 0, Math.PI * 2); ctx.stroke();
+            let atmanY = cy + 14 * scale; ctx.save(); let glowR = 30 * scale; let grad = ctx.createRadialGradient(cx, atmanY, 0, cx, atmanY, glowR); grad.addColorStop(0, "rgba(255, 255, 255, 1)"); grad.addColorStop(0.1, "rgba(255, 255, 255, 0.9)"); grad.addColorStop(0.3, "rgba(200, 230, 255, 0.35)"); grad.addColorStop(1, "rgba(0, 0, 0, 0)"); ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx, atmanY, glowR, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(cx, atmanY, 1.2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            ctx.save(); ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = 3;
+            let horseCount = 6; let horseSpacing = 10; let startX = cx - ((horseCount - 1) * horseSpacing) / 2; let finalHorsePositions = [];
+            for (let i = 0; i < horseCount; i++) { let hx, hy; if (i === pulledHorseIndex) { hx = pulledHorseX; hy = pulledHorseY; } else { hx = startX + i * horseSpacing; hy = cy - breathingSmoothSize / 2 - 18 + (isPaused || gameOver ? 0 : Math.sin((frameNow / 70) + i) * 3); } finalHorsePositions.push({ x: hx, y: hy }); ctx.beginPath(); ctx.arc(hx, hy, 2.2, 0, Math.PI * 2); ctx.fill(); }
+            for (let i = 0; i < horseCount; i++) {
+                let hx = finalHorsePositions[i].x; let hy = finalHorsePositions[i].y;
+                if (totalKarma > 0) {
+                    let ashuvhaRatio = activeBadKarma / totalKarma; let reinGrad = ctx.createLinearGradient(hx, hy, cx, sCy);
+                    if (ashuvhaRatio === 0) { ctx.strokeStyle = "rgba(50, 255, 50, 0.65)"; } else if (ashuvhaRatio === 1) { ctx.strokeStyle = "rgba(255, 50, 50, 0.65)"; } else { let splitPoint = 1 - ashuvhaRatio; reinGrad.addColorStop(0, "rgba(50, 255, 50, 0.65)"); reinGrad.addColorStop(splitPoint, "rgba(50, 255, 50, 0.65)"); reinGrad.addColorStop(splitPoint, "rgba(255, 50, 50, 0.65)"); reinGrad.addColorStop(1, "rgba(255, 50, 50, 0.65)"); ctx.strokeStyle = reinGrad; }
+                } else { ctx.strokeStyle = (i === pulledHorseIndex) ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.4)"; }
+                ctx.lineWidth = (i === pulledHorseIndex) ? 1.6 : 1.1; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(cx, sCy); ctx.stroke();
+            }
+            ctx.restore();
+            mayaPool.forEach(m => {
+                if (!m.active) return;
+                let boxInside = (m.x >= TUNNEL_X && (m.x + m.width) <= (TUNNEL_X + TUNNEL_WIDTH)); let bScale = boxInside ? 0.5 : 1; let bw = m.width * bScale; let bh = m.height * bScale; let bx = m.x + (m.width - bw) / 2; let by = m.y + (m.height - bh) / 2;
+                if (m.isPulling && pulledHorseIndex !== -1) { ctx.save(); ctx.beginPath(); ctx.moveTo(bx + bw / 2, by + bh); ctx.lineTo(pulledHorseX, pulledHorseY); ctx.strokeStyle = m.type === "shuvha" ? "rgba(50, 255, 50, 0.3)" : "rgba(255, 50, 50, 0.3)"; ctx.stroke(); ctx.restore(); }
+                if (m.type === "shuvha" || m.type === "ashuvha") {
+                    
+                    let gcx = bx + bw / 2; let gcy = by + bh / 2;
+                    let sprite = getMayaSprite(m.type, bScale);
+                    ctx.drawImage(sprite.canvas, gcx - sprite.size / 2, gcy - sprite.size / 2);
+                } else if (m.type === "naama") {
+                    let r = 18 * bScale; let ncx = m.x + m.width / 2; let ncy = m.y + m.height / 2; let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.save();
+                    let nGrad = ctx.createRadialGradient(ncx, ncy, 0, ncx, ncy, r + pulse * 3); nGrad.addColorStop(0, "#ffffff"); nGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.9)"); nGrad.addColorStop(1, "rgba(255, 255, 255, 0)"); ctx.fillStyle = nGrad; ctx.beginPath(); ctx.arc(ncx, ncy, r + 6, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(ncx, ncy, r * 0.6, 0, Math.PI * 2);
+                    ctx.fill(); ctx.restore();
+                } else if (m.type === "kripa") {
+                    
+                    let kr = 16 * bScale; let kcx = m.x + m.width / 2; let kcy = m.y + m.height / 2; let kpulse = (Math.sin(frameNow / 130) + 1) / 2; ctx.save();
+                    let kGrad = ctx.createRadialGradient(kcx, kcy, 0, kcx, kcy, kr + 10 + kpulse * 4);
+                    kGrad.addColorStop(0, "rgba(255,255,255,0.95)"); kGrad.addColorStop(0.5, "rgba(255,215,0,0.55)"); kGrad.addColorStop(1, "rgba(255,215,0,0)");
+                    ctx.fillStyle = kGrad; ctx.beginPath(); ctx.arc(kcx, kcy, kr + 10, 0, Math.PI * 2); ctx.fill();
+                    ctx.font = (16 * bScale) + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.shadowBlur = 10; ctx.shadowColor = "#ffd700"; ctx.fillStyle = "#ffffff";
+                    ctx.fillText("✋", kcx, kcy);
+                    ctx.restore();
+                }
+                ctx.textAlign = "left";
+            });
+            if (pendingGoodKarma && !gameOver) {
+                ctx.save(); let secondsLeft = Math.ceil(punyaTimer / 60); let karmaPulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let py = player.y + smoothSize + 30; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#32ff32"; ctx.fillStyle = "rgba(200, 255, 200, 0.9)"; ctx.fillText("पुण्य त्यागो (+" + pendingGoodKarmaCount + ")", cx, py - 14); ctx.font = "900 " + (26 + karmaPulse * 4) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + karmaPulse * 15; ctx.shadowColor = "#00ff00"; ctx.fillText(secondsLeft + "s", cx, py); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(50, 255, 50, " + (0.8 + karmaPulse * 0.2) + ")"; ctx.strokeText(secondsLeft + "s", cx, py); ctx.restore();
+            }
+            if (samaya < 100 && samaya > 0 && !swaansaSamapta && !gameOver) {
+                ctx.save(); let currentSamay = Math.ceil(samaya); let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let textY = cy - smoothSize / 2 - 55; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#ff3232"; ctx.fillStyle = "rgba(255, 200, 200, 0.9)"; ctx.fillText("अंतिम चरण", cx, textY - 24); ctx.font = "900 " + (26 + pulse * 4) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + pulse * 15; ctx.shadowColor = "#ff0000"; ctx.fillText(currentSamay + "s", cx, textY); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255, 50, 50, " + (0.8 + pulse * 0.2) + ")"; ctx.strokeText(currentSamay + "s", cx, textY); ctx.restore();
+            }
+            ctx.save();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            const FT_SAFE_MARGIN = 8;              
+            const FT_MAX_WIDTH = WIDTH - (FT_SAFE_MARGIN * 2); 
+            floatingTexts.forEach(ft => {
+                ctx.fillStyle = ft.color;
+                ctx.globalAlpha = ft.alpha;
+                
+                let baseFontSize = ft.isBigName ? 100 : 16;
+                ctx.font = `900 ${baseFontSize}px 'Orbitron', sans-serif`;
+                let currentFontSize = baseFontSize; 
+                
+                
+                if (ft._cachedTextWidth === undefined) {
+                    ft._cachedTextWidth = ctx.measureText(ft.text).width;
+                }
+                
+                
+                let textWidth = ft._cachedTextWidth;
+                if (textWidth > FT_MAX_WIDTH) {
+                    let scaledFontSize = baseFontSize * (FT_MAX_WIDTH / textWidth);
+                    ctx.font = `900 ${scaledFontSize.toFixed(1)}px 'Orbitron', sans-serif`;
+                    textWidth = FT_MAX_WIDTH; 
+                    currentFontSize = scaledFontSize; 
+                }
+                
+                let circlePadding = Math.max(12, currentFontSize * 0.25);
+                let circleRadius = (Math.max(textWidth, currentFontSize * 0.85) / 2) + circlePadding;
+                
+                let minX = circleRadius + FT_SAFE_MARGIN;
+                let maxX = WIDTH - circleRadius - FT_SAFE_MARGIN;
+                let safeX = (minX > maxX) ? WIDTH / 2 : Math.min(maxX, Math.max(minX, ft.x));
+                
+                ctx.save();
+                ctx.globalAlpha = ft.alpha;
+                ctx.beginPath();
+                ctx.arc(safeX, ft.y, circleRadius, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(8, 8, 14, 0.40)";
+                ctx.fill();
+                ctx.lineWidth = 1.4;
+                ctx.strokeStyle = ft.color;
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = ft.color;
+                ctx.stroke();
+                ctx.restore();
+                
+                
+                ctx.lineWidth = Math.max(2, currentFontSize * 0.07);
+                ctx.strokeStyle = "rgba(0, 0, 0, 0.9)";
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = ft.alpha;
+                ctx.strokeText(ft.text, safeX, ft.y);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = ft.color;
+                ctx.fillStyle = ft.color;
+                ctx.fillText(ft.text, safeX, ft.y);
+            });
+            ctx.restore();
+            if (notifyTimer > 0) {
+                
+                ctx.save(); let alpha = 1.0; if (notifyTimer < 50) { alpha = notifyTimer / 50; } ctx.globalAlpha = alpha; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "rgba(0, 0, 0, " + (alpha * 0.7) + ")"; ctx.fillRect(0, HEIGHT / 2 - 50, WIDTH, 100); ctx.fillStyle = "#ff6b6b"; ctx.font = "900 32px 'Orbitron', sans-serif"; ctx.shadowBlur = 25; ctx.shadowColor = "#ff3232"; ctx.fillText(notifyText, WIDTH / 2, HEIGHT / 2); ctx.restore();
+            }
+            orbits[0].count = activeNaam;
+            orbits[1].count = kripa;                      
+            orbits[2].count = activeGoodKarma;
+            orbits[3].count = activeBadKarma;
+            orbits[4].count = prarabdha;
+            orbits[5].count = punaraJanmaCount;
+            orbits[6].count = samarpita;
+            let baseDist = (breathingSmoothSize / 2) + 8; let orbitGap = 7;
+            for (let o = 0; o < orbits.length; o++) {
+                let orbit = orbits[o]; if (orbit.count > 0) {
+                    ctx.save(); ctx.shadowBlur = 6; ctx.shadowColor = orbit.color; ctx.fillStyle = orbit.color; let renderTime = frameNow / 1000;
+                    let pulse = Math.sin(renderTime * 1.2 + o) * 2; let actualDist = baseDist + pulse; let visibleCount = Math.min(orbit.count, 36); let step = Math.max(1, Math.ceil(orbit.count / visibleCount)); let drawCount = Math.ceil(orbit.count / step); let dotRadius = Math.max(1.0, Math.min(1.8, 15 / Math.sqrt(drawCount)));
+                    ctx.beginPath(); for (let i = 0; i < orbit.count; i += step) { let angle = (renderTime * orbit.speed) + (i * (Math.PI * 2 / orbit.count)); let dx = cx + Math.cos(angle) * actualDist; let dy = cy + Math.sin(angle) * actualDist; ctx.moveTo(dx + dotRadius, dy); ctx.arc(dx, dy, dotRadius, 0, Math.PI * 2); } ctx.fill(); ctx.restore(); baseDist += orbitGap;
+                }
+            }
+            ctx.restore();
+        }
+        function scaleGame() { const s = Math.min(window.innerWidth / 600, window.innerHeight / 680) * 0.90; UI.container.style.transform = `scale(${s})`; }
+        scaleGame(); const debouncedScale = debounce(scaleGame, 200); window.addEventListener('resize', debouncedScale);
+        lastTime = performance.now();
+        function gameLoop(ts) {
+            pollGamepad();
+            if (!isPaused && !gameOver && !won && !isShastraVisible) {
+                const dt = Math.min((ts - lastTime) / (1000 / 60), 2);
+                frameNow += (ts - lastTime);
+                update(dt);
+            }
+            lastTime = ts;
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        let isGameStarted = false;
+        startBtn.addEventListener('click', () => {
+            isGameStarted = true;
+            
+            
+            
+            const padsAtStart = navigator.getGamepads();
+            for (let i = 0; i < padsAtStart.length; i++) {
+                if (padsAtStart[i]) {
+                    const gp = padsAtStart[i];
+                    const startBtnGp = gp.buttons[GAMEPAD_BUTTON.START];
+                    gpButtonStates[GAMEPAD_BUTTON.START] = !!(startBtnGp && startBtnGp.pressed);
+                    break;
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            ensureAudio();
+            startScreen.style.display = 'none';
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        });
+        
+        
+        
+        let startScreenGpState = {};
+        function pollGamepadOnStartScreen() {
+            if (isGameStarted) return; 
+            const pads = navigator.getGamepads();
+            let gp = null;
+            for (let i = 0; i < pads.length; i++) { if (pads[i]) { gp = pads[i]; break; } }
+            if (gp) {
+                
+                
+                
+                const startBtnGp = gp.buttons[GAMEPAD_BUTTON.START];
+                const startPressed = !!(startBtnGp && startBtnGp.pressed);
+                const startRise = startPressed && !startScreenGpState.start;
+                startScreenGpState.start = startPressed;
+                
+                
+                
+                if (startRise && !isShastraVisible) {
+                    startBtn.click(); 
+                }
+                
+                
+                const backBtnGp = gp.buttons[GAMEPAD_BUTTON.BACK];
+                const backPressed = !!(backBtnGp && backBtnGp.pressed);
+                const backRise = backPressed && !startScreenGpState.back;
+                startScreenGpState.back = backPressed;
+                if (backRise) {
+                    dispatchKey('keydown', 'Escape');
+                }
+                
+                
+                
+                if (isShastraVisible) {
+                    handleShastraGamepadNav(gp);
+                }
+            }
+            requestAnimationFrame(pollGamepadOnStartScreen);
+        }
+        requestAnimationFrame(pollGamepadOnStartScreen);
+        function showEndScreen(reason = "EVALUATING") {
+            UI.viraamaOverlay.style.display = 'none';
+            UI.overlay.style.display = 'flex';
+            if (reason === "FORCE STOPPED") {
+                UI.overlayTitle.innerText = "🛑 प्रलय 🛑"; UI.overlayTitle.style.fontFamily = "'Noto Sans Devanagari', sans-serif"; UI.overlayTitle.style.color = "#ff3232";
+                UI.overlaySubtitle.innerHTML = `<b>यात्रा रद्द:</b><br>सारथी ने रथ को बीच में ही छोड़ दिया।<br>चित्त की अवस्था: पुण्य: ${activeGoodKarma} | पाप: ${activeBadKarma}<br><br>आत्मा अप्रकट अंधकारमय स्थान में फंसी रहती है।` +
+                    `<br>अतः, घोड़े आत्मा को संसार में एक नए शरीर की ओर खींच ले जाते हैं। जीवन का रथ पुनः आरंभ (Reset) होता है।<br><br><span style="font-family:'Noto Sans Devanagari', sans-serif; color:#f87171; font-size:14px; letter-spacing:0.5px;">♻️ पुनर्जन्म: <b>${punaraJanmaCount}</b></span>` +
+                    `<br><br><div style="font-size: 10px; color: #444; font-family: sans-serif;">Developed by PS</div>`;
+            } else if (won) {
+                UI.overlayTitle.innerText = "💥 मोक्ष 💥";
+                UI.overlayTitle.style.color = "#ffffff";
+                UI.overlaySubtitle.innerHTML =
+                    "<div style='color: #ffd700; font-family:\"Orbitron\", sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 8px;'>आपको पुनः जन्म लेने की आवश्यकता नहीं है। यह संसार एक माया जाल है, जिससे आपने अंततः मुक्ति पा ली है।</div>" +
+                    "<div style='color: #a78bfa; font-family:\"Orbitron\", sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; margin-bottom: 20px;'>आपको इस चक्र को पुनः दोहराने की आवश्यकता नहीं है। आपने जन्म-मरण के इस खेल पर विजय प्राप्त कर ली है।</div>" +
+                    "<span style='color: rgba(255,255,255,0.6); font-size: 13px; line-height: 1.6; display: block; max-width: 90%; margin: 0 auto;'>" +
+                    "<b>गुणों और कर्मों से परे</b><br>अद्भुत अनुभूति! सारथी ने इंद्रियों रूपी घोड़ों को स्थिर रखा और मन को पूर्णतः आसक्ति मुक्त कर दिया। ब्रह्मांडीय क्षितिज पर, जहाँ न कोई पाप शेष था और न ही कोई पुण्य, भौतिक रथ पंचतत्वों में विलीन हो गया और आत्मा परम चेतना से एकाकार हो गई।</span>" +
+                    `<br><br><div style="font-size: 10px; color: #444; font-family: sans-serif;">Developed by PS</div>`;
+                playSound('vijaya');
+            } else {
+                UI.overlayTitle.innerText = "संसार में पुनर्जन्म";
+                UI.overlayTitle.style.color = "#ff3232";
+                UI.overlaySubtitle.innerHTML = `<b>मोह की लगाम:</b><br>` +
+                    (activeBadKarma > 0 ? `आपके पापों (${activeBadKarma}) ने सारथी को अंधा कर दिया, और इंद्रियों रूपी घोड़ों को अंधकारमय चक्र की ओर मोड़ दिया।<br>` : '') +
+                    (activeGoodKarma > 0 ? `आपके पुण्यों (${activeGoodKarma}) ने स्वर्गीय गति तो प्रदान की, किंतु मन कर्मफल में इतना आसक्त हो गया कि उसे त्याग न सका।<br>` : '') +
+                    `<br>अतः, घोड़े आत्मा को संसार में एक नए शरीर की ओर खींच ले जाते हैं। जीवन का रथ पुनः आरंभ (Reset) होता है।<br><br><span style="font-family:'Noto Sans Devanagari', sans-serif; color:#f87171; font-size:14px; letter-spacing:0.5px;">♻️ पुनर्जन्म: <b>${punaraJanmaCount}</b></span>` +
+                    `<br><br><div style="font-size: 10px; color: #444; font-family: sans-serif;">Developed by PS</div>`;
+            }
+        }
+        function punahaPrarambha() {
+            prarabdha = 0; activeGoodKarma = 0; activeBadKarma = 0; activeNaam = 0; samarpita = 0; punaraJanmaCount = 0; isKarmaImmune = false; kripa = 0; prevKripaForBurn = 0; 
+            chetanaaJagrita = false;
+            player.x = WIDTH / 2 - 30; for (let i = 0; i < particlePool.length; i++) { particlePool[i].active = false; } floatingTexts = [];
+            for (let i = 0; i < mayaPool.length; i++) { mayaPool[i].active = false; }
+            samaya = 1440; swaansa = 5; swaansaTimer = 0; gameOver = false; isPaused = false; won = false; swaansaSamapta = false; spawnTimer = 0;
+            pendingGoodKarma = false; pendingGoodKarmaCount = 0; punyaTimer = 0; pulledHorseIndex = -1; naamaGlowTimer = 0; bodyGlowTimer = 0; smoothSize = 60; isNaamaJaapa = false; naamaGhera = 0;
+            timerTickAccumulator = 0; prevGoodKarmaForSound = 0; prevBadKarmaForSound = 0; prevPrarabdhaForSound = 0; 
+            timerSoundPlayed = false; 
+            mayaConsumedWhilePulling = false; prevPulledHorseIndex = -1; 
+            stopSpaceBreathLayer(); 
+            startDreamBreathLayer(); 
+            oldStats = { naama: -1, punya: -1, paap: -1, prarabdha: -1, samarpita: -1, punaraJanma: -1, gatee: "-1", kripa: -1, chetana: "" };
+            UI.overlay.style.display = 'none';
+            UI.viraamaOverlay.style.display = 'none';
+            isPaused = false;
+            UI.samayaVal.innerText = `1440s`; UI.swaansaVal.innerText = `5`;
+            updateUIStats(); playSound('punaha');
+            updateAlert("♻️ पवित्र पुनर्जन्म: नया सफर शुरू होता है।", "#32ff32");
+            notifyTimer = 100; notifyText = "♻️ पवित्र पुनर्जन्म"; 
+        }   
+    </script>
+</body>
+</html>
