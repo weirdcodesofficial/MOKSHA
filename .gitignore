@@ -1,0 +1,42 @@
+# Created by https://www.toptal.com/developers/gitignore/api/linux
+# Edit at https://www.toptal.com/developers/gitignore?templates=linux
+
+### Linux ###
+*~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+# End of https://www.toptal.com/developers/gitignore/api/linux
+
+# ====================== Editor ======================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# ====================== Logs ======================
+*.log
+npm-debug.log*
+
+# ====================== Node (future tooling) ======================
+node_modules/
+package-lock.json
+
+# ====================== Temp / Env ======================
+*.tmp
+*.bak
+*.orig
+.env
+.env.local
