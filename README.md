@@ -235,7 +235,7 @@ Enter tunnel, offer all नाम → burn remaining karma
 
 ## 👤 Credits
 
-**Developed by PS**
+**Developed by Weird Codes**
 
 > *"मन एव मनुष्याणां कारणं बन्धमोक्षयोः"*  
 > Mind alone is the cause of bondage and liberation for mankind.  
