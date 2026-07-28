@@ -81,27 +81,30 @@ export const KarmaMixin = {
         const earnsKripaOnRebirth = (
             this.activeNaam >= 20 || this.samarpita >= 30 || this.chetanaaJaagrita
         );
-        const gainedPrarabdha = (this.shuvhaKarma + this.ashuvhaKarma) +
-                                 (this._pendingGoodKarma ? this._pendingGoodKarmaCount : 0);
-
+        // ── pendingGoodKarma साफ करें — प्रारब्ध में count नहीं जोड़ेंगे ──
+        // (pending था = इस जन्म का बोझ, नीचे एकसाथ +1 में गिना जाएगा)
         if (this._pendingGoodKarma) {
-            const pendingCount = this._pendingGoodKarmaCount;
-            this.prarabdha           += pendingCount;
-            this.prarabdhaTimer += pendingCount * PRARABDHA_BHOG_FRAMES;
-            this._pendingGoodKarma    = false;
-            this._punyaTimer          = 0;
+            this._pendingGoodKarma      = false;
+            this._punyaTimer            = 0;
             this._pendingGoodKarmaCount = 0;
         }
-        const sanchitaKarma = this.shuvhaKarma + this.ashuvhaKarma;
-        // MAX_PRARABDHA cap — unbounded growth रोकें
-        const prevPrarabdhaBeforeRebirth = this.prarabdha;
-        this.prarabdha = Math.min(MAX_PRARABDHA, this.prarabdha + sanchitaKarma);
-        const actualAdded = this.prarabdha - prevPrarabdhaBeforeRebirth;
-        this.prarabdhaTimer += actualAdded * PRARABDHA_BHOG_FRAMES;
-        if (gainedPrarabdha > 0) this._addFloatingText(`+${gainedPrarabdha} 📜`, "#a78bfa");
+
+        // ── प्रारब्ध: प्रति पुनर्जन्म केवल +1 (शास्त्र-नियम) ──
+        // संचित कर्म (shuvha/ashuvha/pending) कितना भी हो —
+        // एक जन्म का भार = एक प्रारब्ध।
+        const hasSanchitaKarma = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0 || isApavitra);
+        const prevPrarabdha    = this.prarabdha;
+        if (hasSanchitaKarma) {
+            this.prarabdha = Math.min(MAX_PRARABDHA, this.prarabdha + 1);
+        }
+        const actualAdded = this.prarabdha - prevPrarabdha;
+        if (actualAdded > 0) {
+            this.prarabdhaTimer += PRARABDHA_BHOG_FRAMES; // सदा 1× — +1 प्रारब्ध = 1 भोग-चक्र
+            this._addFloatingText(`+1 📜`, "#a78bfa");
+        }
         // cap hit होने पर player को सूचित करें
-        if (actualAdded < sanchitaKarma) {
-            this._updateAlert(`⚠️ प्रारब्ध सीमा: अधिकतम ${MAX_PRARABDHA} — शेष कर्म भस्म।`, "#f87171");
+        if (hasSanchitaKarma && actualAdded === 0) {
+            this._updateAlert(`⚠️ प्रारब्ध सीमा: अधिकतम ${MAX_PRARABDHA} — नया बोझ असंभव।`, "#f87171");
         }
 
         this.ashuvhaKarma = 0; this.shuvhaKarma = 0;
