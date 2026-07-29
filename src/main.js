@@ -69,6 +69,7 @@ const UI = {
 
 // ====================== ENGINE INIT ======================
 const engine = new KarmaEngine();
+window._engine = engine; // debug only
 
 // inject callbacks
 engine.setCallbacks({
