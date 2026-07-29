@@ -161,8 +161,7 @@ MOKSHA/
 # 📖 मोक्ष — प्रोजेक्ट संदर्भ-दस्तावेज़ (Developer Reference)
 
 > **उद्देश्य:** यह दस्तावेज़ मोक्ष codebase के लिए एक स्थायी संदर्भ (reference) है।
-> **अंतिम अपडेट आधार:** v0.0.9 — Prarabdha mechanic refinements + Alert system fixes + chetanaaJaagrita → isKarmaImmune (~5390 lines across 7 src files + style.css)
-> **भाषा/स्टैक:** HTML5 Canvas, Vanilla JS ES6 Modules (no build tooling, no TypeScript, no framework), Web Audio API, Gamepad API
+> **अंतिम अपडेट आधार:** v0.0.8 — Prarabdha mechanic refinements + Alert system fixes + chetanaaJaagrita → isKarmaImmune (~5390 lines across 7 src files + style.css)> **भाषा/स्टैक:** HTML5 Canvas, Vanilla JS ES6 Modules (no build tooling, no TypeScript, no framework), Web Audio API, Gamepad API
 
 ---
 
