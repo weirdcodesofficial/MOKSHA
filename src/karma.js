@@ -281,8 +281,7 @@ export const KarmaMixin = {
                 this._createExplosion(m.x + m.width / 2, m.y + m.height / 2, "#ffffff");
                 this._addFloatingText("🥀", "#ff3232", { x: m.x + m.width / 2, y: m.y });
                 this._triggerBlast("#ff3232");
-                this._cb.playSound?.('ashuvha');
-                this._updateAlert("🥀 पाप कमाया: अशुभ कर्म का आघात!", "#ff3232");            }
+                this._cb.playSound?.('ashuvhaPrahaar');                this._updateAlert("🥀 पाप कमाया: अशुभ कर्म का आघात!", "#ff3232");            }
         }
         m.active = false;
     },

@@ -432,7 +432,7 @@ class AudioManager {
                 this._vibrate?.(0.50, 0.70, 160);
                 break;
 
-            case 'ashuvha':
+            case 'ashuvhaPrahaar':
                 // पाप-प्रहार — गहरा square wave
                 this._playTone(100, 0.2, 'square', 0.015, 140);
                 this._vibrate?.(0.30, 0.20, 80);
