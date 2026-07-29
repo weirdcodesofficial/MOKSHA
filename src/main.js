@@ -333,7 +333,7 @@ window.addEventListener('pointerdown', () => AM?.ensureAudio(), { passive: true 
 window.addEventListener('gamepadconnected', (e) => {
     gamepadIndex = e.gamepad.index;
     gpButtonStates = {};
-    console.log(`🎮 Gamepad जुड़ा: ${e.gamepad.id}`);
+    //console.log(`🎮 Gamepad जुड़ा: ${e.gamepad.id}`);
     engine.triggerAlert({ icon:"🎮", title:"गेमपैड जुड़ा", subtitle:"नियंत्रण सक्रिय", category:"achievement" });
 });
 window.addEventListener('gamepaddisconnected', (e) => {

@@ -107,14 +107,24 @@ export const KarmaMixin = {
             this._updateAlert(`⚠️ प्रारब्ध सीमा: अधिकतम ${MAX_PRARABDHA} — नया बोझ असंभव।`, "#f87171");
         }
 
-        this.ashuvhaKarma = 0; this.shuvhaKarma = 0;
-        this.punaraJanmaCount++;
+        // पूर्व-जन्म का gati-भार prarabdha में store करें — multiply (हर जन्म का बोझ जुड़े)
+        this.prarabdhaGatiModifier *= this._currentGatiModifier;
+        // 0 तक न जाने दें — minimum gati 1% बनाए रखें
+        this.prarabdhaGatiModifier  = Math.max(0.01, this.prarabdhaGatiModifier);
+        this.ashuvhaKarma = 0; this.shuvhaKarma = 0;        this.punaraJanmaCount++;
         this._triggerBlast("#f87171");
         this.samaya          = SAMAYA_PRAARAMBHIKA;
         this.swaansa         = 10;
         this.swaansaSamapta  = false;
         this._timerTickAccumulator = 0;
         this._timerSoundPlayed     = false;
+        // samaya alerts — हर जन्म में नए सिरे से fire हों
+        this._prevSamaya200       = false;
+        this._prevSamaya100Guided = false;
+        // नाम-जाप state — mid-jaap मृत्यु हो तो ring reset हो
+        this.isNaamaJaapa    = false;
+        this.naamaGhera      = 0;
+        this.naamaJaapaPower = 0;
 
         // चेतना जागृत है तो पुनर्जन्म पर भी कर्म-रक्षा बनी रहे
         this.isKarmaImmune  = this.chetanaaJaagrita;
