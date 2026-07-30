@@ -238,6 +238,8 @@ function drawAlerts(alertQueue, WIDTH) {
     for (let i = 0; i < alertQueue.length; i++) {
         const a = alertQueue[i];
         if (a.opacity <= 0) continue;
+        // warning/guidance → drawProximateAlerts में render होंगे
+        if (a.category === 'warning' || a.category === 'guidance') continue;
 
         const color = CATEGORY_COLOR[a.category] ?? CATEGORY_COLOR.info;
 
@@ -305,6 +307,98 @@ function drawAlerts(alertQueue, WIDTH) {
             ctx.fillStyle = 'rgba(200, 200, 220, 0.85)';
             ctx.fillText(a.subtitle, textX, cardY + CARD_H * 0.65, CARD_W - BORDER_W - 44);
         }
+
+        ctx.restore();
+    }
+}
+
+// ====================== 🔔 Proximate Alert Pills (Issue #32) ======================
+
+/**
+ * warning/guidance alerts को player के ऊपर compact pill में render करें।
+ * Timer pills से ऊपर stack होते हैं — clutter नहीं।
+ *
+ * @param {Array}  alertQueue  — engine.alertQueue snapshot
+ * @param {Object} player      — {x, y, width, height}
+ * @param {number} smoothSize  — player body radius × 2
+ * @param {number} WIDTH       — canvas width (boundary clamp हेतु)
+ */
+function drawProximateAlerts(alertQueue, player, smoothSize, WIDTH) {
+    if (!alertQueue || alertQueue.length === 0) return;
+
+    const CATEGORY_COLOR = {
+        warning:  '#ef4444',  // लाल — चेतावनी
+        guidance: '#f97316',  // नारंगी — मार्गदर्शन
+    };
+
+    const PILL_W   = 164;
+    const PILL_H   = 28;
+    const PILL_R   = 8;
+    const PILL_GAP = 6;
+    // timer pills baseY = player.y - smoothSize*0.5 - 48
+    // proximate pills उससे ऊपर शुरू हों
+    const BASE_OFFSET = (smoothSize * 0.5) + 82;
+
+    // सिर्फ warning/guidance filter
+    const proxAlerts = alertQueue.filter(
+        a => a.category === 'warning' || a.category === 'guidance'
+    );
+    if (proxAlerts.length === 0) return;
+
+    const cx = player.x + (player.width ?? smoothSize) / 2;
+
+    for (let i = 0; i < proxAlerts.length; i++) {
+        const a = proxAlerts[i];
+        if (a.opacity <= 0) continue;
+
+        const color = CATEGORY_COLOR[a.category] ?? '#94a3b8';
+
+        // position — ऊपर की तरफ stack (newest सबसे नीचे)
+        const pillCX = Math.max(PILL_W / 2 + 6,
+                       Math.min(WIDTH - PILL_W / 2 - 6,
+                       cx + a.slideX * (cx < WIDTH / 2 ? -1 : 1)));
+        const pillY  = player.y - BASE_OFFSET - i * (PILL_H + PILL_GAP);
+
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, a.opacity) * (1 - i * 0.15);
+
+        // ── background pill ──
+        ctx.fillStyle   = 'rgba(6, 6, 18, 0.85)';
+        ctx.shadowBlur  = 10;
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.beginPath();
+        ctx.roundRect(pillCX - PILL_W / 2, pillY - PILL_H / 2, PILL_W, PILL_H, PILL_R);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // ── colored border ──
+        ctx.strokeStyle = color;
+        ctx.lineWidth   = 1;
+        ctx.shadowBlur  = 5;
+        ctx.shadowColor = color;
+        ctx.beginPath();
+        ctx.roundRect(pillCX - PILL_W / 2, pillY - PILL_H / 2, PILL_W, PILL_H, PILL_R);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // ── icon ──
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        if (a.icon) {
+            ctx.font      = "14px 'Noto Sans Devanagari', sans-serif";
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur  = 4;
+            ctx.shadowColor = color;
+            ctx.fillText(a.icon, pillCX - PILL_W / 2 + 16, pillY);
+            ctx.shadowBlur = 0;
+        }
+
+        // ── title (short, no subtitle) ──
+        ctx.textAlign    = 'left';
+        ctx.font         = "700 9px 'Orbitron', sans-serif";
+        ctx.fillStyle    = '#ffffff';
+        const textStartX = pillCX - PILL_W / 2 + (a.icon ? 28 : 10);
+        ctx.fillText(a.title, textStartX, pillY, PILL_W - (a.icon ? 38 : 20));
 
         ctx.restore();
     }
@@ -1016,5 +1110,6 @@ export const Renderer = {
 
         // ── Alert Queue — सबसे ऊपर (HUD के नीचे नहीं दबें) ──
         drawAlerts(alertQueue ?? [], WIDTH);
-    }
+        // ── Proximate Alerts — warning/guidance player के ऊपर ──
+        drawProximateAlerts(alertQueue ?? [], player, smoothSize, WIDTH);    }
 };
