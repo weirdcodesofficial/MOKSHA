@@ -43,3 +43,7 @@ package-lock.json
 *.zip
 *.map
 index.min.html
+dist/
+*.zip
+*.map
+index.min.html
