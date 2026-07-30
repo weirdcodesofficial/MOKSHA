@@ -40,3 +40,14 @@ package-lock.json
 *.orig
 .env
 .env.local
+*.zip
+*.map
+index.min.html
+dist/
+*.zip
+*.map
+index.min.html
+dist/
+*.zip
+*.map
+index.min.html
