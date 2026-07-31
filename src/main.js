@@ -440,6 +440,54 @@ function gameLoop(ts) {
 
 // ====================== START SCREEN ======================
 const startBtn = document.getElementById('start-btn');
+const languageToggle = document.getElementById('language-toggle');
+
+const startScreenCopy = {
+    hi: {
+        title: 'मोक्ष',
+        description: 'जीवन और मृत्यु के चक्र से मुक्त हों।<br>क्या आप तैयार हैं?',
+        button: 'खेल प्रारंभ करें',
+        switchLabel: 'Switch game language to English',
+        status: 'हिंदी चुनी गई',
+        pageTitle: 'मोक्ष',
+        pageDescription: 'मोक्ष — एक आध्यात्मिक गेम जो सनातन शास्त्र पर आधारित है।',
+    },
+    en: {
+        title: 'MOKSHA',
+        description: 'Break free from the cycle of life and death.<br>Are you ready?',
+        button: 'START GAME',
+        switchLabel: 'खेल की भाषा हिंदी में बदलें',
+        status: 'English selected',
+        pageTitle: 'Moksha',
+        pageDescription: 'Moksha — a spiritual game rooted in Sanatan Shastra.',
+    },
+};
+
+function setStartScreenLanguage(language) {
+    const copy = startScreenCopy[language];
+    const isEnglish = language === 'en';
+    const title = document.getElementById('start-title');
+    const description = document.getElementById('start-description');
+    const hindiLabel = document.getElementById('hindi-language-label');
+    const englishLabel = document.getElementById('english-language-label');
+    const status = document.getElementById('language-choice-status');
+    const metaDescription = document.querySelector('meta[name="description"]');
+
+    document.documentElement.lang = language;
+    document.title = copy.pageTitle;
+    if (title) title.textContent = copy.title;
+    if (description) description.innerHTML = copy.description;
+    if (startBtn) startBtn.textContent = copy.button;
+    if (languageToggle) languageToggle.setAttribute('aria-label', copy.switchLabel);
+    if (status) status.textContent = copy.status;
+    if (metaDescription) metaDescription.setAttribute('content', copy.pageDescription);
+    hindiLabel?.classList.toggle('active', !isEnglish);
+    englishLabel?.classList.toggle('active', isEnglish);
+}
+
+languageToggle?.addEventListener('change', () => {
+    setStartScreenLanguage(languageToggle.checked ? 'en' : 'hi');
+});
 
 // Start-screen gamepad poller (game शुरू होने से पहले)
 function pollGamepadOnStartScreen() {
