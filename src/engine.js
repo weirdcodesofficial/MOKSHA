@@ -974,7 +974,7 @@ export class KarmaEngine {
                     `अतः, घोड़े आत्मा को संसार में एक नए शरीर की ओर खींच ले जाते हैं।<br><br>` +
                     `<span style="font-family:'Noto Sans Devanagari',sans-serif;color:#f87171;font-size:14px;">` +
                     `♻️ पुनर्जन्म: <b>${this.punaraJanmaCount}</b></span>` +
-                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weired Codes</div>`;
+                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weird Codes</div>`;
             }
         } else if (this.won) {
             if (this._UI?.overlayTitle) {
@@ -993,7 +993,7 @@ export class KarmaEngine {
                     "display:block;max-width:90%;margin:0 auto;'>" +
                     "<b>गुणों और कर्मों से परे</b><br>अद्भुत अनुभूति! सारथी ने इंद्रियों रूपी" +
                     " घोड़ों को स्थिर रखा और मन को पूर्णतः आसक्ति मुक्त कर दिया।</span>" +
-                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weired Codes</div>`;
+                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weird Codes</div>`;
             }
             this._cb.playSound?.('vijaya');
         } else {
@@ -1009,7 +1009,7 @@ export class KarmaEngine {
                     `<br>घोड़े आत्मा को नए शरीर की ओर ले जाते हैं।<br><br>` +
                     `<span style="font-family:'Noto Sans Devanagari',sans-serif;color:#f87171;font-size:14px;">` +
                     `♻️ पुनर्जन्म: <b>${this.punaraJanmaCount}</b></span>` +
-                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weired Codes</div>`;
+                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weird Codes</div>`;
             }
         }
     }
