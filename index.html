@@ -43,26 +43,17 @@
     <!-- ── Start Screen ── -->
     <div id="start-screen"
         style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,1);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:50;">
-        <h1 id="start-title" class="scifi-title"
+        <h1 class="scifi-title"
             style="color:#ffa600;font-size:64px;margin-bottom:10px;font-family:'Noto Sans Devanagari',sans-serif;">
             मोक्ष</h1>
-        <p id="start-description" style="color:#aaa;margin-bottom:26px;text-align:center;max-width:80%;font-size:18px;">
+        <p style="color:#aaa;margin-bottom:40px;text-align:center;max-width:80%;font-size:18px;">
             जीवन और मृत्यु के चक्र से मुक्त हों।<br>क्या आप तैयार हैं?</p>
-        <div class="language-picker">
-            <span id="hindi-language-label" class="language-option active">हिंदी</span>
-            <label class="language-switch" for="language-toggle">
-                <input id="language-toggle" type="checkbox" role="switch" aria-label="Switch game language to English" aria-describedby="language-choice-status">
-                <span class="language-switch-track" aria-hidden="true">
-                    <span class="language-switch-thumb"></span>
-                </span>
-            </label>
-            <span id="english-language-label" class="language-option">English</span>
-            <span id="language-choice-status" class="visually-hidden" aria-live="polite">हिंदी चुनी गई</span>
-        </div>
         <button id="start-btn" disabled
             style="padding:15px 40px;font-size:24px;font-weight:bold;background:rgba(255,100,20,0.18);color:#ffa600;border:2px solid rgba(255,120,30,0.75);border-radius:8px;cursor:pointer;font-family:'Noto Sans Devanagari',sans-serif;box-shadow:0 0 18px rgba(255,120,30,0.45);transition:transform 0.2s,opacity 0.2s;">
             खेल प्रारंभ करें</button>
-        <div id="credits">Developed by Weird Codes</div>
+        <div id="credits"
+            style="position:absolute;bottom:150px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.55);font-family:'Rajdhani',sans-serif;font-size:12px;pointer-events:none;">
+            Developed by Weired Codes</div>
     </div>
 
     <!-- ── HUD Overlay (stats panels) ── -->
@@ -103,7 +94,7 @@
                 title="संगीत वॉल्यूम" aria-label="Background Music Volume">
             <button id="music-toggle-btn" class="hud-icon-btn" title="पृष्ठभूमि ध्वनि म्यूट/अनम्यूट करें">🔊</button>
             <button id="shastra-help-btn" class="hud-icon-btn" title="शास्त्र पढ़ें (खेल की जानकारी)">❓</button>
-            <div id="hud-credits" class="hud-icon-btn" style="cursor:default;" title="Developed by Weird Codes">🛠️</div>
+            <div id="hud-credits" class="hud-icon-btn" style="cursor:default;" title="Developed by Weired Codes">🛠️</div>
         </div>
     </div>
 
