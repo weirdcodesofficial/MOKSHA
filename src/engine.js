@@ -823,7 +823,7 @@ export class KarmaEngine {
             const hitY = m.y < this.player.y + this.player.height && m.y + m.height > this.player.y;
             if (hitX && hitY) {
                 if (m.isPulling) this._mayaConsumedWhilePulling = true;
-                if (this.isKarmaImmune) {
+                if (this.isKarmaImmune && m.type !== 'naama') {
                     this._createExplosion(m.x + m.width/2, m.y + m.height/2, "#ffffff");
                     this._addFloatingText("🙏", "#fb923c", { x:m.x + m.width/2, y:m.y + m.height/2 });
                     this.samarpita++;
