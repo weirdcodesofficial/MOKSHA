@@ -25,6 +25,7 @@
 import { Renderer }     from './render.js';
 import { KarmaEngine, SAMAYA_PRAARAMBHIKA }  from './engine.js';
 import Audio from './audio.js';
+import { TutorialManager } from './tutorial.js';
 const AM = Audio;
 // ====================== CANVAS SETUP ======================
 const canvas = document.getElementById('gameCanvas');
@@ -83,6 +84,13 @@ engine.setCallbacks({
 });
 engine.setUI(UI);
 engine.init(WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH);
+
+// ====================== TUTORIAL INIT ======================
+const tutorial = new TutorialManager(
+    (...args) => engine._forceSpawnMaya?.(...args),
+    WIDTH,
+    HEIGHT
+);
 
 // ====================== RENDERER INIT ======================
 Renderer.init(ctx, WIDTH, HEIGHT);
@@ -189,6 +197,13 @@ function pollGamepad() {
     const dpadLeft  = !!gp.buttons[GAMEPAD_BUTTON.DPAD_LEFT]?.pressed;
     const dpadRight = !!gp.buttons[GAMEPAD_BUTTON.DPAD_RIGHT]?.pressed;
 
+// ── Tutorial dismiss — START button (edge-triggered, सर्वोच्च priority) ──
+    const _tStartPressed = !!gp.buttons[GAMEPAD_BUTTON.START]?.pressed;
+    if (_tStartPressed && !gpButtonStates['_tut_start'] && !tutorial.isDone()) {
+        tutorial.dismiss();
+    }
+    gpButtonStates['_tut_start'] = _tStartPressed;
+
     if (engine.isShastraVisible) {
         handleShastraGamepadNav(gp);
         keys['arrowleft'] = false; keys['arrowright'] = false;
@@ -290,11 +305,16 @@ window.addEventListener('keydown', (e) => {
     if (!isGameStarted && key !== 'escape' && !engine.isShastraVisible) return;
     AM?.ensureAudio();
 
-    if (['arrowup','arrowdown','arrowleft','arrowright',' ','q','f','r','escape','pageup','pagedown'].includes(key)) {
+    if (['arrowup','arrowdown','arrowleft','arrowright',' ','q','f','r','escape','enter','pageup','pagedown'].includes(key)) {
         e.preventDefault();
     }
 
-    if (key === 'escape') { toggleShastra(); return; }
+    // ── Tutorial dismiss / skip ──
+    if (key === 'enter') { tutorial.dismiss(); return; }
+    if (key === 'escape') {
+        if (!tutorial.isDone()) { tutorial.skip(); return; }
+        toggleShastra(); return;
+    }
 
     if (engine.isShastraVisible) {
         const body = document.getElementById('shastra-body');
@@ -329,6 +349,11 @@ window.addEventListener('keyup', (e) => {
 
 window.addEventListener('blur',        () => { keys = {}; });
 window.addEventListener('pointerdown', () => AM?.ensureAudio(), { passive: true });
+
+// ── Tutorial card — tap/click to dismiss ──
+canvas.addEventListener('click', () => {
+    if (!tutorial.isDone()) tutorial.dismiss();
+});
 
 // ── Gamepad connect / disconnect ──
 window.addEventListener('gamepadconnected', (e) => {
@@ -421,6 +446,11 @@ function draw() {
         punyaTimer:            engine._punyaTimer,
         pendingGoodKarmaCount: engine._pendingGoodKarmaCount,
     });
+
+    // ── Tutorial card overlay — game scene के ऊपर ──
+    if (tutorial.hasActiveCard()) {
+        Renderer.drawTutorialCard(ctx, tutorial.getCurrentCard());
+    }
 }
 
 // ====================== GAME LOOP ======================
@@ -429,8 +459,17 @@ lastTime = performance.now();
 function gameLoop(ts) {
     pollGamepad();
     if (!engine.isPaused && !engine.gameOver && !engine.won && !engine.isShastraVisible) {
-        const dt = Math.min((ts - lastTime) / (1000 / 60), 2);
+        const rawDt = Math.min((ts - lastTime) / (1000 / 60), 2);
+        // tutorial card visible होने पर slow-motion (dt × 0.3)
+        const dt = tutorial.isSlowMode() ? rawDt * 0.3 : rawDt;
         frameNow += (ts - lastTime);
+        // tutorial completion हर frame check करें
+        tutorial.checkCompletion({
+            player:         engine.player,
+            activeNaam:     engine.activeNaam,
+            isNaamaJaapa:   engine.isNaamaJaapa,
+            playerInTunnel: engine.playerInTunnel,
+        });
         engine.update(dt, keys, frameNow);
     }
     lastTime = ts;
@@ -440,6 +479,54 @@ function gameLoop(ts) {
 
 // ====================== START SCREEN ======================
 const startBtn = document.getElementById('start-btn');
+const languageToggle = document.getElementById('language-toggle');
+
+const startScreenCopy = {
+    hi: {
+        title: 'मोक्ष',
+        description: 'जीवन और मृत्यु के चक्र से मुक्त हों।<br>क्या आप तैयार हैं?',
+        button: 'खेल प्रारंभ करें',
+        switchLabel: 'Switch game language to English',
+        status: 'हिंदी चुनी गई',
+        pageTitle: 'मोक्ष',
+        pageDescription: 'मोक्ष — एक आध्यात्मिक गेम जो सनातन शास्त्र पर आधारित है।',
+    },
+    en: {
+        title: 'MOKSHA',
+        description: 'Break free from the cycle of life and death.<br>Are you ready?',
+        button: 'START GAME',
+        switchLabel: 'खेल की भाषा हिंदी में बदलें',
+        status: 'English selected',
+        pageTitle: 'Moksha',
+        pageDescription: 'Moksha — a spiritual game rooted in Sanatan Shastra.',
+    },
+};
+
+function setStartScreenLanguage(language) {
+    const copy = startScreenCopy[language];
+    const isEnglish = language === 'en';
+    const title = document.getElementById('start-title');
+    const description = document.getElementById('start-description');
+    const hindiLabel = document.getElementById('hindi-language-label');
+    const englishLabel = document.getElementById('english-language-label');
+    const status = document.getElementById('language-choice-status');
+    const metaDescription = document.querySelector('meta[name="description"]');
+
+    document.documentElement.lang = language;
+    document.title = copy.pageTitle;
+    if (title) title.textContent = copy.title;
+    if (description) description.innerHTML = copy.description;
+    if (startBtn) startBtn.textContent = copy.button;
+    if (languageToggle) languageToggle.setAttribute('aria-label', copy.switchLabel);
+    if (status) status.textContent = copy.status;
+    if (metaDescription) metaDescription.setAttribute('content', copy.pageDescription);
+    hindiLabel?.classList.toggle('active', !isEnglish);
+    englishLabel?.classList.toggle('active', isEnglish);
+}
+
+languageToggle?.addEventListener('change', () => {
+    setStartScreenLanguage(languageToggle.checked ? 'en' : 'hi');
+});
 
 // Start-screen gamepad poller (game शुरू होने से पहले)
 function pollGamepadOnStartScreen() {
@@ -479,6 +566,8 @@ startBtn?.addEventListener('click', () => {
     AM?.ensureAudio();
     isGameStarted = true;
     document.getElementById('start-screen')?.remove();
+    // गुरु-दीक्षा — पहली बार खेलने पर tutorial शुरू
+    tutorial.start(engine.player.x);
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
 });
