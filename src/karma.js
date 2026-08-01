@@ -195,6 +195,29 @@ export const KarmaMixin = {
         }
     },
 
+    /**
+     * Tutorial के लिए forced Maya spawn।
+     * _spawnMaya() का deterministic variant — random नहीं।
+     * @param {string} type — MAYA_SIZE_TABLE में valid key
+     * @param {number} x    — spawn X position (pixels)
+     * @param {number} y    — spawn Y position (pixels)
+     */
+    _forceSpawnMaya(type, x, y) {
+        const sizeInfo = MAYA_SIZE_TABLE[type] || MAYA_SIZE_TABLE.default;
+        for (let i = 0; i < this.mayaPool.length; i++) {
+            if (!this.mayaPool[i].active) {
+                this.mayaPool[i].active    = true;
+                this.mayaPool[i].x         = x;
+                this.mayaPool[i].y         = y;
+                this.mayaPool[i].width     = sizeInfo.width;
+                this.mayaPool[i].height    = sizeInfo.height;
+                this.mayaPool[i].type      = type;
+                this.mayaPool[i].isPulling = false;
+                break;
+            }
+        }
+    },
+
     // ====================== COLLISION ======================
 
     /**

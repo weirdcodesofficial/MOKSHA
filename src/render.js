@@ -1111,5 +1111,155 @@ export const Renderer = {
         // ── Alert Queue — सबसे ऊपर (HUD के नीचे नहीं दबें) ──
         drawAlerts(alertQueue ?? [], WIDTH);
         // ── Proximate Alerts — warning/guidance player के ऊपर ──
-        drawProximateAlerts(alertQueue ?? [], player, smoothSize, WIDTH);    }
+        drawProximateAlerts(alertQueue ?? [], player, smoothSize, WIDTH);    },
+
+    // ====================== 📜 गुरु-दीक्षा Tutorial Card ======================
+
+    /**
+     * Scripture-style tutorial overlay card draw करें।
+     * Alert cards से visually अलग — center-screen, बड़ा, semi-opaque।
+     *
+     * @param {CanvasRenderingContext2D} context — main canvas ctx
+     * @param {Object} card — tutorial.getCurrentCard() से मिला object
+     *   { shloka, shlokaCredit, task, hint, stepNumber, totalSteps }
+     */
+    drawTutorialCard(context, card) {
+        if (!card) return;
+
+        const W = context.canvas.width;
+        const H = context.canvas.height;
+
+        // ── Card dimensions ──
+        const CARD_W  = Math.min(W - 32, 360);
+        const CARD_H  = 290;
+        const CARD_X  = (W - CARD_W) / 2;
+        const CARD_Y  = (H - CARD_H) / 2;
+        const RADIUS  = 14;
+
+        context.save();
+
+        // ── 1. Full-screen dim overlay ──
+        context.fillStyle = 'rgba(0, 0, 0, 0.72)';
+        context.fillRect(0, 0, W, H);
+
+        // ── 2. Card drop-shadow ──
+        context.shadowBlur  = 40;
+        context.shadowColor = 'rgba(255, 215, 0, 0.35)';
+
+        // ── 3. Card background ──
+        context.fillStyle = 'rgba(6, 6, 18, 0.96)';
+        context.beginPath();
+        context.roundRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS);
+        context.fill();
+        context.shadowBlur = 0;
+
+        // ── 4. Gold border ──
+        context.strokeStyle = 'rgba(255, 215, 0, 0.55)';
+        context.lineWidth   = 1.5;
+        context.beginPath();
+        context.roundRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS);
+        context.stroke();
+
+        // ── 5. Top accent line (saffron) ──
+        context.strokeStyle = '#ff9933';
+        context.lineWidth   = 3;
+        context.shadowBlur  = 8;
+        context.shadowColor = '#ff9933';
+        context.beginPath();
+        context.roundRect(CARD_X + 24, CARD_Y, CARD_W - 48, 3, 2);
+        context.stroke();
+        context.shadowBlur  = 0;
+        context.shadowColor = 'transparent';
+
+        // ── 6. Step counter (top-right) ──
+        context.font      = "700 10px 'Orbitron', sans-serif";
+        context.fillStyle = 'rgba(255, 215, 0, 0.55)';
+        context.textAlign = 'right';
+        context.textBaseline = 'top';
+        context.fillText(
+            `${card.stepNumber} / ${card.totalSteps}`,
+            CARD_X + CARD_W - 16,
+            CARD_Y + 14
+        );
+
+        // ── 7. ॐ Header icon ──
+        context.font      = "26px 'Noto Sans Devanagari', sans-serif";
+        context.fillStyle = '#ffd700';
+        context.textAlign = 'center';
+        context.textBaseline = 'top';
+        context.shadowBlur  = 14;
+        context.shadowColor = '#ffd700';
+        context.fillText('🕉️', W / 2, CARD_Y + 16);
+        context.shadowBlur  = 0;
+
+        // ── 8. Shloka text ──
+        context.font      = "italic 12px 'Noto Sans Devanagari', serif";
+        context.fillStyle = 'rgba(255, 236, 180, 0.90)';
+        context.textAlign = 'center';
+        context.textBaseline = 'top';
+        context.fillText(card.shloka, W / 2, CARD_Y + 58, CARD_W - 32);
+
+        // ── 9. Shloka credit ──
+        context.font      = "10px 'Orbitron', sans-serif";
+        context.fillStyle = 'rgba(255, 215, 0, 0.50)';
+        context.fillText(card.shlokaCredit, W / 2, CARD_Y + 80, CARD_W - 32);
+
+        // ── 10. Divider line ──
+        context.strokeStyle = 'rgba(255, 215, 0, 0.18)';
+        context.lineWidth   = 1;
+        context.beginPath();
+        context.moveTo(CARD_X + 24, CARD_Y + 100);
+        context.lineTo(CARD_X + CARD_W - 24, CARD_Y + 100);
+        context.stroke();
+
+        // ── 11. Task text (multi-line support) ──
+        const taskLines = card.task.split('\n');
+        context.font      = "13px 'Noto Sans Devanagari', sans-serif";
+        context.fillStyle = '#ffffff';
+        context.textAlign = 'center';
+        context.textBaseline = 'top';
+        const LINE_H = 20;
+        taskLines.forEach((line, i) => {
+            context.fillText(line, W / 2, CARD_Y + 112 + i * LINE_H, CARD_W - 32);
+        });
+
+        // ── 12. Hint pill ──
+        const HINT_Y = CARD_Y + 112 + taskLines.length * LINE_H + 10;
+        context.font      = "italic 10px 'Noto Sans Devanagari', sans-serif";
+        context.fillStyle = 'rgba(148, 163, 184, 0.80)';
+        context.textAlign = 'center';
+        context.textBaseline = 'top';
+        context.fillText(`✦ ${card.hint} ✦`, W / 2, HINT_Y, CARD_W - 48);
+
+        // ── 13. Dismiss button (bottom) ──
+        const BTN_W  = 160;
+        const BTN_H  = 34;
+        const BTN_X  = (W - BTN_W) / 2;
+        const BTN_Y  = CARD_Y + CARD_H - BTN_H - 14;
+
+        // button background
+        context.fillStyle = 'rgba(255, 153, 51, 0.18)';
+        context.shadowBlur  = 10;
+        context.shadowColor = '#ff9933';
+        context.beginPath();
+        context.roundRect(BTN_X, BTN_Y, BTN_W, BTN_H, 8);
+        context.fill();
+
+        // button border
+        context.strokeStyle = 'rgba(255, 153, 51, 0.70)';
+        context.lineWidth   = 1;
+        context.beginPath();
+        context.roundRect(BTN_X, BTN_Y, BTN_W, BTN_H, 8);
+        context.stroke();
+        context.shadowBlur  = 0;
+
+        // button label
+        context.font         = "700 11px 'Orbitron', sans-serif";
+        context.fillStyle    = '#ff9933';
+        context.textAlign    = 'center';
+        context.textBaseline = 'middle';
+        context.fillText('ENTER / TAP to continue', W / 2, BTN_Y + BTN_H / 2);
+
+        context.restore();
+    },
 };
