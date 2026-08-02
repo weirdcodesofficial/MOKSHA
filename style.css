@@ -65,10 +65,10 @@ canvas {
 #gameContainer::after {
     content: "";
     position: absolute;
-    top: 0;
+    top: 130px; /* top HUD के नीचे से शुरू */
     left: 0;
     right: 0;
-    bottom: 60px; /* HUD (60px) के नीचे न जाए */
+    bottom: 0;
     border-radius: 0;
     pointer-events: none;
     background: repeating-linear-gradient(
@@ -101,12 +101,12 @@ canvas {
 /* ====================== HUD / UI OVERLAY ====================== */
 #ui-overlay {
     position: absolute;
-    bottom: 60px;
+    top: 0;
     left: auto;
     width: 100%;
     height: auto;
     background: rgba(6, 6, 10, 0.1);
-    padding: 18px 16px 6px 16px;
+    padding: 6px 16px 10px 16px;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
@@ -641,4 +641,135 @@ button.hud-icon-btn:hover {
     clip: rect(0, 0, 0, 0) !important;
     white-space: nowrap !important;
     border: 0 !important;
+}
+
+/* ====================== TOUCH CONTROLS (mobile only) ====================== */
+
+#touch-controls {
+    display: none;               /* JS से touch device detect होने पर flex बनेगा */
+    position: absolute;
+    bottom: 92px;                /* HUD overlay के ऊपर */
+    left: 0;
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+    justify-content: space-between;
+    align-items: flex-end;
+    z-index: 9;                  /* ui-overlay(7) के ऊपर, overlays(15+) के नीचे */
+    pointer-events: none;        /* container transparent — buttons पर auto */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* ── Clusters ── */
+.touch-cluster {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    pointer-events: none;       /* बच्चों (buttons) पर pointer-events: auto */
+}
+
+.touch-cluster-center {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 100px;
+}
+
+.touch-cluster-right {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.touch-secondary-row {
+    display: flex;
+    gap: 6px;
+}
+
+/* ── Base touch button ── */
+.touch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 166, 0, 0.10);
+    border: 1.5px solid rgba(255, 166, 0, 0.38);
+    color: rgba(255, 255, 255, 0.88);
+    font-family: 'Noto Sans Devanagari', 'Rajdhani', sans-serif;
+    font-weight: 700;
+    pointer-events: auto;       /* touch events receive करें */
+    cursor: pointer;
+    touch-action: none;         /* browser scroll/zoom intercept न करे */
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.08s ease, border-color 0.08s ease, transform 0.06s ease;
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.50),
+        inset 0 0 8px rgba(255, 166, 0, 0.04);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* ── Size variants ── */
+.touch-btn-xl {
+    width: 64px;
+    height: 64px;
+    font-size: 22px;
+}
+
+.touch-btn-md {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+}
+
+.touch-btn-sm {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+}
+
+/* ── Primary action button — ॐ (नाम-जाप) ── */
+.touch-btn-primary {
+    width: 72px;
+    height: 72px;
+    font-size: 26px;
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    background: rgba(255, 215, 0, 0.13);
+    border: 2px solid rgba(255, 215, 0, 0.55);
+    color: #ffd700;
+    box-shadow:
+        0 0 18px rgba(255, 215, 0, 0.18),
+        0 2px 10px rgba(0, 0, 0, 0.50),
+        inset 0 0 14px rgba(255, 215, 0, 0.06);
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.60);
+}
+
+/* ── Pressed / active state ── */
+.touch-btn.touch-active {
+    background: rgba(255, 166, 0, 0.32);
+    border-color: rgba(255, 166, 0, 0.90);
+    transform: scale(0.91);
+    box-shadow:
+        0 0 20px rgba(255, 166, 0, 0.38),
+        inset 0 0 10px rgba(255, 166, 0, 0.14);
+}
+
+.touch-btn-primary.touch-active {
+    background: rgba(255, 215, 0, 0.38);
+    border-color: rgba(255, 215, 0, 1.00);
+    transform: scale(0.91);
+    box-shadow:
+        0 0 30px rgba(255, 215, 0, 0.55),
+        inset 0 0 16px rgba(255, 215, 0, 0.22);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 1.00);
+}
+
+/* ── CSS fallback (JS load से पहले touch CSS media query) ── */
+@media (hover: none) and (pointer: coarse) {
+    #touch-controls {
+        display: flex;
+    }
 }
