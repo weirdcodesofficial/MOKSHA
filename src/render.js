@@ -1133,7 +1133,7 @@ export const Renderer = {
         const CARD_W  = Math.min(W - 32, 360);
         const CARD_H  = 290;
         const CARD_X  = (W - CARD_W) / 2;
-        const CARD_Y  = (H - CARD_H) / 2;
+        const CARD_Y  = (H - CARD_H) / 2 + 30; /* HUD top offset */
         const RADIUS  = 14;
 
         context.save();

@@ -26,6 +26,7 @@ import { Renderer }     from './render.js';
 import { KarmaEngine, SAMAYA_PRAARAMBHIKA }  from './engine.js';
 import Audio from './audio.js';
 import { TutorialManager } from './tutorial.js';
+import { TouchControls }   from './touch.js';
 const AM = Audio;
 // ====================== CANVAS SETUP ======================
 const canvas = document.getElementById('gameCanvas');
@@ -40,7 +41,8 @@ const TUNNEL_WIDTH = 180;
 const TUNNEL_X     = (WIDTH - TUNNEL_WIDTH) / 2;
 
 // HUD_TOP_Y — gameplay canvas की वह Y-सीमा जहाँ HUD overlay शुरू होता है
-const HUD_TOP_Y = HEIGHT - 60 - (document.getElementById('ui-overlay')?.offsetHeight ?? 120);
+// HUD अब ऊपर है — gameplay area HUD के नीचे से शुरू होती है
+const HUD_TOP_Y = document.getElementById('ui-overlay')?.offsetHeight ?? 120;
 
 // ====================== UI ELEMENT REFERENCES ======================
 const UI = {
@@ -100,6 +102,7 @@ let isGameStarted   = false;
 let lastTime        = 0;
 let frameNow        = 0;
 let keys            = {};
+const touch         = new TouchControls(keys);
 let isFontsReady    = false;
 let isScaleGameDone = false;
 
@@ -347,7 +350,11 @@ window.addEventListener('keyup', (e) => {
     if (key === 'arrowdown') shastraKeyState.down = false;
 });
 
-window.addEventListener('blur',        () => { keys = {}; });
+window.addEventListener('blur', () => {
+    // keys reassign नहीं — TouchControls reference safe रहे
+    Object.keys(keys).forEach(k => { keys[k] = false; });
+    touch.clearAll();
+});
 window.addEventListener('pointerdown', () => AM?.ensureAudio(), { passive: true });
 
 // ── Tutorial card — tap/click to dismiss ──
@@ -470,6 +477,8 @@ function gameLoop(ts) {
             isNaamaJaapa:   engine.isNaamaJaapa,
             playerInTunnel: engine.playerInTunnel,
         });
+        // tutorial card visible होने पर touch controls hide
+        touch.syncWithTutorial(tutorial.hasActiveCard());
         engine.update(dt, keys, frameNow);
     }
     lastTime = ts;
