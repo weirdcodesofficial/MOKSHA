@@ -647,6 +647,7 @@ button.hud-icon-btn:hover {
 
 #touch-controls {
     display: none;               /* JS से touch device detect होने पर flex बनेगा */
+    will-change: opacity;        /* GPU layer — compositor thread पर रखें */
     position: absolute;
     bottom: 92px;                /* HUD overlay के ऊपर */
     left: 0;
@@ -695,6 +696,7 @@ button.hud-icon-btn:hover {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
+    will-change: transform, background; /* press animation GPU पर */
     background: rgba(255, 166, 0, 0.10);
     border: 1.5px solid rgba(255, 166, 0, 0.38);
     color: rgba(255, 255, 255, 0.88);

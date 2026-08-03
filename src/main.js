@@ -252,10 +252,19 @@ function toggleShastra() {
     if (engine.isShastraVisible) {
         // overlay DOM
         currentShastraPage = 1; updateShastraPage();
-        keys = {};
+        // keys reassign नहीं — TouchControls reference safe रहे
+        Object.keys(keys).forEach(k => { keys[k] = false; });
+        touch.clearAll();
         requestAnimationFrame(continuousShastraScrollLoop);
     } else {
-        keys = {};
+        Object.keys(keys).forEach(k => { keys[k] = false; });
+        touch.clearAll();
+        // viraama pause overlay नहीं दिख रही → game resume होना चाहिए
+        // (wasAlreadyPaused गलत तरीके से set हो सकता है — safe override)
+        if (UI.viraamaOverlay?.style.display !== 'flex') {
+            engine.isPaused = false;
+            lastTime = performance.now(); // Shastra में बिताया time → dt spike रोकें
+        }
     }
 }
 
@@ -362,6 +371,11 @@ canvas.addEventListener('click', () => {
     if (!tutorial.isDone()) tutorial.dismiss();
 });
 
+// ── Mobile AudioContext unlock — पहले touch पर resume ──
+canvas.addEventListener('touchstart', () => {
+    if (AM?.ctx?.state === 'suspended') AM.ctx.resume();
+}, { once: true, passive: true });
+
 // ── Gamepad connect / disconnect ──
 window.addEventListener('gamepadconnected', (e) => {
     gamepadIndex = e.gamepad.index;
@@ -384,7 +398,8 @@ document.addEventListener('visibilitychange', () => {
         engine.isPaused = true;
         if (UI.viraamaOverlay) UI.viraamaOverlay.style.display = 'flex';
         AM?.playSound('viraama');
-        keys = {};
+        Object.keys(keys).forEach(k => { keys[k] = false; });
+        touch.clearAll();
         engine.triggerAlert({ icon:"⏸️", title:"खेल स्तम्भित", subtitle:"ध्यान भटका, टैब बदला गया।", category:"guidance" });
         AM?.updateAmbientVolumes();
     }
@@ -443,7 +458,7 @@ function draw() {
         frameNow,
 
         // ── Engine state (सम्पूर्ण snapshot) ──
-        ...engine.getState(),
+        ...st,
 
         // ── Private → public name mapping ──
         // render.js इन्हें underscore-prefix के बिना expect करता है
@@ -485,6 +500,23 @@ function gameLoop(ts) {
     draw();
     requestAnimationFrame(gameLoop);
 }
+
+// ====================== VISIBILITY API — Tab hidden पर rAF रोकें ======================
+let _rafId = null;
+const _origGameLoop = gameLoop;
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // tab छुपा — rAF cancel करें (battery + GPU बचाएँ)
+        if (_rafId) { cancelAnimationFrame(_rafId); _rafId = null; }
+    } else {
+        // tab वापस आया — dt spike रोकें, loop restart करें
+        lastTime = performance.now();
+        if (isGameStarted && _rafId === null) {
+            _rafId = requestAnimationFrame(gameLoop);
+        }
+    }
+});
 
 // ====================== START SCREEN ======================
 const startBtn = document.getElementById('start-btn');
