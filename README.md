@@ -12,6 +12,12 @@ Control your chariot through the cosmic field, master your senses, burn your kar
 
 ---
 
+- For now its only for hindi users who deeply understand hindu philosophy.
+- You have to control you senses to get out the reincarnation cycle for getting moksha.
+- Challenge is that how less reincarnations you get before you get moksha.​​
+
+---
+
 ## 🕉️ Spiritual Philosophy (Sanatan Model)
 
 The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
