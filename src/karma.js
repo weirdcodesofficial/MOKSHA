@@ -320,15 +320,18 @@ export const KarmaMixin = {
         const freedKarma = this.shuvhaKarma + this.ashuvhaKarma;
         const hadKarma   = freedKarma > 0;
 
-        if (hadKarma) {
-            if (this.kripa > 0) this.kripa--;
-            this.samarpita   += freedKarma;
-            this.shuvhaKarma  = 0;
-            this.ashuvhaKarma = 0;
-            // ⚠️ प्रारब्ध जानबूझकर अप्रभावित — पूर्व-जन्मों का भार
-        } else {
-            this.kripa++;
-        }
+    // chetanaaJaagrita के बाद — कृपा शुद्ध अनुग्रह; auto-samarpita नहीं
+    if (this.chetanaaJaagrita) {
+        this.kripa++;
+    } else if (hadKarma) {
+        if (this.kripa > 0) this.kripa--;
+        this.samarpita   += freedKarma;
+        this.shuvhaKarma  = 0;
+        this.ashuvhaKarma = 0;
+        // ⚠️ प्रारब्ध जानबूझकर अप्रभावित — पूर्व-जन्मों का भार
+    } else {
+        this.kripa++;
+    }
 
         const px = x ?? (this.player.x + this.player.width  / 2);
         const py = y ?? (this.player.y + this.player.height / 2);
@@ -448,10 +451,9 @@ export const KarmaMixin = {
             this._updateAlert("❌ नाम समर्पण करने के लिए आपको भक्ति-मार्ग के अंदर होना चाहिए।", "#ff3232");
             this._cb.playSound?.('ashuvha'); return;
         }
-        let gained = (this.activeNaam * 3) + (this.kripa + this.shankha + this.jyoti);
+        let gained = (this.activeNaam * 3) + (this.shankha + this.jyoti);
         this.samarpita      += gained;
         this.activeNaam      = 0;
-        this.kripa           = 0;
         this.shankha         = 0;
         this.jyoti           = 0;
         this.purnaSamarpana  = true;
