@@ -327,6 +327,8 @@ window.addEventListener('keydown', (e) => {
         if (!tutorial.isDone()) { tutorial.skip(); return; }
         toggleShastra(); return;
     }
+    
+
 
     if (engine.isShastraVisible) {
         const body = document.getElementById('shastra-body');
@@ -341,8 +343,16 @@ window.addEventListener('keydown', (e) => {
 
     keys[key] = true;
 
+    // ── Tutorial card visible → action keys block (Bug fix) ──
+    if (tutorial.hasActiveCard()) return;
+    
     // ── Engine actions from keydown ──
-    if (key === 'r') { engine.reset(); lastTime = performance.now(); return; }
+    if (key === 'r') {
+        engine.reset();
+        tutorial.start(engine.player.x);
+        last.Time = performance.now();
+        return;
+    }
     if (key === 'q') { engine.actionPralaya(); return; }
     if (key === 'f') { engine.actionPause(); return; }
     if (key === ' ') { engine.actionNaamaJaapa(); return; }
@@ -367,8 +377,10 @@ window.addEventListener('blur', () => {
 window.addEventListener('pointerdown', () => AM?.ensureAudio(), { passive: true });
 
 // ── Tutorial card — tap/click to dismiss ──
+// Ghost click guard: game start के 600ms बाद ही canvas click allow करें
+let _tutorialClickReady = false;
 canvas.addEventListener('click', () => {
-    if (!tutorial.isDone()) tutorial.dismiss();
+    if (!tutorial.isDone() && _tutorialClickRead) tutorial.dismiss();
 });
 
 // ── Mobile AudioContext unlock — पहले touch पर resume ──
@@ -610,6 +622,8 @@ startBtn?.addEventListener('click', () => {
     // गुरु-दीक्षा — पहली बार खेलने पर tutorial शुरू
     tutorial.start(engine.player.x);
     lastTime = performance.now();
+    // Ghost click guard — 600ms बाद canvas click enable
+    setTimeout (() => {_tutorialClickReady = true;}, 600);
     requestAnimationFrame(gameLoop);
 });
 
