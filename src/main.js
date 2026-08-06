@@ -350,7 +350,7 @@ window.addEventListener('keydown', (e) => {
     if (key === 'r') {
         engine.reset();
         tutorial.start(engine.player.x);
-        last.Time = performance.now();
+        lastTime = performance.now();
         return;
     }
     if (key === 'q') { engine.actionPralaya(); return; }
@@ -380,7 +380,7 @@ window.addEventListener('pointerdown', () => AM?.ensureAudio(), { passive: true 
 // Ghost click guard: game start के 600ms बाद ही canvas click allow करें
 let _tutorialClickReady = false;
 canvas.addEventListener('click', () => {
-    if (!tutorial.isDone() && _tutorialClickRead) tutorial.dismiss();
+    if (!tutorial.isDone() && _tutorialClickReady) tutorial.dismiss();
 });
 
 // ── Mobile AudioContext unlock — पहले touch पर resume ──
@@ -532,6 +532,7 @@ document.addEventListener('visibilitychange', () => {
 
 // ====================== START SCREEN ======================
 const startBtn = document.getElementById('start-btn');
+const tutorialBtn = document.getElementById('tutorial-btn');
 const languageToggle = document.getElementById('language-toggle');
 
 const startScreenCopy = {
@@ -570,6 +571,7 @@ function setStartScreenLanguage(language) {
     if (title) title.textContent = copy.title;
     if (description) description.innerHTML = copy.description;
     if (startBtn) startBtn.textContent = copy.button;
+    if (tutorialBtn) tutorialBtn.textContent = copy.tutorialButton ?? '🕉️ गुरु-दीक्षा देखें';
     if (languageToggle) languageToggle.setAttribute('aria-label', copy.switchLabel);
     if (status) status.textContent = copy.status;
     if (metaDescription) metaDescription.setAttribute('content', copy.pageDescription);
@@ -624,6 +626,21 @@ startBtn?.addEventListener('click', () => {
     lastTime = performance.now();
     // Ghost click guard — 600ms बाद canvas click enable
     setTimeout (() => {_tutorialClickReady = true;}, 600);
+    requestAnimationFrame(gameLoop);
+});
+
+// ── Tutorial button — गुरु-दीक्षा reset करके game शुरू करें ──
+tutorialBtn?.addEventListener('click', () => {
+    if (isGameStarted) return;
+    AM?.ensureAudio();
+    // localStorage key हटाएँ — TutorialManager.start() इसे check करता है
+    try { localStorage.removeItem('moksha_tutorial_seen');} catch (_) {}
+    isGameStarted = true;
+    document.getElementById('start-screen')?.remove();
+    // tutorial.start() अब localStorage clear होने के बाद — guaranteed fresh tutorial
+    tutorial.start(engine.player.x);
+    lastTime = performance.now();
+    setTimeout(() => { _tutorialClickReady = true; }, 600);
     requestAnimationFrame(gameLoop);
 });
 
