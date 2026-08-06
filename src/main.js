@@ -21,11 +21,12 @@
  *
  * ============================================================
  */
-
+import { initLang, setLang, getLang, t, tLines } from './i18n.js';
 import { Renderer }     from './render.js';
 import { KarmaEngine, SAMAYA_PRAARAMBHIKA }  from './engine.js';
 import Audio from './audio.js';
 import { TutorialManager } from './tutorial.js';
+import { renderShastraPage } from './shastra.js';
 import { TouchControls }   from './touch.js';
 const AM = Audio;
 // ====================== CANVAS SETUP ======================
@@ -231,15 +232,27 @@ function pollGamepad() {
 // ====================== SHASTRA UI ======================
 
 function updateShastraPage() {
+    const lang  = getLang();
+    const TOTAL = 3;
+
+    // ── सामग्री भरें — पहली बार, और भाषा बदलने पर दोबारा ──
+    // dataset.lang से जाँचते हैं कि यह page पहले से इसी भाषा में तो नहीं;
+    // वरना हर nav-click पर व्यर्थ innerHTML लिखना पड़ता।
+    for (let p = 1; p <= TOTAL; p++) {
+        const el = document.getElementById(`shastra-page-${p}`);
+        if (el && el.dataset.lang !== lang) {
+            el.innerHTML   = renderShastraPage(p - 1, lang);   // 0-based index
+            el.dataset.lang = lang;
+        }
+    }    
     for (let p = 1; p <= 3; p++) {
         document.getElementById(`shastra-page-${p}`)?.classList.remove('active');
     }
     document.getElementById(`shastra-page-${currentShastraPage}`)?.classList.add('active');
     const navBtn = document.getElementById('shastra-nav-btn');
     if (navBtn) {
-        navBtn.textContent = currentShastraPage < 3
-            ? `अगला  [ ${currentShastraPage} / 3 ]`
-            : `पिछला  [ ${currentShastraPage} / 3 ]`;
+        const key = currentShastraPage < TOTAL ? 'shastra.next' : 'shastra.prev';
+        navBtn.textContent = t(key, { page: currentShastraPage, total: TOTAL });        
     }
 }
 
@@ -393,7 +406,7 @@ window.addEventListener('gamepadconnected', (e) => {
     gamepadIndex = e.gamepad.index;
     gpButtonStates = {};
     //console.log(`🎮 Gamepad जुड़ा: ${e.gamepad.id}`);
-    engine.triggerAlert({ icon:"🎮", title:"गेमपैड जुड़ा", subtitle:"नियंत्रण सक्रिय", category:"achievement" });
+    engine._alertKey('gamepad', '🎮', 'achievement');
 });
 window.addEventListener('gamepaddisconnected', (e) => {
     if (gamepadIndex === e.gamepad.index) {
@@ -412,7 +425,7 @@ document.addEventListener('visibilitychange', () => {
         AM?.playSound('viraama');
         Object.keys(keys).forEach(k => { keys[k] = false; });
         touch.clearAll();
-        engine.triggerAlert({ icon:"⏸️", title:"खेल स्तम्भित", subtitle:"ध्यान भटका, टैब बदला गया।", category:"guidance" });
+        engine._alertKey('paused', '⏸️', 'guidance');
         AM?.updateAmbientVolumes();
     }
 });
@@ -531,34 +544,15 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ====================== START SCREEN ======================
+
 const startBtn = document.getElementById('start-btn');
-const tutorialBtn = document.getElementById('tutorial-btn');
 const languageToggle = document.getElementById('language-toggle');
+const tutorialBtn = document.getElementById('tutorial-btn');
 
-const startScreenCopy = {
-    hi: {
-        title: 'मोक्ष',
-        description: 'जीवन और मृत्यु के चक्र से मुक्त हों।<br>क्या आप तैयार हैं?',
-        button: 'खेल प्रारंभ करें',
-        switchLabel: 'Switch game language to English',
-        status: 'हिंदी चुनी गई',
-        pageTitle: 'मोक्ष',
-        pageDescription: 'मोक्ष — एक आध्यात्मिक गेम जो सनातन शास्त्र पर आधारित है।',
-    },
-    en: {
-        title: 'MOKSHA',
-        description: 'Break free from the cycle of life and death.<br>Are you ready?',
-        button: 'START GAME',
-        switchLabel: 'खेल की भाषा हिंदी में बदलें',
-        status: 'English selected',
-        pageTitle: 'Moksha',
-        pageDescription: 'Moksha — a spiritual game rooted in Sanatan Shastra.',
-    },
-};
-
-function setStartScreenLanguage(language) {
-    const copy = startScreenCopy[language];
+function applyStartScreenLanguage() {
+    const language = getLang();
     const isEnglish = language === 'en';
+
     const title = document.getElementById('start-title');
     const description = document.getElementById('start-description');
     const hindiLabel = document.getElementById('hindi-language-label');
@@ -567,20 +561,39 @@ function setStartScreenLanguage(language) {
     const metaDescription = document.querySelector('meta[name="description"]');
 
     document.documentElement.lang = language;
-    document.title = copy.pageTitle;
-    if (title) title.textContent = copy.title;
-    if (description) description.innerHTML = copy.description;
-    if (startBtn) startBtn.textContent = copy.button;
-    if (tutorialBtn) tutorialBtn.textContent = copy.tutorialButton ?? '🕉️ गुरु-दीक्षा देखें';
-    if (languageToggle) languageToggle.setAttribute('aria-label', copy.switchLabel);
-    if (status) status.textContent = copy.status;
-    if (metaDescription) metaDescription.setAttribute('content', copy.pageDescription);
+    document.title = t('start.pageTitle');
+
+    if (title) title.textContent = t('start.title');
+    if (description) description.innerHTML = tLines('start.description');
+    if (startBtn) startBtn.textContent = t('start.button');
+    if (tutorialBtn) tutorialBtn.textContent = t('start.tutorialButton');
+    if (status) status.textContent = t('start.status');
+
+    languageToggle?.setAttribute('aria-label', t('start.switchLabel'));
+    metaDescription?.setAttribute('content', t('start.pageDescription'));
     hindiLabel?.classList.toggle('active', !isEnglish);
     englishLabel?.classList.toggle('active', isEnglish);
+    updateShastraPage(); // शास्त्र content भी language के अनुसार update करें    
 }
 
+initLang();
+if(languageToggle) languageToggle.checked = (getLang() === 'en');
+applyStartScreenLanguage();
+
 languageToggle?.addEventListener('change', () => {
-    setStartScreenLanguage(languageToggle.checked ? 'en' : 'hi');
+    setLang(languageToggle.checked ? 'en' : 'hi');
+    if (languageToggle) languageToggle.checked = (getLang() === 'en');
+    applyStartScreenLanguage();
+});
+
+// ── bfcache restore पर पुनः sync ────────────────────────────
+// back/forward navigation में page memory से लौटता है — कोई script
+// दोबारा नहीं चलती, पर browser checkbox की state restore कर देता है।
+// storage ही सत्य है — checkbox को उसके अधीन लाएँ।
+window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;            // सामान्य load — boot-sync ने सँभाल लिया
+    if (languageToggle) languageToggle.checked = (getLang() === 'en');
+    applyStartScreenLanguage();
 });
 
 // Start-screen gamepad poller (game शुरू होने से पहले)

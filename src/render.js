@@ -1,5 +1,6 @@
 // src/render.js
 
+import { resolveAlert } from './i18n.js';
 // ── roundRect polyfill — Chrome<99, Firefox<112, Safari<15.4 support ──
 if (!CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
@@ -240,7 +241,7 @@ function drawAlerts(alertQueue, WIDTH) {
         if (a.opacity <= 0) continue;
         // warning/guidance → drawProximateAlerts में render होंगे
         if (a.category === 'warning' || a.category === 'guidance') continue;
-
+        const { icon, title, subtitle } = resolveAlert(a);
         const color = CATEGORY_COLOR[a.category] ?? CATEGORY_COLOR.info;
 
         // ── position (slideX से right-side offset) ──
@@ -296,10 +297,10 @@ function drawAlerts(alertQueue, WIDTH) {
         const textX = cardX + BORDER_W + (a.icon ? 30 : 12);
         ctx.textAlign    = 'left';
         ctx.textBaseline = 'middle';
-        ctx.font         = "700 11px 'Orbitron', sans-serif";
+        ctx.font         = "700 11px 'Orbitron', 'Noto Sans Devanagari', sans-serif";
         ctx.fillStyle    = '#ffffff';
         ctx.shadowBlur   = 0;
-        ctx.fillText(a.title, textX, cardY + (a.subtitle ? CARD_H * 0.38 : CARD_H / 2), CARD_W - BORDER_W - 44);
+        ctx.fillText(subtitle, textX, cardY + CARD_H * 0.65, CARD_W - BORDER_W - 44);
 
         // ── subtitle ──
         if (a.subtitle) {
@@ -350,7 +351,7 @@ function drawProximateAlerts(alertQueue, player, smoothSize, WIDTH) {
     for (let i = 0; i < proxAlerts.length; i++) {
         const a = proxAlerts[i];
         if (a.opacity <= 0) continue;
-
+        const { icon, title } = resolveAlert(a);
         const color = CATEGORY_COLOR[a.category] ?? '#94a3b8';
 
         // position — ऊपर की तरफ stack (newest सबसे नीचे)
@@ -384,22 +385,21 @@ function drawProximateAlerts(alertQueue, player, smoothSize, WIDTH) {
         // ── icon ──
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
-        if (a.icon) {
+        if (icon) {
             ctx.font      = "14px 'Noto Sans Devanagari', sans-serif";
             ctx.fillStyle = '#ffffff';
             ctx.shadowBlur  = 4;
             ctx.shadowColor = color;
-            ctx.fillText(a.icon, pillCX - PILL_W / 2 + 16, pillY);
+            ctx.fillText(icon, pillCX - PILL_W / 2 + 16, pillY);
             ctx.shadowBlur = 0;
         }
 
         // ── title (short, no subtitle) ──
         ctx.textAlign    = 'left';
-        ctx.font         = "700 9px 'Orbitron', sans-serif";
+        ctx.font         = "700 9px 'Orbitron', 'Noto Sans Devanagari', sans-serif";
         ctx.fillStyle    = '#ffffff';
-        const textStartX = pillCX - PILL_W / 2 + (a.icon ? 28 : 10);
-        ctx.fillText(a.title, textStartX, pillY, PILL_W - (a.icon ? 38 : 20));
-
+        const textStartX = pillCX - PILL_W / 2 + (icon ? 28 : 10);
+        ctx.fillText(title, textStartX, pillY, PILL_W - (icon ? 30 : 12));
         ctx.restore();
     }
 }
@@ -1121,8 +1121,44 @@ export const Renderer = {
      *
      * @param {CanvasRenderingContext2D} context — main canvas ctx
      * @param {Object} card — tutorial.getCurrentCard() से मिला object
-     *   { shloka, shlokaCredit, task, hint, stepNumber, totalSteps }
+     *   { shloka, shlokaCredit, shlokaMeaning, task, hint, stepNumber, totalSteps }
      */
+    /**
+     * wrapText — पाठ को दी गई चौड़ाई में तोड़कर पंक्तियों की array लौटाता है।
+     *
+     * ⚠️ यह fillText(..., maxWidth) से भिन्न है — वह glyphs को *दबाकर*
+     *    सँकरा करता है (भद्दा दिखता है); यह वास्तव में wrap करता है।
+     *
+     * '\n' पहले से मौजूद हो तो उसका सम्मान करता है।
+     * ⚠️ caller पहले ctx.font सेट करे — माप उसी पर निर्भर है।
+     *
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {string} text
+     * @param {number} maxWidth
+     * @returns {string[]} — पंक्तियों की array
+    */
+    wrapText(ctx, text, maxWidth) {
+        if (!text) return [];
+        const out = [];
+
+        // पहले explicit '\n' पर तोड़ें, फिर हर टुकड़े को width से
+        for (const paragraph of String(text).split('\n')) {
+            const words = paragraph.split(' ');
+            let line = '';
+
+            for (const word of words) {
+                const test = line ? line + ' ' + word : word;
+                if (ctx.measureText(test).width <= maxWidth || !line) {
+                    line = test;
+                } else {
+                    out.push(line);
+                    line = word;
+                }
+            }
+            out.push(line);   // खाली paragraph भी एक खाली पंक्ति बने
+        }
+        return out;
+    },    
     drawTutorialCard(context, card) {
         if (!card) return;
 
@@ -1131,7 +1167,42 @@ export const Renderer = {
 
         // ── Card dimensions ──
         const CARD_W  = Math.min(W - 32, 360);
-        const CARD_H  = 290;
+        // ── ऊर्ध्वाधर लय (सभी spacing यहीं से आती है) ──
+        const PAD_X       = 16;   // पाठ के लिए बाएँ-दाएँ margin
+        const HEADER_H    = 58;   // ॐ icon + step counter की जगह
+        const LH_SHLOKA   = 18;
+        const LH_MEANING  = 15;
+        const LH_CREDIT   = 20;
+        const LH_TASK     = 20;
+        const LH_HINT     = 18;
+        const GAP_DIVIDER = 20;   // divider के ऊपर-नीचे
+        const BTN_H       = 34;
+        const PAD_BOTTOM  = 14;
+        const TEXT_W      = CARD_W - PAD_X * 2;
+
+        // ── सामग्री मापें — भाषा बदलने पर लंबाई बदलती है,
+        //    इसलिए ऊँचाई स्थिर नहीं हो सकती ──
+        context.font = "italic 12px 'Noto Sans Devanagari', serif";
+        const shlokaLines  = this.wrapText(context, card.shloka, TEXT_W);
+
+        context.font = "italic 11px 'Rajdhani', 'Noto Sans Devanagari', sans-serif";
+        const meaningLines = this.wrapText(context, card.shlokaMeaning, TEXT_W);
+
+        context.font = "13px 'Noto Sans Devanagari', sans-serif";
+        const taskLines    = this.wrapText(context, card.task, TEXT_W);
+
+        context.font = "italic 10px 'Noto Sans Devanagari', sans-serif";
+        const hintLines    = this.wrapText(context, `✦ ${card.hint} ✦`, CARD_W - 48);
+
+        const CARD_H = HEADER_H
+                     + shlokaLines.length  * LH_SHLOKA
+                     + meaningLines.length * LH_MEANING
+                     + LH_CREDIT
+                     + GAP_DIVIDER * 2
+                     + taskLines.length    * LH_TASK
+                     + 10
+                     + hintLines.length    * LH_HINT
+                     + 16 + BTN_H + PAD_BOTTOM;
         const CARD_X  = (W - CARD_W) / 2;
         const CARD_Y  = (H - CARD_H) / 2 + 30; /* HUD top offset */
         const RADIUS  = 14;
@@ -1192,48 +1263,65 @@ export const Renderer = {
         context.fillText('🕉️', W / 2, CARD_Y + 16);
         context.shadowBlur  = 0;
 
-        // ── 8. Shloka text ──
+        // ── 8-12. पाठ-खंड — y एक ही cursor से आगे बढ़ता है ──
+        // (hard-coded offsets हटा दिए गए; अब सामग्री ही ऊँचाई तय करती है)
+        context.textAlign    = 'center';
+        context.textBaseline = 'top';
+        let y = CARD_Y + HEADER_H;
+
+        // ── 8. श्लोक — मूल देवनागरी, कभी अनूदित नहीं (नियम E-1) ──
         context.font      = "italic 12px 'Noto Sans Devanagari', serif";
         context.fillStyle = 'rgba(255, 236, 180, 0.90)';
-        context.textAlign = 'center';
-        context.textBaseline = 'top';
-        context.fillText(card.shloka, W / 2, CARD_Y + 58, CARD_W - 32);
+        for (const line of shlokaLines) {
+            context.fillText(line, W / 2, y);
+            y += LH_SHLOKA;
+        }
 
-        // ── 9. Shloka credit ──
-        context.font      = "10px 'Orbitron', sans-serif";
+        // ── 8b. अन्वयार्थ — केवल तब जब भाषा में अर्थ दिया हो (hi में खाली) ──
+        if (meaningLines.length) {
+            context.font      = "italic 11px 'Rajdhani', 'Noto Sans Devanagari', sans-serif";
+            context.fillStyle = 'rgba(200, 200, 220, 0.72)';
+            for (const line of meaningLines) {
+                context.fillText(line, W / 2, y);
+                y += LH_MEANING;
+            }
+        }
+
+        // ── 9. श्लोक-स्रोत ──
+        context.font      = "10px 'Orbitron', 'Noto Sans Devanagari', sans-serif";
         context.fillStyle = 'rgba(255, 215, 0, 0.50)';
-        context.fillText(card.shlokaCredit, W / 2, CARD_Y + 80, CARD_W - 32);
+        context.fillText(card.shlokaCredit, W / 2, y);
+        y += LH_CREDIT;
 
-        // ── 10. Divider line ──
+        // ── 10. Divider ──
+        y += GAP_DIVIDER;
         context.strokeStyle = 'rgba(255, 215, 0, 0.18)';
         context.lineWidth   = 1;
         context.beginPath();
-        context.moveTo(CARD_X + 24, CARD_Y + 100);
-        context.lineTo(CARD_X + CARD_W - 24, CARD_Y + 100);
+        context.moveTo(CARD_X + 24, y);
+        context.lineTo(CARD_X + CARD_W - 24, y);
         context.stroke();
+        y += GAP_DIVIDER;
 
-        // ── 11. Task text (multi-line support) ──
-        const taskLines = card.task.split('\n');
+        // ── 11. निर्देश (task) ──
         context.font      = "13px 'Noto Sans Devanagari', sans-serif";
         context.fillStyle = '#ffffff';
-        context.textAlign = 'center';
-        context.textBaseline = 'top';
-        const LINE_H = 20;
-        taskLines.forEach((line, i) => {
-            context.fillText(line, W / 2, CARD_Y + 112 + i * LINE_H, CARD_W - 32);
-        });
+        for (const line of taskLines) {
+            context.fillText(line, W / 2, y);
+            y += LH_TASK;
+        }
 
-        // ── 12. Hint pill ──
-        const HINT_Y = CARD_Y + 112 + taskLines.length * LINE_H + 10;
+        // ── 12. संकेत (hint) ──
+        y += 10;
         context.font      = "italic 10px 'Noto Sans Devanagari', sans-serif";
         context.fillStyle = 'rgba(148, 163, 184, 0.80)';
-        context.textAlign = 'center';
-        context.textBaseline = 'top';
-        context.fillText(`✦ ${card.hint} ✦`, W / 2, HINT_Y, CARD_W - 48);
+        for (const line of hintLines) {
+            context.fillText(line, W / 2, y);
+            y += LH_HINT;
+        }        
 
         // ── 13. Dismiss button (bottom) ──
         const BTN_W  = 160;
-        const BTN_H  = 34;
         const BTN_X  = (W - BTN_W) / 2;
         const BTN_Y  = CARD_Y + CARD_H - BTN_H - 14;
 

@@ -104,7 +104,7 @@ export const KarmaMixin = {
         }
         // cap hit होने पर player को सूचित करें
         if (hasSanchitaKarma && actualAdded === 0) {
-            this._updateAlert(`⚠️ प्रारब्ध सीमा: अधिकतम ${MAX_PRARABDHA} — नया बोझ असंभव।`, "#f87171");
+            this._alertKey('errPrarabdhaMax', '⚠️', 'warning', { n: MAX_PRARABDHA });
         }
 
         // पूर्व-जन्म का gati-भार prarabdha में store करें — multiply (हर जन्म का बोझ जुड़े)
@@ -131,10 +131,10 @@ export const KarmaMixin = {
         this.purnaSamarpana = false;
         
         if (isApavitra) {
-            this._updateAlert("♻️ अपवित्र पुनर्जन्म: कर्म असंतुलित रह गया, चक्र जारी है...", "#ff3232");
+            this._alertKey('punarjanmaApavitra', '♻️', 'warning');
             this.notifyText = "♻️ अपवित्र पुनर्जन्म";
         } else {
-            this._updateAlert("♻️ पवित्र पुनर्जन्म: कर्म शुद्ध था, परंतु यात्रा अधूरी रही।", "#ffd700");
+            this._alertKey('punarjanmaPavitra', '♻️', 'guidance');
             this.notifyText = "♻️ पवित्र पुनर्जन्म";
         }
         this.notifyTimer = 120;
@@ -150,7 +150,8 @@ export const KarmaMixin = {
             this._addFloatingText("✋", "#ffe9a8", { alpha:1.3, vy:-1.6, isBigName:true });
             if (this.activeNaam  >= 20) this._addFloatingText("ॐ", "#ffffff", { alpha:1.5, vy:-2.2, isBigName:true });
             if (this.samarpita   >= 30) this._addFloatingText("🙏", "#fb923c", { alpha:1.5, vy:-2.2, isBigName:true });
-            this._updateAlert("✋ अतिरिक्त कृपा लेकर नए जीवन में प्रवेश!", "#ffe9a8");            this._triggerGlow("#ffe9a8");
+            this._alertKey('kripaAtirikta', '✋', 'guidance');
+            this._triggerGlow("#ffe9a8");
             this._cb.playSound?.('kripa');
         }
         this._cb.playSound?.('punaha');
@@ -231,7 +232,7 @@ export const KarmaMixin = {
             this.naamaGlowTimer = 40;
             this._triggerGlow("#ffffff");
             this._cb.playSound?.('naama');
-            this._updateAlert("🌿 नाम सुमिरन: शुद्धिकरण...", "#ffff00");
+            this._alertKey('naamaSumirana', '🌿', 'info');
 
             if (this.playerInTunnel) {
                 // शास्त्र-संगत क्रम: पुण्य → पाप → प्रारब्ध
@@ -241,24 +242,20 @@ export const KarmaMixin = {
                     this._triggerGlow("#32ff32");
                     this._cb.playSound?.('samarpita');
                     this._cb.playSound?.('bandhanaMukta');
-                    this._updateAlert(
-                        this.shuvhaKarma === 0
-                            ? "🌿🌸 पुण्य-बंधन मुक्त: शुभ कर्म भस्म — चित्त निर्मल हुआ।"
-                            : `🌿🌸 पुण्य-बंधन: ${this.shuvhaKarma} शेष — नाम-जाप जारी रखें।`,
-                        "#32ff32"
-                    );
+                    this.shuvhaKarma === 0
+                        ? this._alertKey('bandhanaPunyaMukta', '🌿', 'achievement')
+                        : this._alertKey('bandhanaPunyaShesha', '🌿', 'guidance',
+                                         { n: this.shuvhaKarma });
                 } else if (this.ashuvhaKarma > 0 && this.activeNaam >= 5) {
                     this.activeNaam -= 5; this.ashuvhaKarma--; this.samarpita++;
                     this._addFloatingText("🥀🔥", "#ff3232");
                     this._triggerGlow("#ff3232");
                     this._cb.playSound?.('samarpita');
                     this._cb.playSound?.('bandhanaMukta');
-                    this._updateAlert(
-                        this.ashuvhaKarma === 0
-                            ? "🥀🔥 पाप-बंधन मुक्त: अशुभ कर्म भस्म — आत्मा शुद्ध हुई।"
-                            : `🥀🔥 पाप-बंधन: ${this.ashuvhaKarma} शेष — ५ नाम और चाहिए।`,
-                        "#ff3232"
-                    );
+                    this.ashuvhaKarma === 0
+                        ? this._alertKey('bandhanaPaapaMukta', '🥀', 'achievement')
+                        : this._alertKey('bandhanaPaapaShesha', '🥀', 'guidance',
+                                         { n: this.ashuvhaKarma });
                 }
             }
         } else if (m.type === "kripa") {
@@ -276,7 +273,7 @@ export const KarmaMixin = {
             ));
             this._addFloatingText("🌪️", "#aaaaaa", { x: m.x + m.width / 2, y: m.y });
             this._cb.vibrateGamepad?.(0.4, 0.6, 180);
-            this._updateAlert("🌪️ विक्षेप: चक्रवात ने रथ को झकझोरा!", "#aaaaaa");
+            this._alertKey('vikshepa', '🌪️', 'warning');
             return; // m.active = false नहीं — chakravaata यथावत
         } else if (m.type === "shuvha") {
             if (this.activeNaam >= 1) {
@@ -304,7 +301,9 @@ export const KarmaMixin = {
                 this._createExplosion(m.x + m.width / 2, m.y + m.height / 2, "#ffffff");
                 this._addFloatingText("🥀", "#ff3232", { x: m.x + m.width / 2, y: m.y });
                 this._triggerBlast("#ff3232");
-                this._cb.playSound?.('ashuvhaPrahaar');                this._updateAlert("🥀 पाप कमाया: अशुभ कर्म का आघात!", "#ff3232");            }
+                this._cb.playSound?.('ashuvhaPrahaar');
+                this._alertKey('ashuvha', '🥀', 'warning');
+            }
         }
         m.active = false;
     },
@@ -353,12 +352,8 @@ export const KarmaMixin = {
 
         this._triggerGlow("#ffe9a8");
         this._cb.playSound?.('kripa');
-        this._updateAlert(
-            hadKarma
-                ? "✋ कृपा: सारथी के सभी सांसारिक पुण्य-पाप समर्पित हुए।"
-                : "✋ कृपा प्राप्त हुई।",
-            "#ffe9a8"
-        );
+        this._alertKey(hadKarma ? 'kripaSamarpita' : 'kripaSimple',
+                       '✋', 'achievement');
         this.glowRings.kripa.active = true;
         this.glowRings.kripa.radius = 0;
     },
@@ -378,7 +373,9 @@ export const KarmaMixin = {
         if (opts.withGainedGlow) this._createGainedGlow(x, y, info.color);
         this._triggerGlow(info.color);
         this._cb.playSound?.(info.sound);
-        if (opts.alert !== false) this._updateAlert(info.alert, info.color);
+        if (opts.alert !== false) {
+            this._alertKey(info.alertKey, info.icon, info.category);
+        }
     },
 
     // ====================== KEYBOARD ACTIONS ======================
@@ -396,7 +393,7 @@ export const KarmaMixin = {
             this._cb.playSound?.('jaapa');
             this._addFloatingText(this.jaapaNaama, "#ffff00", { yOffset:-10, alpha:1.5, vy:-2, isBigName:true });
         } else if (this.activeNaam === 0 && !this.isNaamaJaapa) {
-            this._updateAlert("❌ नाम जाप के लिए नाम की आवश्यकता है!", "#ff3232");
+            this._alertKey('errNaamaAbsent', '❌', 'warning');
             this._cb.playSound?.('ashuvha');
         }
     },
@@ -411,8 +408,9 @@ export const KarmaMixin = {
             this.glowRings.shankha.active = true;
             this.glowRings.shankha.radius = 0;
             this._cb.playSound?.('shankhaDhwani');
-            this._updateAlert("🐚 शंख-ध्वनि: श्वेत प्रकाश फैल रहा है...", "#7dd3fc");        } else {
-            this._updateAlert("❌ शंख-शक्ति समाप्त — पहले शंख संग्रह करें।", "#ff3232");
+            this._alertKey('shankhaNaada', '🐚', 'achievement');
+        } else {
+            this._alertKey('errShankhaAbsent', '❌', 'warning');
             this._cb.playSound?.('ashuvha');
         }
     },
@@ -427,9 +425,9 @@ export const KarmaMixin = {
             this.glowRings.jyoti.active = true;
             this.glowRings.jyoti.radius = 0;
             this._cb.playSound?.('jyotiDhwani');
-            this._updateAlert("🪔 ज्योति जली: पाप-अंधकार में प्रकाश फैल रहा है...", "#ffe932");
+            this._alertKey('jyotiJali', '🪔', 'achievement');
         } else {
-            this._updateAlert("❌ ज्योति-शक्ति समाप्त — पहले ज्योति संग्रह करें।", "#ff3232");
+            this._alertKey('errJyotiAbsent', '❌', 'warning');
             this._cb.playSound?.('ashuvha');
         }
     },
@@ -440,15 +438,15 @@ export const KarmaMixin = {
     actionNaamaSamarpan() {
         if (this.gameOver || this.isPaused) return;
         if (this.samaya >= 100) {
-            this._updateAlert("❌ नाम समर्पण केवल 'अंतिम चरण' में संभव है।", "#ff3232");
+            this._alertKey('errSamarpanaPhase', '❌', 'warning');
             this._cb.playSound?.('ashuvha'); return;
         }
         if (this.activeNaam === 0) {
-            this._updateAlert("❌ समर्पण हेतु नाम शेष नहीं है।", "#ff3232");
+            this._alertKey('errSamarpanaNoNaam', '❌', 'warning');
             this._cb.playSound?.('ashuvha'); return;
         }
         if (!this.playerInTunnel) {
-            this._updateAlert("❌ नाम समर्पण करने के लिए आपको भक्ति-मार्ग के अंदर होना चाहिए।", "#ff3232");
+            this._alertKey('errSamarpanaTunnel', '❌', 'warning');
             this._cb.playSound?.('ashuvha'); return;
         }
         let gained = (this.activeNaam * 3) + (this.shankha + this.jyoti);
@@ -459,7 +457,7 @@ export const KarmaMixin = {
         this.purnaSamarpana  = true;
         this.isKarmaImmune   = true;
         this._addFloatingText(`+${gained} ॐ🙏`, "#ffff00", { alpha:1.5, vy:-2, isBigName:true, yOffset:-10 });
-        this._updateAlert("🌿 नाम समर्पित: +" + gained + " मिले।", "#ffff00");
+        this._alertKey('naamaSamarpita', '🌿', 'achievement', { n: gained });
         this._cb.playSound?.('naamaSamarpita');
     },
 
@@ -477,7 +475,8 @@ export const KarmaMixin = {
             this._addFloatingText(`+${gained} 🙏`, "#fb923c");
             this._triggerBlast("#32ff32");
             this._cb.playSound?.('samarpita');
-            this._updateAlert("🪷 वैराग्य: सारथी ने पुण्य का प्रलोभन ठुकराया।", "#ffd700");        } else {
+                        this._alertKey('vairaagya', '🪷', 'achievement');
+        } else {
             this._cb.playSound?.('ashuvha');
         }
     },

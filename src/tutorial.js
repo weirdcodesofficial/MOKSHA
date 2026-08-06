@@ -39,17 +39,13 @@
  *  if (!tutorial.isDone()) { tutorial.skip(); return; }
  * ============================================================
  */
-
+import { t } from './i18n.js';
 // ── localStorage key ─────────────────────────────────────────
 const TUTORIAL_STORAGE_KEY = 'moksha_tutorial_seen';
 
 // ── Step definitions ─────────────────────────────────────────
 // हर step में:
 //   id           — unique identifier
-//   shloka       — Sanskrit shloka / Vedic reference
-//   shlokaCredit — source attribution
-//   task         — खिलाड़ी को क्या करना है (Hindi)
-//   hint         — छोटा gameplay hint
 //   forceSpawn   — { type, xRatio, yRatio } | null
 //                  xRatio/yRatio: canvas के fraction में position
 //                  (0.5, 0.4 = canvas center से थोड़ा ऊपर)
@@ -59,45 +55,30 @@ const TUTORIAL_STEPS = [
     {
         id: 'move',
         shloka: 'उद्धरेदात्मनात्मानं नात्मानमवसादयेत्।',
-        shlokaCredit: '— भगवद्गीता ६.५',
-        task: 'अपनी पंखुड़ी (सारथी) को बाएँ-दाएँ हिलाओ।\nकीबोर्ड: ← → | Gamepad: L-Stick',
-        hint: 'आत्मा का उद्धार स्वयं आत्मा करे।',
         forceSpawn: null,
         dismissToComplete: false,
     },
     {
         id: 'maya',
         shloka: 'मायाजालमिदं विश्वं मोहयत्यखिलं जगत्।',
-        shlokaCredit: '— योगवासिष्ठ',
-        task: 'ऊपर से गिरती वस्तु को स्पर्श करो।\nसुनहरी "ॐ" — नाम है, इसे ग्रहण करो।',
-        hint: 'माया पहचानना — पहला कदम है।',
         forceSpawn: { type: 'naama', xRatio: 0.5, yRatio: 0.15 },
         dismissToComplete: false,
     },
     {
         id: 'jaapa',
         shloka: 'नाम जपत मंगल दिसि दसहूँ।',
-        shlokaCredit: '— रामचरितमानस',
-        task: 'नाम-जाप करो।\nकीबोर्ड: SPACE | Gamepad: RT\n(नाम संग्रह होने पर ही काम करेगा)',
-        hint: 'नाम ही रक्षा करता है — बार-बार जपो।',
         forceSpawn: { type: 'naama', xRatio: 0.5, yRatio: 0.12 },
         dismissToComplete: false,
     },
     {
         id: 'tunnel',
         shloka: 'भक्त्या मामभिजानाति यावान्यश्चास्मि तत्त्वतः।',
-        shlokaCredit: '— भगवद्गीता १८.५५',
-        task: 'स्क्रीन के मध्य में चमकता भक्ति-मार्ग दिखेगा।\nउसमें प्रवेश करो।',
-        hint: 'भक्ति-मार्ग में नाम-समर्पण (↑) संभव होता है।',
         forceSpawn: null,
         dismissToComplete: false,
     },
     {
         id: 'prarabdha',
         shloka: 'भोगेन क्षीयते पापं, तपसा क्षीयते मलः।',
-        shlokaCredit: '— स्कन्द पुराण',
-        task: 'प्रारब्ध भोगना ही पड़ता है — टाला नहीं जा सकता।\nमृत्यु पर प्रारब्ध +१ जुड़ता है। धैर्य रखो।\n\n"ENTER" दबाओ — यात्रा शुरू हो!',
-        hint: 'पुण्य, नाम, और समर्पण से मोक्ष मिलता है।',
         forceSpawn: null,
         dismissToComplete: true,   // dismiss = tutorial complete
     },
@@ -291,10 +272,11 @@ export class TutorialManager {
         if (!this.hasActiveCard()) return null;
         const step = TUTORIAL_STEPS[this._step];
         return {
-            shloka:       step.shloka,
-            shlokaCredit: step.shlokaCredit,
-            task:         step.task,
-            hint:         step.hint,
+            shloka:        step.shloka,
+            shlokaCredit:  t(`tutorial.${step.id}.credit`),
+            shlokaMeaning: t(`tutorial.${step.id}.meaning`),   // hi में खाली
+            task:          t(`tutorial.${step.id}.task`),
+            hint:          t(`tutorial.${step.id}.hint`),
             stepNumber:   this._step + 1,          // 1-indexed (display)
             totalSteps:   TUTORIAL_STEPS.length,
         };
