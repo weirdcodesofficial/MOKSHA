@@ -1016,6 +1016,9 @@ class AudioManager {
         }
 
         if (startBtn) startBtn.disabled = false;
+        // tutorial-btn भी साथ ही enable — दोनों readiness-gated हैं
+        const tutorialBtn = document.getElementById('tutorial-btn');
+        if (tutorialBtn) tutorialBtn.disabled = false;
     }
 
     // ── Buffer loading (private) ────────────────────────────
