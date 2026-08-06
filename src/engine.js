@@ -41,6 +41,7 @@
 import { KarmaMixin   } from './karma.js';
 import { PhysicsMixin } from './physics.js';
 import { StateMixin   } from './state.js';
+import { t } from './i18n.js';
 
 // ====================== शास्त्रीय स्थिरांक (VEDIC CONSTANTS) ======================
 
@@ -95,11 +96,10 @@ export const MAYA_SIZE_TABLE = {
  */
 export const RESOURCE_PICKUP_TABLE = {
     shankha: { icon: "🐚", color: "#7dd3fc", sound: "shankhaPrapta",
-               alert: "🐚 शंख प्राप्त: विक्षेप-शमन हेतु सुरक्षित रखें।" },
+               alertKey: "shankhaPrapta", category: "achievement" },
     jyoti:   { icon: "🪔", color: "#ffe932", sound: "jyotiPrapta",
-               alert: "🪔 ज्योति प्राप्त: B दबाकर अंधकार में प्रकाश फैलाएं।" },
+               alertKey: "jyotiPrapta",   category: "achievement" },
 };
-
 
 // ====================== KarmaEngine CLASS ======================
 
@@ -450,9 +450,9 @@ export class KarmaEngine {
             this._addFloatingText("⚫", "#888888", { alpha:1.5, vy:-3, isBigName:true });
             // ── Guidance: drishti blocked → ज्योति जलाओ ──
             if (this.jyoti > 0) {
-                this._updateAlert("⚫ दृष्टि अवरुद्ध: B दबाएँ — ज्योति से अंधकार भगाएँ।", "#ffe932");
+                this._alertKey('drishti', '⚫', 'guidance', null, 'drishtiJyoti');
             } else {
-                this._updateAlert("⚫ दृष्टि अवरुद्ध: ज्योति संग्रह करें — पाप का अंधकार बढ़ा।", "#888888");
+                this._alertKey('drishti', '⚫', 'warning', null, 'drishtiNone');
             }
         }
         this._prevDrishtiClear = isDrishtiClear;
@@ -463,7 +463,7 @@ export class KarmaEngine {
         if (this.samaya < 200 && this.samaya > 0 && !this.swaansaSamapta
                 && !this._prevSamaya200) {
             this._prevSamaya200 = true;
-            this._updateAlert("⏳ समय समाप्त होने वाला है — शीघ्र समर्पण करें!", "#ffd700");
+            this._alertKey('samaya200', '⏳', 'guidance');
         }
 
         // 2. समय < 100 — नाम-समर्पण guidance (एक-बार)
@@ -471,23 +471,18 @@ export class KarmaEngine {
                 && !this._prevSamaya100Guided) {
             this._prevSamaya100Guided = true;
             if (this.activeNaam > 0 && this.playerInTunnel) {
-                this._updateAlert("🌿 अंतिम चरण: W दबाएँ — नाम समर्पण करें!", "#32ff32");
+                this._alertKey('samaya100Tunnel', '🌿', 'achievement');
             } else if (this.activeNaam > 0) {
-                this._updateAlert("🌿 अंतिम चरण: भक्ति-मार्ग में जाएँ, W दबाएँ।", "#ffd700");
+                this._alertKey('samaya100Path', '🌿', 'guidance');;
             } else {
-                this._updateAlert("⚠️ अंतिम चरण: नाम संग्रह नहीं — ॐ एकत्र करें!", "#ff3232");
+                this._alertKey('samaya100NoNaam', '⚠️', 'warning');
             }
         }
 
         // 3. चेतना-जागृति — पहली बार achievement
         if (this.chetanaaJaagrita && !this._prevChetanaAlert) {
             this._prevChetanaAlert = true;
-            this.triggerAlert({
-                icon:     "👁️",
-                title:    "चेतना जागृत!",
-                subtitle: "सारथी ने माया का भेद जान लिया।",
-                category: "achievement",
-            });
+            this._alertKey('chetana', '👁️', 'achievement');
         }
 
         // 4. समर्पित milestones — 10 / 25 / 50
@@ -495,14 +490,8 @@ export class KarmaEngine {
         for (const ms of SAMARPITA_MILESTONES) {
             if (this.samarpita >= ms && !this._samarpitaMilestones.has(ms)) {
                 this._samarpitaMilestones.add(ms);
-                this.triggerAlert({
-                    icon:     "🙏",
-                    title:    `${ms} समर्पित!`,
-                    subtitle: ms === 50 ? "अद्भुत! पूर्ण वैराग्य की ओर।"
-                            : ms === 25 ? "शाबाश! निष्काम कर्म जारी रखें।"
-                            :             "प्रथम मील का पत्थर — समर्पण का मार्ग खुला।",
-                    category: "achievement",
-                });
+                this._alertKey('samarpita', '🙏', 'achievement',
+                               { n: ms }, `samarpita${ms}`);
             }
         }
 
@@ -523,9 +512,9 @@ export class KarmaEngine {
             if (chakravaataActive && !this._chakravaataGuided) {
                 this._chakravaataGuided = true;
                 if (this.shankha > 0) {
-                    this._updateAlert("🌪️ चक्रवात निकट: Y दबाएँ — शंख-ध्वनि से नष्ट करें!", "#7dd3fc");
+                    this._alertKey('chakravaata', '🌪️', 'guidance', null, 'chakravaataShankha');
                 } else {
-                    this._updateAlert("🌪️ चक्रवात निकट: शंख संग्रह करें — अभी सुरक्षा नहीं।", "#aaaaaa");
+                    this._alertKey('chakravaata', '🌪️', 'warning', null, 'chakravaataNone');
                 }
             }
             // chakravaata दूर जाने पर flag reset — अगली बार फिर guide करे
@@ -673,7 +662,8 @@ export class KarmaEngine {
             // activeNaam >= 10 होने पर prarabdhaTimer 2× गति से घटता है (§22.5)।
             if (this.naamaGhera > NAAMA_JAAP_MAX_RADIUS) {
                 this.isNaamaJaapa = false; this.naamaGhera = 0;
-                this._updateAlert("🌿 नाम जपत मंगल दिसि दसहूँ॥", "#ffd700");                this.naamaJaapaPower = 0;
+                this._alertKey('naamaJapa', '🌿', 'achievement');
+                this.naamaJaapaPower = 0;
             }
         }
 
@@ -697,7 +687,7 @@ export class KarmaEngine {
             }
             if (shankhaHit) {
                 this._cb.playSound?.('samarpita');
-                this._updateAlert("🐚 शंख-ध्वनि: चक्रवात समर्पित हुआ।", "#7dd3fc");
+                this._alertKey('shankhaChakra', '🐚', 'achievement');
             }
         });
 
@@ -715,7 +705,7 @@ export class KarmaEngine {
                 this._pendingGoodKarmaCount   = 0;
                 this._addFloatingText(`+${gained} 🌿`, "#32ff32");
                 this._triggerBlast("#32ff32");
-                this._updateAlert("🌿 पुण्य कमाया: सारथी के मन ने अच्छे कर्म स्वीकार किए।", "#32ff32");
+                this._alertKey('punyaPrapta', '🌿', 'achievement');
             }
         }
 
@@ -746,7 +736,8 @@ export class KarmaEngine {
 
             if (this.samaya <= 0) {
                 this.samaya = 0; this.swaansa = 0; this.swaansaSamapta = true;
-                this._updateAlert("🕉️ ब्रह्मांडीय क्षितिज: समय स्थिर है — निर्णय का क्षण।", "#ffffff");            }
+                this._alertKey('brahmandaKshitija', '🕉️', 'info');
+            }
         } else {
             // ── 16. ब्रह्मांडीय क्षितिज — मोक्ष-निर्णय (karma.js) ──
             this._checkMokhsha();
@@ -869,7 +860,7 @@ export class KarmaEngine {
                         "#a78bfa"
                     );
                     this._addFloatingText("-📜", "#a78bfa", { vy: -2.5, isBigName: true });
-                    this._updateAlert(`📜🔥 एक प्रारब्ध भोग लिया — ${this.prarabdha} शेष`, "#a78bfa");
+                    this._alertKey('prarabdhaBhoga', '📜', 'info', { n: this.prarabdha });
                     this._cb.playSound?.('bandhanaMukta');
                 } else {
                     // ── पूर्ण मुक्ति ──
@@ -880,7 +871,7 @@ export class KarmaEngine {
                         "#e879f9"
                     );
                     this._addFloatingText("📜🔥 मुक्त!", "#e879f9", { vy: -2.8, isBigName: true });
-                    this._updateAlert("📜🔥 प्रारब्ध से मुक्ति — पूर्ण भोग संपन्न!", "#a78bfa");
+                    this._alertKey('prarabdhaMukta', '📜', 'achievement');
                     this._cb.playSound?.('bandhanaMukta');
                     this._triggerGlow("#e879f9");
                 }
@@ -959,57 +950,65 @@ export class KarmaEngine {
     showEndScreen(reason = "EVALUATING") {
         if (this._UI?.viraamaOverlay) this._UI.viraamaOverlay.style.display = 'none';
         if (this._UI?.overlay)        this._UI.overlay.style.display        = 'flex';
-
+        // ── साझा inline styles — i18n में कभी नहीं जाते ──
+        const S_COUNT  = "font-family:'Noto Sans Devanagari',sans-serif;color:#f87171;font-size:14px;";
+        const S_CREDIT = "font-size:10px;color:#444;font-family:sans-serif;";
+        const CREDIT   = `<br><br><div style="${S_CREDIT}">Developed by Weird Codes</div>`;
+        // पुनर्जन्म-गिनती — तीनों में से दो शाखाओं में समान
+        const COUNT_HTML =
+            `<span style="${S_COUNT}">${t('end.punarjanmaLabel')} ` +
+            `<b>${this.punaraJanmaCount}</b></span>`;
         if (reason === "FORCE STOPPED") {
             if (this._UI?.overlayTitle) {
-                this._UI.overlayTitle.innerText   = "🛑 प्रलय 🛑";
+                this._UI.overlayTitle.innerText   = t('end.pralaya.title');
                 this._UI.overlayTitle.style.fontFamily = "'Noto Sans Devanagari', sans-serif";
                 this._UI.overlayTitle.style.color = "#ff3232";
             }
             if (this._UI?.overlaySubtitle) {
                 this._UI.overlaySubtitle.innerHTML =
-                    `<b>यात्रा रद्द:</b><br>सारथी ने रथ को बीच में ही छोड़ दिया।<br>` +
-                    `चित्त की अवस्था: पुण्य: ${this.shuvhaKarma} | पाप: ${this.ashuvhaKarma}<br><br>` +
-                    `आत्मा अप्रकट अंधकारमय स्थान में फंसी रहती है।<br>` +
-                    `अतः, घोड़े आत्मा को संसार में एक नए शरीर की ओर खींच ले जाते हैं।<br><br>` +
-                    `<span style="font-family:'Noto Sans Devanagari',sans-serif;color:#f87171;font-size:14px;">` +
-                    `♻️ पुनर्जन्म: <b>${this.punaraJanmaCount}</b></span>` +
-                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weird Codes</div>`;
+                    `<b>${t('end.pralaya.lead')}</b><br>${t('end.pralaya.line1')}<br>` +
+                    `${t('end.pralaya.stats', { punya: this.shuvhaKarma, paap: this.ashuvhaKarma })}<br><br>` +
+                    `${t('end.pralaya.line2')}<br>` +
+                    `${t('end.pralaya.line3')}<br><br>` +
+                    COUNT_HTML + CREDIT;
             }
         } else if (this.won) {
             if (this._UI?.overlayTitle) {
-                this._UI.overlayTitle.innerText   = "💥 मोक्ष 💥";
+                this._UI.overlayTitle.innerText   = t('end.moksha.title');
+                // ⚠️ BUG FIX: प्रलय शाखा fontFamily बदलती है, पर यह शाखा उसे
+                //    कभी रीसेट नहीं करती थी — प्रलय के बाद मोक्ष देखने पर
+                //    शीर्षक ग़लत font में रह जाता था। अब स्पष्ट रूप से सेट।
+                this._UI.overlayTitle.style.fontFamily = "'Noto Sans Devanagari', sans-serif";
                 this._UI.overlayTitle.style.color = "#ffffff";
             }
             if (this._UI?.overlaySubtitle) {
+                const S_M1 = "color:#ffa600;font-family:'Orbitron','Noto Sans Devanagari',sans-serif;" +
+                             "font-size:15px;font-weight:700;margin-bottom:8px;";
+                const S_M2 = "color:#a78bfa;font-family:'Orbitron','Noto Sans Devanagari',sans-serif;" +
+                             "font-size:11px;font-weight:600;letter-spacing:1.5px;margin-bottom:20px;";
+                const S_M3 = "color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;" +
+                             "display:block;max-width:90%;margin:0 auto;";                
                 this._UI.overlaySubtitle.innerHTML =
-                    "<div style='color:#ffa600;font-family:\"Orbitron\",sans-serif;font-size:15px;" +
-                    "font-weight:700;margin-bottom:8px;'>आपको पुनः जन्म लेने की आवश्यकता नहीं है।" +
-                    " यह संसार एक माया जाल है, जिससे आपने अंततः मुक्ति पा ली है।</div>" +
-                    "<div style='color:#a78bfa;font-family:\"Orbitron\",sans-serif;font-size:11px;" +
-                    "font-weight:600;letter-spacing:1.5px;margin-bottom:20px;'>" +
-                    "आपने जन्म-मरण के इस खेल पर विजय प्राप्त कर ली है।</div>" +
-                    "<span style='color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;" +
-                    "display:block;max-width:90%;margin:0 auto;'>" +
-                    "<b>गुणों और कर्मों से परे</b><br>अद्भुत अनुभूति! सारथी ने इंद्रियों रूपी" +
-                    " घोड़ों को स्थिर रखा और मन को पूर्णतः आसक्ति मुक्त कर दिया।</span>" +
-                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weird Codes</div>`;
+                    `<div style="${S_M1}">${t('end.moksha.line1')}</div>` +
+                    `<div style="${S_M2}">${t('end.moksha.line2')}</div>` +
+                    `<span style="${S_M3}">` +
+                    `<b>${t('end.moksha.heading')}</b><br>${t('end.moksha.line3')}</span>` +
+                    CREDIT;
             }
             this._cb.playSound?.('vijaya');
         } else {
             if (this._UI?.overlayTitle) {
-                this._UI.overlayTitle.innerText   = "संसार में पुनर्जन्म";
+                this._UI.overlayTitle.innerText   = t('end.rebirth.title');
+                this._UI.overlayTitle.style.fontFamily = "'Noto Sans Devanagari', sans-serif";
                 this._UI.overlayTitle.style.color = "#ff3232";
             }
             if (this._UI?.overlaySubtitle) {
                 this._UI.overlaySubtitle.innerHTML =
-                    `<b>मोह की लगाम:</b><br>` +
-                    (this.ashuvhaKarma > 0 ? `आपके (${this.ashuvhaKarma}) पापों ने सारथी को अंधा कर दिया।<br>` : '') +
-                    (this.shuvhaKarma  > 0 ? `आपके (${this.shuvhaKarma}) पुण्यों में मन आसक्त हो गया।<br>` : '') +
-                    `<br>घोड़े आत्मा को नए शरीर की ओर ले जाते हैं।<br><br>` +
-                    `<span style="font-family:'Noto Sans Devanagari',sans-serif;color:#f87171;font-size:14px;">` +
-                    `♻️ पुनर्जन्म: <b>${this.punaraJanmaCount}</b></span>` +
-                    `<br><br><div style="font-size:10px;color:#444;font-family:sans-serif;">Developed by Weird Codes</div>`;
+                    `<b>${t('end.rebirth.lead')}</b><br>` +
+                    (this.ashuvhaKarma > 0 ? `${t('end.rebirth.paap',  { n: this.ashuvhaKarma })}<br>` : '') +
+                    (this.shuvhaKarma  > 0 ? `${t('end.rebirth.punya', { n: this.shuvhaKarma  })}<br>` : '') +
+                    `<br>${t('end.rebirth.line1')}<br><br>` +
+                    COUNT_HTML + CREDIT;
             }
         }
     }
@@ -1091,7 +1090,7 @@ export class KarmaEngine {
 
         // पुनर्जन्म पर पुराने alerts clear करें — नई शुरुआत, नया संदेश
         this.alertQueue = [];
-        this._updateAlert("♻️ पवित्र पुनर्जन्म: नया सफर शुरू होता है।", "#32ff32");
+        this._alertKey('punarjanmaNaya', '♻️', 'achievement');
         this.notifyTimer = 120;
         this.notifyText = "♻️ पवित्र पुनर्जन्म";
     }

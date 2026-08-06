@@ -155,6 +155,8 @@ MOKSHA/
 └── src/
     ├── audio.js      — AudioManager: 28-mp3 preload, ambient layers, duck system
     ├── engine.js     — KarmaEngine: slim orchestrator, core loop, pools, state transitions
+    ├── i18n.js       — भाषा-प्रबंधक: 134 keys (hi/en), persistence, late-binding resolveAlert
+    ├── shastra.js    — शास्त्र-ग्रंथ: 3 pages, संरचित blocks, श्लोक-कोश (भाषा-निरपेक्ष)    
     ├── karma.js      — KarmaMixin: Vedic logic, maya spawn, kripa, keyboard actions
     ├── physics.js    — PhysicsMixin: glow-rings, particles, floating text, pool helpers
     ├── state.js      — StateMixin: HUD updates, alert queue, triggerAlert, animations

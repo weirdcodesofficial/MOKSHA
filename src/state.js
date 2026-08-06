@@ -32,8 +32,13 @@ export const StateMixin = {
      * @param {{ icon:string, title:string, subtitle:string, category:string }} opts
      * category: 'achievement' | 'guidance' | 'warning' | 'info'
      */
-    triggerAlert({ icon = '', title = '', subtitle = '', category = 'info' } = {}) {
-        const MAX_ALERTS = 3;
+    triggerAlert({
+        icon = '', title = '', subtitle = '',
+        titleKey = null, subtitleKey = null, params = null,
+        category = 'info',
+    } = {}) {
+
+    const MAX_ALERTS = 3;
         // Cap enforce: सबसे पुराना हटाएँ
         if (this.alertQueue.length >= MAX_ALERTS) {
             this.alertQueue.shift();
@@ -41,6 +46,9 @@ export const StateMixin = {
         this.alertQueue.push({
             id:      this._nextAlertId++,
             icon,
+            titleKey,
+            subtitleKey,
+            params,            
             title,
             subtitle,
             category,   // 'achievement' | 'guidance' | 'warning' | 'info'
@@ -50,7 +58,15 @@ export const StateMixin = {
             slideX:  80,   // 80→0 (right-side slide-in)
         });
     },
-
+    _alertKey(name, icon, category = 'info', params = null, subtitleName = null) {
+        this.triggerAlert({
+            icon,
+            titleKey:    `alert.${name}.title`,
+            subtitleKey: `alert.${subtitleName ?? name}.subtitle`,
+            params,
+            category,
+        });
+    },
     /**
      * Legacy wrapper — सभी पुराने _updateAlert() calls को
      * triggerAlert() पर delegate करता है (backward compatible)।

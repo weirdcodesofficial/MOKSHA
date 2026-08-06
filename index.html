@@ -51,7 +51,7 @@
         <div class="language-picker">
             <span id="hindi-language-label" class="language-option active">हिंदी</span>
             <label class="language-switch" for="language-toggle">
-                <input id="language-toggle" type="checkbox" role="switch" aria-label="Switch game language to English" aria-describedby="language-choicce-status">
+                <input id="language-toggle" type="checkbox" role="switch" aria-label="Switch game language to English" aria-describedby="language-choice-status">
                 <span class="language-switch-track" aria-hidden="true">
                     <span class="language-switch-thumb"></span>
                 </span>
@@ -63,7 +63,7 @@
             style="padding:15px 40px;font-size:24px;font-weight:bold;background:rgba(255,100,20,0.18);color:#ffa600;border:2px solid rgba(255,120,30,0.75);border-radius:8px;cursor:pointer;font-family:'Noto Sans Devanagari',sans-serif;box-shadow:0 0 18px rgba(255,120,30,0.45);transition:transform 0.2s,opacity 0.2s;">
             खेल प्रारंभ करें</button>
             <!-- गुरु-दीक्षा — पहले खिलाड़ियों के लिए tutorial reset button -->
-            <button id="tutorial-btn" disabled style="margin-top:14px;padding:10px, 28px;font-size:15px;font-weight:700;font-family:'Noto Sans Devanagari',sans-serif;background:rgba(255,140,0,0.07);border-radius:6px;cursor:pointer;letter-spacing:0.5pxl;transition:transform 0.18s ease,border-color 0.18s ease,box-shadow 0.18s ease;">🕉️ गुरु-दीक्षा देखें</button>
+            <button id="tutorial-btn" disabled style="margin-top:14px;padding:10px 28px;font-size:15px;font-weight:700;font-family:'Noto Sans Devanagari',sans-serif;background:rgba(255,140,0,0.07);border-radius:6px;cursor:pointer;letter-spacing:0.5px;transition:transform 0.18s ease,border-color 0.18s ease,box-shadow 0.18s ease;">🕉️ गुरु-दीक्षा देखें</button>
         <div id="credits">Developed by Weird Codes</div>
     </div>
 
@@ -155,58 +155,16 @@
             </div>
 
             <div class="shastra-body" id="shastra-body">
-
-                <div class="shastra-page active" id="shastra-page-1">
-                    <h3>🌀 ब्रह्मांड विज्ञान 🌀</h3>
-                    <p>समय और अंतरिक्ष की आपकी यात्रा दिव्य रथ द्वारा निर्देशित है। यह रथ आत्मा के मोक्ष की ओर बढ़ने वाले मार्ग का प्रतीक है, जो संसार की कर्मिक हवाओं को पार करता है। <i>Samsara</i>.</p>
-                    <p>आपके द्वारा किया गया प्रत्येक कर्म — पुण्य हो या पाप — <strong>समय विकृति (गति)</strong> के रूप में फल लाता है। <strong>पुण्य और पाप दोनों ही गति को मंद करते हैं</strong> — दोनों ही बंधन हैं। पाप सीधे रथ पर आघात करता है (कंपन व दृष्टि-भ्रम), जबकि पुण्य मोहक प्रलोभन देकर मन को बहकाता है।</p>
-                    <p><strong>🌬️ श्वास :</strong> यह आयु-शेष का प्रतीक है — इस जीवन-चक्र में बचे शेष श्वासों की गिनती।</p>
-                    <p><strong>⚖️ ब्रह्मांडीय क्षितिज — निर्णय का क्षण :</strong> जब समय शून्य पर पहुँचता है, यही निर्णय का क्षण है। यदि उस क्षण आत्मा सर्वथा निष्कर्म हो, <strong>चेतना जागृत</strong> हो (समर्पित ≥50), और <strong>पूर्ण नाम-समर्पण</strong> (⬆️ / W) किया गया हो — तभी <strong>मोक्ष</strong> प्राप्त होता है। अन्यथा <strong>पुनर्जन्म</strong> होता है।</p>
-                    <p><strong>👁️ चेतना-जागृति — कर्म-रक्षा :</strong> जब चेतना जागृत होती है, तो माया का कर्म-प्रभाव शून्य हो जाता है — <em>ज्ञानाग्निः सर्वकर्माणि भस्मसात् कुरुते</em> (गीता ४.३७)। जागृत आत्मा पर कर्म-बंधन नहीं लगता।</p>
-                </div>
-
-                <div class="shastra-page" id="shastra-page-2">
-                    <h3>⚙️ यंत्रिकी ⚙️</h3>
-                    <p><strong>☸️ ⬅️ ➡️ | DPAD_LEFT/RIGHT | A/D (रथ संचालन) :</strong> रथ का संचालन करें।</p>
-                    <p><strong>📿 (नाम जाप) : RT/R1 | SPACE :</strong> 1 नाम व्यय कर एक फैलती हुई आभा उत्पन्न करें।</p>
-                    <p><strong>🪷 (वैराग्य) : ⬇️ / X | S :</strong> पुण्य का प्रलोभन ठुकराएँ — आसक्ति त्यागें।</p>
-                    <p><strong>🌊 (प्रलय) : LB/L1 | Q :</strong> महाप्रलय का आह्वान — स्वेच्छा से रथ-त्याग।</p>
-                    <p><strong>♻️ (पवित्र पुनर्जन्म) : LT/L2 | R :</strong> समस्त कर्म-भार शून्य करके नया जीवन।</p>
-                    <p><strong>📖 (शास्त्र) : BACK | ESC :</strong> ब्रह्म-ज्ञान का द्वार। समय स्थिर हो जाता है।</p>
-                    <p><strong>⏸️ (स्तम्भन) : START | F :</strong> ब्रह्मांडीय प्रवाह को क्षण-भर थामें।</p>
-                    <p><strong>🐚 शंख (चक्रवात-शमन) : Y | GAMEPAD Y :</strong> शंख-ध्वनि से माया-चक्रवात नष्ट करें। <span style="color:#7dd3fc;">नाम अनुपलब्ध हो तो यंत्र-मार्ग।</span></p>
-                    <p><strong>🪔 ज्योति (दृष्टि-प्रकाश) : B | GAMEPAD B :</strong> पाप-अंधकार में दृष्टि पुनः प्राप्त करें। <span style="color:#ffe932;">पाप ≥ 3 होने पर दृष्टि अवरुद्ध।</span></p>
-                    <br>
-                    <h3>🏔️ अंतिम चरण 🏔️</h3>
-                    <p><strong>🙏 समर्पित (50) :</strong> चेतना जागृत होती है — मोक्ष-पथ की ओर।</p>
-                    <p><strong>🌌 भक्ति-मार्ग :</strong> <strong>1 नाम</strong> → पुण्य भस्म | <strong>5 नाम</strong> → पाप भस्म | <strong>10 नाम</strong> → प्रारब्ध भस्म।</p>
-                    <p><strong>ॐ 🙏 नाम समर्पण : ⬆️ | RB/R1 | W :</strong> भक्ति-मार्ग के भीतर समस्त नाम समर्पित करें। <span style="color:#ff3232;">⚠️ केवल 'अंतिम चरण' (समय &lt; 100s) में।</span></p>
-                    <br>
-                    <h3>⏳ कर्मफल ⏳</h3>
-                    <p><strong>🌿 पुण्य :</strong> अच्छे कर्म — सुखद, परंतु बंधन।</p>
-                    <p><strong>🥀 पाप :</strong> बुरे कर्म — आघात + दृष्टि-भ्रम।</p>
-                    <p><strong>ॐ नाम :</strong> मोक्ष प्राप्ति का सबसे बड़ा सहायक।</p>
-                    <p><strong>✋ कृपा :</strong> २० नाम पर १ कृपा। कृपा बढ़ने से पाप-माया घटती है।</p>
-                    <p><strong>📜 प्रारब्ध :</strong> प्रत्येक पुनर्जन्म पर — चाहे संचित कर्म कितना भी हो — प्रारब्ध केवल <strong>+1</strong> बढ़ता है। <em>प्रारब्धं भुज्यते एव</em> — भोगना ही पड़ता है। समय को ×1.15 तेज़ करता है। अधिकतम 15। १० नाम से भोग-गति २× होती है।</p>                    <p><strong>👁️ चेतना-जागृति :</strong> ५० समर्पित पूर्ण होने पर चेतना जागती है — कर्म-माया का प्रभाव शून्य होता है <em>(गीता ४.३७)</em>। मोक्ष-पथ की प्रामाणिक शर्त।</p>
-                </div>
-
-                <div class="shastra-page" id="shastra-page-3">
-                    <h3>👁️ प्रतीकवाद 👁️</h3>
-                    <p><strong>🐎 छह घोड़े (छह इंद्रियाँ) :</strong> स्वचालित रूप से सांसारिक वस्तुओं की ओर खींचते हैं।</p>
-                    <p><strong>🪢 लगाम (मन) :</strong> षडिन्द्रिय संतुलन की ओर यात्रा करता सूक्ष्म तत्त्व।</p>
-                    <p><strong>☸️ रथ (शरीर) :</strong> आत्मा को ले जाने वाला स्थूल रूप।</p>
-                    <p><strong>🪈 सारथी (मन) :</strong> इंद्रियों की लगाम थामे सक्रिय सारथी।</p>
-                    <p><strong>🪔 यात्री (आत्मा) :</strong> कारण शरीर में स्थित दिव्य चेतन ऊर्जा।</p>
-                    <p><strong>ॐ नाम (आत्म-स्मरण) :</strong> प्रारब्ध को भस्म करने की शुद्ध ऊर्जा।</p>
-                    <p><strong>🌬️ श्वास (आयु-शेष) :</strong> हर सांस अंतिम सांस के निकट ले जाती है।</p>
-                    <p><strong>🐚 शंख (यंत्र-मार्ग) :</strong> जब नाम-जाप संभव न हो, शंख-ध्वनि माया-चक्रवात को भेदती है — यंत्र की शक्ति से संसार-भ्रम नष्ट।</p>
-                    <p><strong>🪔 ज्योति (प्रकाश-मार्ग) :</strong> पाप के अंधकार में ज्योति दृष्टि लौटाती है — तमसो मा ज्योतिर्गमय।</p>
-                </div>
-
+                <!-- ⚠️ सामग्री अब src/shastra.js में है — यहाँ केवल खाली container।
+                    main.js की updateShastraPage() इन्हें भाषा के अनुसार भरती है। -->
+                <div class="shastra-page active" id="shastra-page-1"></div>
+                <div class="shastra-page" id="shastra-page-2"></div>
+                <div class="shastra-page" id="shastra-page-3"></div>
             </div><!-- /.shastra-body -->
 
             <div class="shastra-footer" style="justify-content:center;">
-                <button id="shastra-nav-btn">अगला &nbsp;[ 1 / 3 ]</button>
+                <!-- पाठ main.js की updateShastraPage() भरती है -->
+                <button id="shastra-nav-btn"></button>                
             </div>
         </div><!-- /.shastra-content -->
     </div><!-- /#shastra-overlay -->
