@@ -8,7 +8,6 @@ Control your chariot through the cosmic field, master your senses, burn your kar
 
 🎮 **[Play on itch.io](https://weirdcodes.itch.io/moksha)** &nbsp;|&nbsp;
 💛 **[Support on PayPal](https://paypal.me/pankajsharma18)** &nbsp;|&nbsp;
-☕ **[Ko-fi](https://ko-fi.com/weirdcodes)**
 
 ---
 
@@ -729,7 +728,6 @@ debugging, optimization, और refactoring सहायता के लिए 
 | 📘 Facebook | [weirdcodesofficial](https://www.facebook.com/weirdcodesofficial/) |
 | 📸 Instagram | [@weirdcodes.dev](https://www.instagram.com/weirdcodes.dev/) |
 | 🧵 Threads | [@weirdcodes.dev](https://www.threads.com/@weirdcodes.dev) |
-| ☕ Ko-fi | [ko-fi.com/weirdcodes](https://ko-fi.com/weirdcodes) |
 | 💛 PayPal | [paypal.me/pankajsharma18](https://paypal.me/pankajsharma18) |
 
 ---
