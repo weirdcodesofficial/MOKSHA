@@ -161,6 +161,16 @@ const STRINGS = {
         'end.rebirth.line1': 'घोड़े आत्मा को नए शरीर की ओर ले जाते हैं।',
 
         // साझा
+        // ── HUD canvas text ──
+        'hud.finalPhase':          'अंतिम चरण',
+        'hud.punyaTimerLabel':     'पुण्य +',
+        'hud.prarabdhaTimerLabel': 'प्रारब्ध {n} शेष',
+        // ── notify overlay ──
+        'notify.prarabdhaMukta':   '📜🔥 मुक्त!',
+        // ── end screens ──
+        'end.punarjanmaLabel':     'पुनर्जन्म:',
+        'end.moksha.samayaLabel':  'मोक्ष 🌿',
+        'end.restartHint':         "'R' दबाएं जीवन रथ को पुनः आरंभ करने के लिए",
         // ── शास्त्र-ग्रंथ (navigation) ──
         'shastra.next': 'अगला  [ {page} / {total} ]',
         'shastra.prev': 'पिछला  [ {page} / {total} ]',                
@@ -318,6 +328,16 @@ const STRINGS = {
         'end.rebirth.punya': 'The mind grew attached to your ({n}) Puṇya.',
         'end.rebirth.line1': 'The horses carry the soul toward a new body.',
 
+        // ── HUD canvas text ──
+        'hud.finalPhase':          'Final Phase',
+        'hud.punyaTimerLabel':     'Puṇya +',
+        'hud.prarabdhaTimerLabel': 'Prārabdha {n} remaining',
+        // ── notify overlay ──
+        'notify.prarabdhaMukta':   '📜🔥 Freed!',
+        // ── end screens ──
+        'end.punarjanmaLabel':     'Rebirths:',
+        'end.moksha.samayaLabel':  'Moksha 🌿',
+        'end.restartHint':         "Press 'R' to restart the life chariot",
         'shastra.next': 'Next  [ {page} / {total} ]',
         'shastra.prev': 'Back  [ {page} / {total} ]',        
     },
@@ -377,7 +397,7 @@ export function t(key, params = null) {
     let str = STRINGS[_currentLang]?.[key] ?? STRINGS[DEFAULT_LANG]?.[key] ?? key;
 
     if (params) {
-        str = str.replace(/\{(w+)}/g, (match, token) => (params[token]) !== undefined ? String(params[token]) : match);
+        str = str.replace(/\{(\w+)\}/g, (match, token) => (params[token]) !== undefined ? String(params[token]) : match);
     }
     return str;
 }

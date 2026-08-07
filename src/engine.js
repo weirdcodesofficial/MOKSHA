@@ -162,7 +162,7 @@ export class KarmaEngine {
         this.naamaGlowTimer  = 0;
         this.playerInTunnel  = false;
         this.notifyTimer     = 0;
-        this.notifyText      = "♻️ पवित्र पुनर्जन्म";
+        this.notifyText      = "";
         this.currentBorderColor = "";
 
         // ── Glow Ring System (DRY — §2.4) ───────────────────
@@ -870,7 +870,7 @@ export class KarmaEngine {
                         this.player.y + this.player.height / 2,
                         "#e879f9"
                     );
-                    this._addFloatingText("📜🔥 मुक्त!", "#e879f9", { vy: -2.8, isBigName: true });
+                    this._addFloatingText(t('notify.prarabdhaMukta'), "#e879f9", { vy: -2.8, isBigName: true });
                     this._alertKey('prarabdhaMukta', '📜', 'achievement');
                     this._cb.playSound?.('bandhanaMukta');
                     this._triggerGlow("#e879f9");
@@ -1092,7 +1092,7 @@ export class KarmaEngine {
         this.alertQueue = [];
         this._alertKey('punarjanmaNaya', '♻️', 'achievement');
         this.notifyTimer = 120;
-        this.notifyText = "♻️ पवित्र पुनर्जन्म";
+        this.notifyText = `♻️ ${t('alert.punarjanmaPavitra.title')}`;
     }
 
     /**

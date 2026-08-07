@@ -1,6 +1,6 @@
 // src/render.js
 
-import { resolveAlert } from './i18n.js';
+import { resolveAlert, t } from './i18n.js';
 // ── roundRect polyfill — Chrome<99, Firefox<112, Safari<15.4 support ──
 if (!CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
@@ -709,8 +709,7 @@ export const Renderer = {
                 ctx.font      = "700 9px 'Orbitron', sans-serif";
                 ctx.fillStyle = "rgba(180, 255, 180, 0.85)";
                 ctx.shadowBlur = 0;
-                ctx.fillText("पुण्य +" + pendingGoodKarmaCount, timerCx, baseY - 13);
-                // countdown
+                ctx.fillText(t('hud.punyaTimerLabel') + pendingGoodKarmaCount, timerCx, baseY - 13);                // countdown
                 ctx.font      = "900 " + (20 + pulse * 3) + "px 'Orbitron', sans-serif";
                 ctx.fillStyle = "#ffffff";
                 ctx.shadowBlur = 12 + pulse * 10; ctx.shadowColor = "#00ff00";
@@ -738,7 +737,7 @@ export const Renderer = {
                 ctx.font      = "700 9px 'Orbitron', sans-serif";
                 ctx.fillStyle = "rgba(200, 180, 255, 0.85)";
                 ctx.shadowBlur = 0;
-                ctx.fillText("प्रारब्ध " + prarabdha + " शेष", timerCx, baseY - 13);
+                ctx.fillText(t('hud.prarabdhaTimerLabel', { n: prarabdha }), timerCx, baseY - 13);
                 // countdown
                 ctx.font      = "900 " + (20 + pulse * 3) + "px 'Orbitron', sans-serif";
                 ctx.fillStyle = "#ffffff";
@@ -752,7 +751,7 @@ export const Renderer = {
         }
 
         if (samaya < 100 && samaya > 0 && !swaansaSamapta && !gameOver) {
-            ctx.save(); let currentSamay = Math.ceil(samaya); let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let textY = cy - smoothSize / 2 - 55; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#ff3232"; ctx.fillStyle = "rgba(255, 200, 200, 0.9)"; ctx.fillText("अंतिम चरण", cx, textY - 24); ctx.font = "900 " + (26 + pulse * 3) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + pulse * 35; ctx.shadowColor = "#ff0000"; ctx.fillText(currentSamay + "s", cx, textY); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255, 50, 50, " + (0.8 + pulse * 0.2) + ")"; ctx.strokeText(currentSamay + "s", cx, textY); ctx.restore();
+            ctx.save(); let currentSamay = Math.ceil(samaya); let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let textY = cy - smoothSize / 2 - 55; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#ff3232"; ctx.fillStyle = "rgba(255, 200, 200, 0.9)"; ctx.fillText(t('hud.finalPhase'), cx, textY - 24); ctx.font = "900 " + (26 + pulse * 3) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + pulse * 35; ctx.shadowColor = "#ff0000"; ctx.fillText(currentSamay + "s", cx, textY); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255, 50, 50, " + (0.8 + pulse * 0.2) + ")"; ctx.strokeText(currentSamay + "s", cx, textY); ctx.restore();
         }
 
         ctx.save();
