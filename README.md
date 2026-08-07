@@ -7,7 +7,7 @@ An HTML5 browser game rooted in **Sanatan Shastra** and **Karmic Philosophy**.
 Control your chariot through the cosmic field, master your senses, burn your karma, and attain **Moksha**.
 
 🎮 **[Play on itch.io](https://weirdcodes.itch.io/moksha)** &nbsp;|&nbsp;
-💛 **[Support on PayPal](https://paypal.me/pankajsharma18)** &nbsp;|&nbsp;
+💛 **[Support on PayPal](https://paypal.me/pankajsharma18)**
 
 ---
 
