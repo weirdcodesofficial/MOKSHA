@@ -573,7 +573,9 @@ function applyStartScreenLanguage() {
     metaDescription?.setAttribute('content', t('start.pageDescription'));
     hindiLabel?.classList.toggle('active', !isEnglish);
     englishLabel?.classList.toggle('active', isEnglish);
-    updateShastraPage(); // शास्त्र content भी language के अनुसार update करें    
+    updateShastraPage(); // शास्त्र content भी language के अनुसार update करें
+    const restartHintEl = document.getElementById('restart-hint-text');
+    if (restartHintEl) restartHintEl.textContent = t('end.restartHint');
 }
 
 initLang();

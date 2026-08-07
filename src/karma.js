@@ -32,6 +32,7 @@
  */
 
 import { SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, RESOURCE_PICKUP_TABLE, PRARABDHA_BHOG_FRAMES, MAX_PRARABDHA } from './engine.js';
+import { t } from './i18n.js';
 
 export const KarmaMixin = {
 
@@ -66,8 +67,7 @@ export const KarmaMixin = {
             this.chetanaaJaagrita      &&
             this.purnaSamarpana
         ) {
-            if (this._UI?.samayaVal)  this._UI.samayaVal.innerText  = `मोक्ष 🌿`;
-            if (this._UI?.swaansaVal) this._UI.swaansaVal.innerText = `0`;
+            if (this._UI?.samayaVal)  this._UI.samayaVal.innerText  = t('end.moksha.samayaLabel');            if (this._UI?.swaansaVal) this._UI.swaansaVal.innerText = `0`;
             if (!this.gameOver) {
                 this.gameOver = true;
                 this.won      = true;
@@ -132,10 +132,10 @@ export const KarmaMixin = {
         
         if (isApavitra) {
             this._alertKey('punarjanmaApavitra', '♻️', 'warning');
-            this.notifyText = "♻️ अपवित्र पुनर्जन्म";
+            this.notifyText = `♻️ ${t('alert.punarjanmaApavitra.title')}`;
         } else {
             this._alertKey('punarjanmaPavitra', '♻️', 'guidance');
-            this.notifyText = "♻️ पवित्र पुनर्जन्म";
+            this.notifyText = `♻️ ${t('alert.punarjanmaPavitra.title')}`;
         }
         this.notifyTimer = 120;
 
