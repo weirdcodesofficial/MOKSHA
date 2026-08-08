@@ -528,5 +528,6 @@ export const KarmaMixin = {
         this.isPaused = false;
         if (this._UI?.viraamaOverlay) this._UI.viraamaOverlay.style.display = 'none';
         this._cb.playSound?.('resume');
+        this._cb.updateAmbientVolumes?.();
     },
 };
