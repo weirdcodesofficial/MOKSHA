@@ -131,7 +131,7 @@ export const PhysicsMixin = {
     // ── Y stagger: font-size के अनुसार dynamic gap ──
     // isBigName = 100px font → 85px gap; normal = 16px → 24px gap
     const isBigName = opts.isBigName || false;
-    const MY_GAP    = isBigName ? 85 : 24;
+    const MY_GAP    = isBigName ? 50 : 24;
 
     let spawnY  = targetY;
     let attempts = 0;
@@ -148,7 +148,8 @@ export const PhysicsMixin = {
         if (!tooClose) break;
         // alternate up/down — सिर्फ ऊपर जाने से screen boundary cross होती थी
         const dir = (attempts % 2 === 0) ? -1 : 1;
-        spawnY   += dir * MY_GAP * (Math.floor(attempts / 2) + 1);
+        const step = Math.ceil((attempts + 1) / 2);
+        spawnY = targetY + dir * MY_GAP * step;
         attempts++;
     }
     // screen boundary clamp — text बाहर न जाए
@@ -172,6 +173,7 @@ export const PhysicsMixin = {
                 ft._cachedTextWidth = undefined;
                 ft._cachedText      = text;
             }
+            activeSlots.push({ y: spawnY, big: isBigName });
             return;
         }
         // सभी slots व्यस्त — silently skip (pool-integrity बनाए रखें)
