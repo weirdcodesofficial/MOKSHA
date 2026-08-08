@@ -12,11 +12,22 @@ body {
     color: #fff;
     font-family: 'Rajdhani', Arial, sans-serif;
     display: flex;
+    flex-direction: column;   /* HUD ऊपर, canvas नीचे — column stack */
     justify-content: center;
     align-items: center;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+}
+/* ====================== OUTER WRAPPER (HUD + Canvas) ====================== */
+/* HUD और canvas एक साथ scale होते हैं — scaleGame() इसी पर transform लगाता है */
+#moksha-outer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: center center;
+    will-change: transform;
+    flex-shrink: 0;
 }
 
 /* ====================== GAME CONTAINER ====================== */
@@ -43,6 +54,10 @@ canvas {
     display: block;
     will-change: transform;
     image-rendering: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0; /* HUD (z-index:7) के नीचे */    
 }
 
 /* ====================== PSEUDO-ELEMENTS ====================== */
@@ -65,7 +80,7 @@ canvas {
 #gameContainer::after {
     content: "";
     position: absolute;
-    top: 130px; /* top HUD के नीचे से शुरू */
+    top: 0; /* HUD अब बाहर है — पूरा canvas area cover करें */
     left: 0;
     right: 0;
     bottom: 0;
@@ -100,19 +115,19 @@ canvas {
 
 /* ====================== HUD / UI OVERLAY ====================== */
 #ui-overlay {
-    position: absolute;
-    top: 0;
-    left: auto;
-    width: 100%;
+    position: relative;            /* अब absolute नहीं — normal flow में है */
+    width: 600px;                  /* gameContainer की width से match */
+    box-sizing: border-box;
     height: auto;
-    background: rgba(6, 6, 10, 0.1);
-    padding: 6px 16px 10px 16px;
+    background: rgba(6, 6, 10, 0.92);
+    border: 1px solid rgba(255, 136, 0, 0.3);  /* gameContainer border से visual connect */
+    border-bottom: none;           /* canvas top-border से seamless join */
+    padding: 6px 16px 8px 16px;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    z-index: 7; /* alert-box(6) के ऊपर HUD clearly दिखे */
+    z-index: 7;
 }
-
 #ui-footer {
     position: absolute;
     bottom: 0;

@@ -77,10 +77,14 @@ export const KarmaMixin = {
         }
 
         // ── पुनर्जन्म (अपवित्र/पवित्र) ──
-        const isApavitra = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0 || this.prarabdha > 0);
+        const isApavitra = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0);
         const earnsKripaOnRebirth = (
             this.activeNaam >= 20 || this.samarpita >= 30 || this.chetanaaJaagrita
         );
+        // ── Bug 5 fix: pendingGoodKarma clear करने से पहले capture करें ──
+        // पहले false किया → hasSanchitaKarma में already false → prarabdha +1 miss
+        const _hadPendingKarma = this._pendingGoodKarma;
+
         // ── pendingGoodKarma साफ करें — प्रारब्ध में count नहीं जोड़ेंगे ──
         // (pending था = इस जन्म का बोझ, नीचे एकसाथ +1 में गिना जाएगा)
         if (this._pendingGoodKarma) {
@@ -92,7 +96,8 @@ export const KarmaMixin = {
         // ── प्रारब्ध: प्रति पुनर्जन्म केवल +1 (शास्त्र-नियम) ──
         // संचित कर्म (shuvha/ashuvha/pending) कितना भी हो —
         // एक जन्म का भार = एक प्रारब्ध।
-        const hasSanchitaKarma = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0 || isApavitra);
+        // _hadPendingKarma: captured value — clear होने से पहले का सच
+        const hasSanchitaKarma = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0 || _hadPendingKarma);
         const prevPrarabdha    = this.prarabdha;
         if (hasSanchitaKarma) {
             this.prarabdha = Math.min(MAX_PRARABDHA, this.prarabdha + 1);
@@ -186,7 +191,7 @@ export const KarmaMixin = {
                 const sizeInfo = MAYA_SIZE_TABLE[type] || MAYA_SIZE_TABLE.default;
                 this.mayaPool[i].active   = true;
                 this.mayaPool[i].x        = xPos;
-                this.mayaPool[i].y        = -30;
+                this.mayaPool[i].y        = -(this.HUD_TOP_Y ?? 0) - 30;
                 this.mayaPool[i].width    = sizeInfo.width;
                 this.mayaPool[i].height   = sizeInfo.height;
                 this.mayaPool[i].type     = type;
@@ -209,7 +214,7 @@ export const KarmaMixin = {
             if (!this.mayaPool[i].active) {
                 this.mayaPool[i].active    = true;
                 this.mayaPool[i].x         = x;
-                this.mayaPool[i].y         = y;
+                this.mayaPool[i].y        = -(this.HUD_TOP_Y ?? 0) - 30;
                 this.mayaPool[i].width     = sizeInfo.width;
                 this.mayaPool[i].height    = sizeInfo.height;
                 this.mayaPool[i].type      = type;

@@ -313,15 +313,15 @@ export class KarmaEngine {
      * @param {number} TUNNEL_X
      * @param {number} TUNNEL_WIDTH
      */
-    init(WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH) {
+    init(WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH, HUD_TOP_Y = 0) {
         this.WIDTH        = WIDTH;
         this.HEIGHT       = HEIGHT;
         this.TUNNEL_X     = TUNNEL_X;
         this.TUNNEL_WIDTH = TUNNEL_WIDTH;
-
+        this.HUD_TOP_Y    = HUD_TOP_Y;  // gameplay area इससे नीचे शुरू होती है
         // player प्रारंभिक position
         this.player.x = WIDTH / 2 - 30;
-        this.player.y = HEIGHT - 250;
+        this.player.y = HEIGHT - 250;   // HUD_TOP_Y से नीचे — unchanged (player नीचे है)
 
         // ── Pre-allocate pools (§2.3) — push/splice कभी नहीं ──
         for (let i = 0; i < 50; i++) {
@@ -345,7 +345,7 @@ export class KarmaEngine {
 
         // ── Background stars ──
         for (let i = 0; i < 35; i++) {
-            this.stars.push({ x: Math.random() * WIDTH, y: Math.random() * HEIGHT,
+            this.stars.push({ x: Math.random() * WIDTH, y: HUD_TOP_Y + Math.random() * (HEIGHT - HUD_TOP_Y),
                                speed: Math.random() * 1.5 + 0.5,
                                size:  Math.random() * 1.0 + 0.3 });
         }
@@ -354,7 +354,7 @@ export class KarmaEngine {
         for (let i = 0; i < 20; i++) {
             this.tunnelSparkles.push({
                 x: TUNNEL_X + Math.random() * TUNNEL_WIDTH,
-                y: Math.random() * HEIGHT,
+                y: HUD_TOP_Y + Math.random() * (HEIGHT - HUD_TOP_Y),
                 speed: Math.random() * 1.2 + 0.6,
                 size:  Math.random() * 1.5 + 0.5,
                 alpha: Math.random() * 0.7 + 0.3,
@@ -718,7 +718,13 @@ export class KarmaEngine {
         const prarabdhaModifier    = this.prarabdha > 0 ? this.prarabdhaGatiModifier : 1.0;
 
         if (!this.swaansaSamapta) {
-            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * dt;            this.swaansaTimer += dt;
+            // ── Bug 6 fix: प्रारब्ध का ×1.15 samaya penalty (शास्त्र-संगत) ──
+            // prarabdha=0 → 1.0×; prarabdha=1 → 1.15×; prarabdha=5 → ≈2.01×
+            // cap: MAX 3.0× (prarabdha≈9 से ऊपर) — game over न हो instantly
+            const prarabdhaSamayaMul = this.prarabdha > 0
+                ? Math.min(3.0, Math.pow(1.15, this.prarabdha))
+                : 1.0;
+            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * prarabdhaSamayaMul * dt;            this.swaansaTimer += dt;
             if (this.swaansaTimer >= 360) {
                 this.swaansaTimer -= 360;
                 if (this.swaansa > 0) this.swaansa--;
@@ -763,7 +769,8 @@ export class KarmaEngine {
         // ── 18. Stars & sparkles movement ─────────────────────
         this.stars.forEach(star => {
             if (!this.swaansaSamapta) {
-                star.y += star.speed * (ashuvhaTimeModifier * shuvhaTimeModifier * prarabdhaModifier + 0.1) * dt;                if (star.y > this.HEIGHT) { star.y = 0; star.x = Math.random() * this.WIDTH; }
+                star.y += star.speed * (ashuvhaTimeModifier * shuvhaTimeModifier * prarabdhaModifier + 0.1) * dt; 
+                if (star.y > this.HEIGHT) { star.y = this.HUD_TOP_Y; star.x = Math.random() * this.WIDTH; }
             }
         });
         this.tunnelSparkles.forEach(sparkle => {
@@ -1101,6 +1108,7 @@ export class KarmaEngine {
      */
     getState() {
         return {
+            HUD_TOP_Y:           this.HUD_TOP_Y,
             // Karma
             shuvhaKarma:         this.shuvhaKarma,
             ashuvhaKarma:        this.ashuvhaKarma,
@@ -1162,7 +1170,6 @@ export class KarmaEngine {
 // ====================== MIXIN APPLICATION ======================
 // physics.js और karma.js के methods engine.prototype पर assign करें।
 // इससे `this` engine instance को refer करता है — zero breaking changes।
-// ⚠️ Order: PhysicsMixin पहले (karma.js इन पर depend करती है)
 // ⚠️ Order: PhysicsMixin पहले (karma.js इन पर depend करती है)
 // StateMixin अंत में — UI helpers, triggerAlert, HUD animations
 Object.assign(KarmaEngine.prototype, PhysicsMixin, KarmaMixin, StateMixin);
