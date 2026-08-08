@@ -280,8 +280,8 @@ const STRINGS = {
         'alert.brahmandaKshitija.subtitle': 'Time stands still — the moment of decision.',
 
         // ── Śāstra-vacana (E-1: मूल देवनागरी अपरिवर्तित; subtitle = अन्वयार्थ) ──
-        'alert.naamaJapa.title': 'नाम जपत मंगल दिसि दसहूँ॥',
-        'alert.naamaJapa.subtitle': 'By chanting the Nāma, auspiciousness arises in all ten directions. — Rāmacaritamānasa',        
+        'alert.naamaJapa.title': 'Naama japata mantala disi dasahun ॥',
+        'alert.naamaJapa.subtitle': '— Raamacharitmaanasa',        
         // ── Tutorial (Guru-dīkṣā) ──
         // ⚠️ श्लोक tutorial.js में मूल देवनागरी में रहते हैं — यहाँ केवल
         //    अन्वयार्थ (word-order meaning), व्याख्या नहीं। कोई पद न छूटे,
@@ -297,7 +297,7 @@ const STRINGS = {
         'tutorial.maya.task': 'Touch the object falling from above.\nThe golden "ॐ" is the Nāma — receive it.',
         'tutorial.maya.hint': 'Recognising Māyā — that is the first step.',
 
-        'tutorial.jaapa.credit': '— Rāmacaritamānasa',
+        'tutorial.jaapa.credit': '— Raamacharitmaanasa',
         'tutorial.jaapa.meaning': 'By chanting the Nāma, auspiciousness arises in all ten directions.',
         'tutorial.jaapa.task': 'Chant the Nāma.\nKeyboard: SPACE | Gamepad: RT\n(works only when Nāma has been collected)',
         'tutorial.jaapa.hint': 'The Nāma alone protects — chant it again and again.',

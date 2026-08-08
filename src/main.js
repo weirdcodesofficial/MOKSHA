@@ -272,10 +272,9 @@ function toggleShastra() {
         touch.unblock('shastra');
         Object.keys(keys).forEach(k => { keys[k] = false; });
         touch.clearAll();
-        // viraama pause overlay नहीं दिख रही → game resume होना चाहिए
-        // (wasAlreadyPaused गलत तरीके से set हो सकता है — safe override)
-        if (UI.viraamaOverlay?.style.display !== 'flex') {
-            engine.isPaused = false;
+        // engine.toggleShastra() already restores pause state correctly.
+        // Only reset lastTime when the game is actually unpaused.
+        if (!engine.isPaused) {
             lastTime = performance.now(); // Shastra में बिताया time → dt spike रोकें
         }
     }
