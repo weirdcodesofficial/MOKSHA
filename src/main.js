@@ -263,6 +263,7 @@ function updateShastraPage() {
 function toggleShastra() {
     engine.toggleShastra(); // engine internal state update
     if (engine.isShastraVisible) {
+        touch.block('shastra');
         // overlay DOM
         currentShastraPage = 1; updateShastraPage();
         // keys reassign नहीं — TouchControls reference safe रहे
@@ -270,6 +271,7 @@ function toggleShastra() {
         touch.clearAll();
         requestAnimationFrame(continuousShastraScrollLoop);
     } else {
+        touch.unblock('shastra');
         Object.keys(keys).forEach(k => { keys[k] = false; });
         touch.clearAll();
         // viraama pause overlay नहीं दिख रही → game resume होना चाहिए
@@ -303,7 +305,9 @@ function debounce(func, delay) {
 
 // ====================== SCALE GAME ======================
 function scaleGame() {
-    const s = Math.min(window.innerWidth / 600, window.innerHeight / 680) * 0.90;
+    // visualViewport.height URL-bar को exclude करता है (mobile Chrome/Safari)
+    const availH = window.visualViewport?.height ?? window.innerHeight;
+    const s = Math.min(window.innerWidth / 600, availH / 680) * 0.90;
     UI.container.style.transform = `scale(${s})`;
     isScaleGameDone = true; // AudioManager readiness coordination
     AM?.notifyReadiness?.();
@@ -312,6 +316,9 @@ function scaleGame() {
 scaleGame();
 const debouncedScale = debounce(scaleGame, 200);
 window.addEventListener('resize', debouncedScale);
+// mobile URL-bar show/hide पर resize fire नहीं होता — visualViewport use करें
+window.visualViewport?.addEventListener('resize', debouncedScale);
+window.addEventListener('orientationchange', () => setTimeout(scaleGame, 300));
 
 // ====================== EVENT LISTENERS ======================
 
@@ -634,6 +641,7 @@ requestAnimationFrame(pollGamepadOnStartScreen);
 startBtn?.addEventListener('click', () => {
     if (isGameStarted) return;
     AM?.ensureAudio();
+    touch.unblock('start');   // start-screen हटा — controls दिखाएँ
     isGameStarted = true;
     document.getElementById('start-screen')?.remove();
     // गुरु-दीक्षा — पहली बार खेलने पर tutorial शुरू
@@ -648,6 +656,7 @@ startBtn?.addEventListener('click', () => {
 tutorialBtn?.addEventListener('click', () => {
     if (isGameStarted) return;
     AM?.ensureAudio();
+    touch.unblock('start');   // start-screen हटा — controls दिखाएँ
     // localStorage key हटाएँ — TutorialManager.start() इसे check करता है
     try { localStorage.removeItem('moksha_tutorial_seen');} catch (_) {}
     isGameStarted = true;

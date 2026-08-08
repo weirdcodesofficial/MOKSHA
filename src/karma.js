@@ -391,7 +391,16 @@ export const KarmaMixin = {
             this.isNaamaJaapa = true;
             this.naamaGhera   = this.smoothSize / 2;
             this._cb.playSound?.('jaapa');
-            this._addFloatingText(this.jaapaNaama, "#ffff00", { yOffset:-10, alpha:1.5, vy:-2, isBigName:true });
+            const bigActive = this.floatingTextPool.some(ft => ft.active && ft.isBigName);
+            if (!bigActive) {
+                this._addFloatingText(this.jaapaNaama, "#ffff00", {
+                    x:      this.WIDTH / 2,
+                    y:      100,
+                    alpha:  1.5,
+                    vy:     -0.8,
+                    isBigName: true,
+                });
+            }
         } else if (this.activeNaam === 0 && !this.isNaamaJaapa) {
             this._alertKey('errNaamaAbsent', '❌', 'warning');
             this._cb.playSound?.('ashuvha');

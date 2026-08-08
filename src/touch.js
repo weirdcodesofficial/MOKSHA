@@ -36,12 +36,14 @@ export class TouchControls {
         this._keys   = keys;
         this._el     = document.getElementById('touch-controls');
         this._active = false;
+        /** visibility blockers — जब तक कोई भी active है, controls hidden रहेंगे */
+        this._blockers = new Set(['start']); // start-screen शुरू में blocking        
 
         // Touch device नहीं है → silently exit
         if (!this._isTouchDevice() || !this._el) return;
 
         this._active = true;
-        this._el.style.display = 'flex';
+        this._applyVisibility();
         this._bind();
     }
 
@@ -114,10 +116,40 @@ export class TouchControls {
      *
      * @param {boolean} cardVisible — tutorial.hasActiveCard()
      */
+    /**
+     * किसी कारण से controls block करें (hide)।
+     * @param {string} reason — 'start' | 'tutorial' | 'shastra' | 'viraama' | 'end'
+     */
+    block(reason) {
+        if (!this._active) return;
+        this._blockers.add(reason);
+        this._applyVisibility();
+    }
+
+    /**
+     * कारण हट गया — controls unblock करें।
+     * सभी blockers हट जाएँ तो controls दिखेंगे।
+     * @param {string} reason
+     */
+    unblock(reason) {
+        if (!this._active) return;
+        this._blockers.delete(reason);
+        this._applyVisibility();
+    }
+
+    /**
+     * Tutorial card visibility sync — backward-compatible wrapper।
+     * @param {boolean} cardVisible — tutorial.hasActiveCard()
+     */
     syncWithTutorial(cardVisible) {
-        if (!this._active || !this._el) return;
-        // card visible = touch controls hide (canvas tap से dismiss होगा)
-        this._el.style.display = cardVisible ? 'none' : 'flex';
+        if (!this._active) return;
+        cardVisible ? this.block('tutorial') : this.unblock('tutorial');
+    }
+
+    /** Internal: blocker set के आधार पर display apply करें */
+    _applyVisibility() {
+        if (!this._el) return;
+        this._el.style.display = this._blockers.size === 0 ? 'flex' : 'none';
     }
 
     /**

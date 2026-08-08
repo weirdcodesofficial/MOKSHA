@@ -5,7 +5,7 @@
     <meta name="description" content="मोक्ष — एक आध्यात्मिक गेम जो सनातन शास्त्र पर आधारित है।">
     <meta charset="UTF-8">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>ॐ</text></svg>">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>मोक्ष</title>
 
     <!-- Social share meta tags-->
@@ -168,34 +168,27 @@
             </div>
         </div><!-- /.shastra-content -->
     </div><!-- /#shastra-overlay -->
-
-    <!-- ── Touch Controls Overlay (mobile only — JS से show होगा) ── -->
-    <div id="touch-controls">
-
-        <!-- Left cluster: Movement -->
-        <div class="touch-cluster touch-cluster-left">
-            <div class="touch-btn touch-btn-xl" data-key="arrowleft">◀</div>
-            <div class="touch-btn touch-btn-xl" data-key="arrowright">▶</div>
-        </div>
-
-        <!-- Center cluster: Secondary actions -->
-        <div class="touch-cluster touch-cluster-center">
-            <div class="touch-btn touch-btn-sm" data-key="y">🐚</div>
-            <div class="touch-btn touch-btn-sm" data-key="b">🪔</div>
-            <div class="touch-btn touch-btn-sm" data-key="escape">📜</div>
-            <div class="touch-btn touch-btn-sm" data-key="f">⏸</div>
-        </div>
-
-        <!-- Right cluster: Primary actions -->
-        <div class="touch-cluster touch-cluster-right">
-            <div class="touch-btn touch-btn-primary" data-key="space">ॐ</div>
-            <div class="touch-secondary-row">
-                <div class="touch-btn touch-btn-md" data-key="s">🌿</div>
-                <div class="touch-btn touch-btn-md" data-key="w">🙏</div>
-            </div>
-        </div>
-
+        <div class="touch-btn touch-btn-xl" data-key="arrowright">▶</div>
     </div>
+
+    <!-- Center cluster: Secondary actions -->
+    <div class="touch-cluster touch-cluster-center">
+        <div class="touch-btn touch-btn-sm" data-key="y">🐚</div>
+        <div class="touch-btn touch-btn-sm" data-key="b">🪔</div>
+        <div class="touch-btn touch-btn-sm" data-key="escape">📜</div>
+        <div class="touch-btn touch-btn-sm" data-key="f">⏸</div>
+    </div>
+
+    <!-- Right cluster: Primary actions -->
+    <div class="touch-cluster touch-cluster-right">
+        <div class="touch-btn touch-btn-primary" data-key="space">ॐ</div>
+        <div class="touch-secondary-row">
+            <div class="touch-btn touch-btn-md" data-key="s">🌿</div>
+            <div class="touch-btn touch-btn-md" data-key="w">🙏</div>
+        </div>
+    </div>
+
+</div>
 
     <!-- ── Loading / Readiness Overlay (highest z-index) ── -->
     <div id="loading-overlay">
@@ -204,6 +197,35 @@
     </div>
 
 </main><!-- /#gameContainer -->
+
+<!-- ── Touch Controls Overlay (mobile only — viewport-level, scale-independent) ── -->
+<div id="touch-controls">
+
+    <!-- Left cluster: Movement -->
+    <div class="touch-cluster touch-cluster-left">
+        <div class="touch-btn touch-btn-xl" data-key="arrowleft">◀</div>
+        <div class="touch-btn touch-btn-xl" data-key="arrowright">▶</div>
+    </div>
+
+    <!-- Center cluster: Secondary actions -->
+    <div class="touch-cluster touch-cluster-center">
+        <div class="touch-btn touch-btn-sm" data-key="y">🐚</div>
+        <div class="touch-btn touch-btn-sm" data-key="b">🪔</div>
+        <div class="touch-btn touch-btn-sm" data-key="escape">📜</div>
+        <div class="touch-btn touch-btn-sm" data-key="f">⏸</div>
+    </div>
+
+    <!-- Right cluster: Primary actions -->
+    <div class="touch-cluster touch-cluster-right">
+        <div class="touch-btn touch-btn-primary" data-key="space">ॐ</div>
+        <div class="touch-secondary-row">
+            <div class="touch-btn touch-btn-md" data-key="s">🌿</div>
+            <div class="touch-btn touch-btn-md" data-key="w">🙏</div>
+        </div>
+    </div>
+
+</div>
+
 
 <!-- ====================== SCRIPTS ======================
      ⚠️  लोड-क्रम महत्वपूर्ण:
