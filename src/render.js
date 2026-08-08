@@ -300,13 +300,13 @@ function drawAlerts(alertQueue, WIDTH) {
         ctx.font         = "700 11px 'Orbitron', 'Noto Sans Devanagari', sans-serif";
         ctx.fillStyle    = '#ffffff';
         ctx.shadowBlur   = 0;
-        ctx.fillText(subtitle, textX, cardY + CARD_H * 0.65, CARD_W - BORDER_W - 44);
+        ctx.fillText(subtitle, textX, cardY + CARD_H * (subtitle ? 0.35 : 0.50), CARD_W - BORDER_W - 44);
 
         // ── subtitle ──
         if (a.subtitle) {
             ctx.font      = "400 9.5px 'Orbitron', sans-serif";
             ctx.fillStyle = 'rgba(200, 200, 220, 0.85)';
-            ctx.fillText(a.subtitle, textX, cardY + CARD_H * 0.65, CARD_W - BORDER_W - 44);
+            ctx.fillText(subtitle, textX, cardY + CARD_H * 0.65, CARD_W - BORDER_W - 44);
         }
 
         ctx.restore();
