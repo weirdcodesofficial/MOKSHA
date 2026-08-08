@@ -119,29 +119,40 @@ export const PhysicsMixin = {
         const baseY     = opts.y ?? this.player.y;
         const targetY   = baseY + (opts.yOffset ?? 10);
 
-        // ── Overlap prevention: active slots की Y positions collect करें ──
-        const activeYs = [];
-        for (let i = 0; i < this.floatingTextPool.length; i++) {
-            if (this.floatingTextPool[i].active) {
-                activeYs.push(this.floatingTextPool[i].y);
-            }
-        }
+// ── Overlap prevention: active slots की Y + isBigName दोनों collect करें ──
+    // 🛠️ बग-फिक्स: पहले सिर्फ Y था — isBigName (100px font) का gap
+    //    22px से compute होता था जो visually insufficient था
+    const activeSlots = [];
+    for (let i = 0; i < this.floatingTextPool.length; i++) {
+        const ft = this.floatingTextPool[i];
+        if (ft.active) activeSlots.push({ y: ft.y, big: ft.isBigName });
+    }
 
-        // ── Y stagger: occupied Y के बहुत पास हो तो offset करो ──
-        const MIN_Y_GAP = 22; // px — दो texts के बीच minimum gap
-        let spawnY = targetY;
-        let attempts = 0;
-        while (attempts < 6) {
-            let tooClose = false;
-            for (let j = 0; j < activeYs.length; j++) {
-                if (Math.abs(activeYs[j] - spawnY) < MIN_Y_GAP) {
-                    tooClose = true; break;
-                }
+    // ── Y stagger: font-size के अनुसार dynamic gap ──
+    // isBigName = 100px font → 85px gap; normal = 16px → 24px gap
+    const isBigName = opts.isBigName || false;
+    const MY_GAP    = isBigName ? 85 : 24;
+
+    let spawnY  = targetY;
+    let attempts = 0;
+    while (attempts < 10) {
+        let tooClose = false;
+        for (let j = 0; j < activeSlots.length; j++) {
+            // existing text का gap उसके size से; दोनों में से बड़ा लो
+            const otherGap = activeSlots[j].big ? 85 : 24;
+            const reqGap   = Math.max(MY_GAP, otherGap);
+            if (Math.abs(activeSlots[j].y - spawnY) < reqGap) {
+                tooClose = true; break;
             }
-            if (!tooClose) break;
-            spawnY -= MIN_Y_GAP; // ऊपर की तरफ offset
-            attempts++;
         }
+        if (!tooClose) break;
+        // alternate up/down — सिर्फ ऊपर जाने से screen boundary cross होती थी
+        const dir = (attempts % 2 === 0) ? -1 : 1;
+        spawnY   += dir * MY_GAP * (Math.floor(attempts / 2) + 1);
+        attempts++;
+    }
+    // screen boundary clamp — text बाहर न जाए
+    spawnY = Math.max(20, Math.min(this.HEIGHT - 20, spawnY));
 
         // ── Slot खोजें और activate करें ──
         for (let i = 0; i < this.floatingTextPool.length; i++) {
