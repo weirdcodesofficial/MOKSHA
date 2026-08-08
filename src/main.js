@@ -41,9 +41,8 @@ const HEIGHT       = 680;
 const TUNNEL_WIDTH = 180;
 const TUNNEL_X     = (WIDTH - TUNNEL_WIDTH) / 2;
 
-// HUD_TOP_Y — gameplay canvas की वह Y-सीमा जहाँ HUD overlay शुरू होता है
-// HUD अब ऊपर है — gameplay area HUD के नीचे से शुरू होती है
-const HUD_TOP_Y = document.getElementById('ui-overlay')?.offsetHeight ?? 120;
+// HUD_TOP_Y — HUD अब gameContainer के बाहर है — canvas पूरा top:0 से शुरू
+const HUD_TOP_Y = 0;
 
 // ====================== UI ELEMENT REFERENCES ======================
 const UI = {
@@ -86,7 +85,7 @@ engine.setCallbacks({
     startSushuptiSwaansaLayer: ()     => AM?.startSushuptiSwaansaLayer(),
 });
 engine.setUI(UI);
-engine.init(WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH);
+engine.init(WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH, HUD_TOP_Y);
 
 // ====================== TUTORIAL INIT ======================
 const tutorial = new TutorialManager(
@@ -269,7 +268,6 @@ function toggleShastra() {
         // keys reassign नहीं — TouchControls reference safe रहे
         Object.keys(keys).forEach(k => { keys[k] = false; });
         touch.clearAll();
-        requestAnimationFrame(continuousShastraScrollLoop);
     } else {
         touch.unblock('shastra');
         Object.keys(keys).forEach(k => { keys[k] = false; });
@@ -285,6 +283,7 @@ function toggleShastra() {
 
 // ====================== CONTINUOUS SHASTRA SCROLL ======================
 // ArrowUp/Down को OS key-repeat पर निर्भर न रखकर — held-flag से smooth scroll
+let _shastraScrollRafId = null;
 function continuousShastraScrollLoop() {
     if (engine.isShastraVisible) {
         const body = document.getElementById('shastra-body');
@@ -293,9 +292,9 @@ function continuousShastraScrollLoop() {
         if (shastraKeyState.down) body.scrollTop += 6;
         }
     }
-    requestAnimationFrame(continuousShastraScrollLoop);
+    _shastraScrollRafId = requestAnimationFrame(continuousShastraScrollLoop);
 }
-requestAnimationFrame(continuousShastraScrollLoop);
+_shastraScrollRafId = requestAnimationFrame(continuousShastraScrollLoop);
 
 // ====================== UTILITY ======================
 function debounce(func, delay) {
@@ -306,12 +305,17 @@ function debounce(func, delay) {
 // ====================== SCALE GAME ======================
 function scaleGame() {
     // visualViewport.height URL-bar को exclude करता है (mobile Chrome/Safari)
-    const availH = window.visualViewport?.height ?? window.innerHeight;
-    const s = Math.min(window.innerWidth / 600, availH / 680) * 0.90;
-    UI.container.style.transform = `scale(${s})`;
+    const availH  = window.visualViewport?.height ?? window.innerHeight;
+    // HUD की natural height include करें — total content height से scale निकालें
+    const hudEl   = document.getElementById('ui-overlay');
+    const hudH    = hudEl ? hudEl.offsetHeight : 0;
+    const totalH  = 680 + hudH;   // canvas (680) + HUD — दोनों #moksha-outer में हैं
+    const s       = Math.min(window.innerWidth / 600, availH / totalH) * 0.90;
+    // transform #gameContainer पर नहीं — #moksha-outer पर (HUD + canvas एक साथ scale)
+    const outerEl = document.getElementById('moksha-outer');
+    if (outerEl) outerEl.style.transform = `scale(${s})`;
     isScaleGameDone = true; // AudioManager readiness coordination
     AM?.notifyReadiness?.();
-
 }
 scaleGame();
 const debouncedScale = debounce(scaleGame, 200);
@@ -479,7 +483,9 @@ function draw() {
     
     const st = engine.getState();
     
-    AM?.setSwaansaPulse?.(st.worldSwaansaPulse ?? 0);
+    // swaansaTimer से compute — render.js के formula से 1:1 match
+    const worldSwaansaPulse = (Math.sin((st.swaansaTimer / 360) * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+    AM?.setSwaansaPulse?.(worldSwaansaPulse);
     AM?.updateDuckDecay?.();
     AM?.updateAmbientVolumes?.();
 
@@ -530,12 +536,11 @@ function gameLoop(ts) {
     }
     lastTime = ts;
     draw();
-    requestAnimationFrame(gameLoop);
+    _rafId = requestAnimationFrame(gameLoop);
 }
 
 // ====================== VISIBILITY API — Tab hidden पर rAF रोकें ======================
 let _rafId = null;
-const _origGameLoop = gameLoop;
 
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
@@ -649,7 +654,7 @@ startBtn?.addEventListener('click', () => {
     lastTime = performance.now();
     // Ghost click guard — 600ms बाद canvas click enable
     setTimeout (() => {_tutorialClickReady = true;}, 600);
-    requestAnimationFrame(gameLoop);
+    _rafId = requestAnimationFrame(gameLoop);
 });
 
 // ── Tutorial button — गुरु-दीक्षा reset करके game शुरू करें ──
@@ -665,7 +670,7 @@ tutorialBtn?.addEventListener('click', () => {
     tutorial.start(engine.player.x);
     lastTime = performance.now();
     setTimeout(() => { _tutorialClickReady = true; }, 600);
-    requestAnimationFrame(gameLoop);
+    _rafId = requestAnimationFrame(gameLoop);
 });
 
 // ====================== AUDIO MANAGER WIRING ======================

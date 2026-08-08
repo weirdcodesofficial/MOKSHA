@@ -236,6 +236,9 @@ function drawAlerts(alertQueue, WIDTH) {
     const BORDER_W    = 4;
     const RADIUS      = 6;
 
+    // ── Bug 4 fix: skipped cards (warning/guidance/opacity=0) count नहीं होने चाहिए ──
+    // i (array index) → renderedCount (actual rendered cards का counter)
+    let renderedCount = 0;
     for (let i = 0; i < alertQueue.length; i++) {
         const a = alertQueue[i];
         if (a.opacity <= 0) continue;
@@ -246,11 +249,11 @@ function drawAlerts(alertQueue, WIDTH) {
 
         // ── position (slideX से right-side offset) ──
         const cardX = WIDTH - CARD_RIGHT - CARD_W - a.slideX;
-        const cardY = CARD_TOP + i * (CARD_H + CARD_GAP);
+        const cardY = CARD_TOP + renderedCount * (CARD_H + CARD_GAP);
 
         ctx.save();
         // stack depth fade — नीचे वाले cards हल्के (visually layered)
-        const depthFade = 1 - (i * 0.12);
+        const depthFade = 1 - (renderedCount * 0.12);
         ctx.globalAlpha = Math.min(1, a.opacity) * depthFade;
         // ── drop shadow ──
         ctx.shadowBlur  = 18;
@@ -300,16 +303,17 @@ function drawAlerts(alertQueue, WIDTH) {
         ctx.font         = "700 11px 'Orbitron', 'Noto Sans Devanagari', sans-serif";
         ctx.fillStyle    = '#ffffff';
         ctx.shadowBlur   = 0;
-        ctx.fillText(subtitle, textX, cardY + CARD_H * (subtitle ? 0.35 : 0.50), CARD_W - BORDER_W - 44);
+        ctx.fillText(title, textX, cardY + CARD_H * (subtitle ? 0.35 : 0.50), CARD_W - BORDER_W - 44);
 
         // ── subtitle ──
-        if (a.subtitle) {
+        if (subtitle) {
             ctx.font      = "400 9.5px 'Orbitron', sans-serif";
             ctx.fillStyle = 'rgba(200, 200, 220, 0.85)';
             ctx.fillText(subtitle, textX, cardY + CARD_H * 0.65, CARD_W - BORDER_W - 44);
         }
 
         ctx.restore();
+        renderedCount++; // ✅ सिर्फ actually rendered cards count करें
     }
 }
 
@@ -429,9 +433,12 @@ export const Renderer = {
         } = state;
 
         let totalKarma = shuvhaKarma + ashuvhaKarma;
-
-        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        const HUD_TOP_Y = state.HUD_TOP_Y ?? 0;
         ctx.shadowBlur = 0; ctx.shadowColor = "transparent"; ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, HUD_TOP_Y, WIDTH, HEIGHT - HUD_TOP_Y);
+        ctx.clip();  
+        ctx.clearRect(0, HUD_TOP_Y, WIDTH, HEIGHT - HUD_TOP_Y);      
         if (shakeTimer > 0) { const sv = (Math.random() - 0.5) * 5; ctx.translate(sv, -sv); }
 
         ctx.fillStyle = "#000000"; ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -456,11 +463,11 @@ export const Renderer = {
         if (tunnelGradBucket !== cachedTunnelGradBucket || !cachedTunnelGrad) {
             cachedTunnelGradBucket = tunnelGradBucket;
             cachedTunnelGrad = ctx.createLinearGradient(TUNNEL_X, 0, TUNNEL_X + TUNNEL_WIDTH, 0);
-            cachedTunnelGrad.addColorStop(0, "rgba(255, 0, 200, " + (0.02 + edgeIntensity * 0.15) + ")");
-            cachedTunnelGrad.addColorStop(0, "rgba(255, 200, 60, " + (0.05 + edgeIntensity * 0.16) + ")");
-            cachedTunnelGrad.addColorStop(0.5, "rgba(0, 240, 255, " + (0.12 + edgeIntensity * 0.45) + ")");
-            cachedTunnelGrad.addColorStop(0, "rgba(255, 200, 60, " + (0.05 + edgeIntensity * 0.16) + ")");
-            cachedTunnelGrad.addColorStop(1, "rgba(255, 0, 200, " + (0.02 + edgeIntensity * 0.15) + ")");
+            cachedTunnelGrad.addColorStop(0,    "rgba(255, 0, 200, "   + (0.02 + edgeIntensity * 0.15) + ")");
+            cachedTunnelGrad.addColorStop(0.25, "rgba(255, 200, 60, "  + (0.05 + edgeIntensity * 0.16) + ")");
+            cachedTunnelGrad.addColorStop(0.5,  "rgba(0, 240, 255, "   + (0.12 + edgeIntensity * 0.45) + ")");
+            cachedTunnelGrad.addColorStop(0.75, "rgba(255, 200, 60, "  + (0.05 + edgeIntensity * 0.16) + ")");
+            cachedTunnelGrad.addColorStop(1,    "rgba(255, 0, 200, "   + (0.02 + edgeIntensity * 0.15) + ")");
         }
         ctx.fillStyle = cachedTunnelGrad; ctx.fillRect(TUNNEL_X, 0, TUNNEL_WIDTH, HEIGHT);
 
