@@ -35,11 +35,8 @@
 </head>
 
 <body>
-<!-- ── Outer wrapper: HUD + canvas एक साथ scale होंगे ── -->
-<div id="moksha-outer">
-
-    <!-- ── HUD Overlay (stats panels) — canvas से ऊपर, border के बाहर ── -->
-    <div id="ui-overlay">
+<!-- ── HUD Overlay — scale-independent, full viewport width ── -->
+<div id="ui-overlay">
         <!-- Row 1: कर्म-त्रय — पुण्य, पाप, प्रारब्ध -->
         <div class="stat-row">
             <div class="stat-line" id="punya"     title="पुण्य"    style="color:#32ff32;background:rgba(50,255,50,0.07);border:1px solid rgba(50,255,50,0.2);">🌿 0</div>
@@ -67,8 +64,10 @@
             <div class="stat-line" id="drishti"         title="दृष्टि"      style="color:#ffe9a8;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);font-size:9.5px;padding:4px 7px;opacity:0.9;">☀️</div>
             <div class="stat-line" id="purnaSamarpana"  title="पूर्ण समर्पण" style="color:#fde68a;background:rgba(253,230,138,0.05);border:1px solid rgba(253,230,138,0.15);font-size:9.5px;padding:4px 7px;opacity:0.9;">🤲</div>
         </div>
-    </div><!-- /#ui-overlay -->
+</div><!-- /#ui-overlay -->
 
+<!-- ── Outer wrapper: canvas scale होगा, HUD नहीं ── -->
+<div id="moksha-outer">
 <main id="gameContainer">
 
     <!-- sci-fi radar sweep overlay (decorative) -->

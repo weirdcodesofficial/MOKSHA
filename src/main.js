@@ -306,15 +306,23 @@ function debounce(func, delay) {
 function scaleGame() {
     // visualViewport.height URL-bar को exclude करता है (mobile Chrome/Safari)
     const availH  = window.visualViewport?.height ?? window.innerHeight;
-    // HUD की natural height include करें — total content height से scale निकालें
+    // HUD अब scale-independent है — canvas को बचा हुआ height मिलता है
     const hudEl   = document.getElementById('ui-overlay');
     const hudH    = hudEl ? hudEl.offsetHeight : 0;
-    const totalH  = 680 + hudH;   // canvas (680) + HUD — दोनों #moksha-outer में हैं
-    const s       = Math.min(window.innerWidth / 600, availH / totalH) * 0.90;
-    // transform #gameContainer पर नहीं — #moksha-outer पर (HUD + canvas एक साथ scale)
+    const canvasH = 680;
+    // touch controls की height भी घटाएँ — canvas उनके ऊपर fit हो
+    const touchEl = document.getElementById('touch-controls');
+    const touchH  = (touchEl && touchEl.style.display !== 'none')
+        ? touchEl.offsetHeight : 0;
+    const s       = Math.min(window.innerWidth / 600, (availH - hudH - touchH) / canvasH) * 0.90;
     const outerEl = document.getElementById('moksha-outer');
-    if (outerEl) outerEl.style.transform = `scale(${s})`;
-    isScaleGameDone = true; // AudioManager readiness coordination
+    if (outerEl) {
+        outerEl.style.transform    = `scale(${s})`;
+        outerEl.style.marginBottom = `${canvasH * (s - 1)}px`; // dead space collapse
+    }
+    // पुराना inline transform clear करें — अब #moksha-outer scale करता है
+    if (UI.container) UI.container.style.transform = '';
+    isScaleGameDone = true;
     AM?.notifyReadiness?.();
 }
 scaleGame();
