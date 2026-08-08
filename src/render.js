@@ -765,9 +765,10 @@ export const Renderer = {
             if (!ft.active) return;
             ctx.fillStyle = ft.color;
             ctx.globalAlpha = ft.alpha;
-
-            let baseFontSize = ft.isBigName ? 100 : 16;
-            ctx.font = `900 ${baseFontSize}px 'Orbitron', sans-serif`;
+            let baseFontSize = ft.isBigName ? 48 : 16;
+            ctx.font = ft.isBigName
+                ? `700 ${baseFontSize}px 'Noto Sans Devanagari', sans-serif`
+                : `700 ${baseFontSize}px 'Orbitron', 'Noto Sans Devanagari', sans-serif`;
             let currentFontSize = baseFontSize; 
 
             if (ft._cachedTextWidth === undefined) {
@@ -778,7 +779,9 @@ export const Renderer = {
 
             if (textWidth > FT_MAX_WIDTH) {
                 let scaledFontSize = baseFontSize * (FT_MAX_WIDTH / textWidth);
-                ctx.font = `900 ${scaledFontSize.toFixed(1)}px 'Orbitron', sans-serif`;
+                ctx.font = ft.isBigName
+                    ? `700 ${scaledFontSize.toFixed(1)}px 'Noto Sans Devanagari', sans-serif`
+                    : `700 ${scaledFontSize.toFixed(1)}px 'Orbitron', 'Noto Sans Devanagari', sans-serif`;
                 textWidth = FT_MAX_WIDTH; 
                 currentFontSize = scaledFontSize; 
             }
@@ -794,11 +797,11 @@ export const Renderer = {
             ctx.globalAlpha = ft.alpha;
             ctx.beginPath();
             ctx.arc(safeX, ft.y, circleRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "rgba(8, 8, 14, 0.40)";
+            ctx.fillStyle = "rgba(8, 8, 14, 0.78)";
             ctx.fill();
-            ctx.lineWidth = 1.4;
+            ctx.lineWidth = ft.isBigName ? 2.4 : 1.8;
             ctx.strokeStyle = ft.color;
-            ctx.shadowBlur = 6;
+            ctx.shadowBlur = ft.isBigName ? 18 : 10;
             ctx.shadowColor = ft.color;
             ctx.stroke();
             ctx.restore();
@@ -809,7 +812,7 @@ export const Renderer = {
             ctx.globalAlpha = ft.alpha;
             ctx.strokeText(ft.text, safeX, ft.y);
 
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = ft.isBigName ? 22 : 16;
             ctx.shadowColor = ft.color;
             ctx.fillStyle = ft.color;
             ctx.fillText(ft.text, safeX, ft.y);

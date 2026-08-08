@@ -675,17 +675,21 @@ button.hud-icon-btn:hover {
 /* ====================== TOUCH CONTROLS (mobile only) ====================== */
 
 #touch-controls {
+    position: fixed;
+    bottom: 0;
     display: none;               /* JS से touch device detect होने पर flex बनेगा */
     will-change: opacity;        /* GPU layer — compositor thread पर रखें */
-    position: absolute;
-    bottom: 92px;                /* HUD overlay के ऊपर */
     left: 0;
     width: 100%;
-    padding: 0 10px;
+    padding: 8px 10px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom)); /* iPhone notch */
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);    
     box-sizing: border-box;
     justify-content: space-between;
     align-items: flex-end;
-    z-index: 9;                  /* ui-overlay(7) के ऊपर, overlays(15+) के नीचे */
+    z-index: 10;                  /* ui-overlay(7) के ऊपर, overlays(15+) के नीचे */
     pointer-events: none;        /* container transparent — buttons पर auto */
     user-select: none;
     -webkit-user-select: none;
@@ -757,9 +761,9 @@ button.hud-icon-btn:hover {
 }
 
 .touch-btn-sm {
-    width: 36px;
-    height: 36px;
-    font-size: 15px;
+    width: 44px;
+    height: 44px;
+    font-size: 17px;
 }
 
 /* ── Primary action button — ॐ (नाम-जाप) ── */
@@ -802,5 +806,18 @@ button.hud-icon-btn:hover {
 @media (hover: none) and (pointer: coarse) {
     #touch-controls {
         display: flex;
+    }
+}
+
+/* ── Mobile layout — canvas top पर, touch controls नीचे ── */
+@media (hover: none) and (pointer: coarse) {
+    body {
+        align-items: center;       /* canvas centered रहे */
+        height: 100dvh;            /* dynamic viewport — URL-bar को exclude करे */
+        overflow: hidden;
+    }
+
+    #gameContainer {
+        transform-origin: center center; /* default restore */
     }
 }

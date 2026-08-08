@@ -2,10 +2,10 @@
   "name": "moksha",
   "version": "0.0.9",
   "description": "A browser-based spiritual game based on Sanatan Shastra",
-  "scripts": {
-    "build": "esbuild src/main.js --bundle --minify --outfile=dist/main.min.js",
-    "dev":   "esbuild src/main.js --bundle --sourcemap --outfile=dist/main.min.js --watch",
-    "package": "npm run build && zip -r moksha.zip index.html style.css audio/ dist/"
+"scripts": {
+"build":   "esbuild src/main.js --bundle --minify --outfile=dist/main.min.js && esbuild style.css --minify --outfile=dist/style.min.css && npx html-minifier-terser index.html --collapse-whitespace --remove-comments --minify-js true --minify-css true -o index.min.html",
+    "dev":     "esbuild src/main.js --bundle --sourcemap --outfile=dist/main.min.js --watch",
+    "package": "npm run build && zip -r moksha.zip index.html audio/ dist/"
   },  "devDependencies": {
     "esbuild": "^0.28.1"
   }
