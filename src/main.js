@@ -107,7 +107,7 @@ const touch         = new TouchControls(keys);
 let isFontsReady    = false;
 let isScaleGameDone = false;
 
-// ====================== SHASTRA STATE ======================
+// ====================== SHAASHTRA STATE ======================
 let currentShaashtraPage = 1;
 // 🛠️ key-repeat बिना continuous scroll (dpad-stick जैसी consistency)
 let shaashtraKeyState = { up: false, down: false };
@@ -229,7 +229,7 @@ function pollGamepad() {
     handleDiscreteButton(gp, GAMEPAD_BUTTON.BACK, 'Escape'); // शास्त्र
 }
 
-// ====================== SHASTRA UI ======================
+// ====================== SHAASHTRA UI ======================
 
 function updateShaashtraPage() {
     const lang  = getLang();
@@ -281,7 +281,7 @@ function toggleShaashtra() {
     }
 }
 
-// ====================== CONTINUOUS SHASTRA SCROLL ======================
+// ====================== CONTINUOUS SHAASHTRA SCROLL ======================
 // ArrowUp/Down को OS key-repeat पर निर्भर न रखकर — held-flag से smooth scroll
 let _shaashtraScrollRafId = null;
 function continuousShaashtraScrollLoop() {
