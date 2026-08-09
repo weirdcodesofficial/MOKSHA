@@ -595,6 +595,26 @@ function applyStartScreenLanguage() {
     updateShastraPage(); // शास्त्र content भी language के अनुसार update करें
     const restartHintEl = document.getElementById('restart-hint-text');
     if (restartHintEl) restartHintEl.textContent = t('end.restartHint');
+
+    // ── Pause (स्तम्भन) overlay — भाषा के अनुसार update ──
+    const viraamaTitle  = document.querySelector('.viraama-content h2');
+    const resumeBtn     = document.getElementById('resume-btn');
+    const restartBtnEl  = document.getElementById('restart-btn');
+    const quitBtn       = document.getElementById('quit-btn');
+    if (viraamaTitle) viraamaTitle.textContent = t('viraama.title');
+    if (resumeBtn)    resumeBtn.textContent    = t('viraama.resume');
+    if (restartBtnEl) restartBtnEl.textContent = t('viraama.restart');
+    if (quitBtn)      quitBtn.textContent      = t('viraama.quit');
+
+    // ── Shastra overlay header — भाषा के अनुसार update ──
+    const shastraH2 = document.querySelector('#shastra-overlay .shastra-header h2');
+    const shastraP  = document.querySelector('#shastra-overlay .shastra-header p');
+    if (shastraH2) shastraH2.textContent = t('shastra.title');
+    if (shastraP)  shastraP.textContent  = t('shastra.subtitle');
+
+    // ── Loading overlay text — भाषा के अनुसार update ──
+    const loadingText = document.getElementById('loading-overlay-text');
+    if (loadingText) loadingText.textContent = t('loading.text');
 }
 
 initLang();

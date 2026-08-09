@@ -30,7 +30,7 @@
 export const SHASTRA_SHLOKAS = {
     gita437: {
         text:   'ज्ञानाग्निः सर्वकर्माणि भस्मसात् कुरुते',
-        credit: { hi: 'गीता ४.३७', en: 'Bhagavad Gītā 4.37' },
+        credit: { hi: 'गीता ४.३७', en: 'Bhagavad Gita 4.37' },
         meaning: {
             hi: '',   // हिंदी पाठक के लिए अर्थ आसपास के गद्य में है
             en: 'The fire of knowledge reduces all karmas to ashes.',
@@ -38,10 +38,10 @@ export const SHASTRA_SHLOKAS = {
     },
         kathaRatha: {
         text:   'आत्मानं रथिनं विद्धि शरीरं रथमेव तु।\nबुद्धिं तु सारथिं विद्धि मनः प्रग्रहमेव च॥',
-        credit: { hi: 'कठोपनिषद् १.३.३', en: 'Kaṭha Upaniṣad 1.3.3' },
+        credit: { hi: 'कठोपनिषद् १.३.३', en: 'Katha Upanishad 1.3.3' },
         meaning: {
             hi: '',
-            en: 'Know the Ātman as the rider, the body as the chariot; know the Buddhi as the charioteer, and the mind as the reins.',
+            en: 'Know the Atman as the rider, the body as the chariot; know the Buddhi as the charioteer, and the mind as the reins.',
         },
     },
     prarabdha: {
@@ -49,12 +49,12 @@ export const SHASTRA_SHLOKAS = {
         credit: { hi: '', en: '' },
         meaning: {
             hi: '',
-            en: 'Prārabdha must indeed be undergone.',
+            en: 'Prarabdha must indeed be undergone.',
         },
     },
     tamaso: {
         text:   'तमसो मा ज्योतिर्गमय',
-        credit: { hi: 'बृहदारण्यक उपनिषद् १.३.२८', en: 'Bṛhadāraṇyaka Upaniṣad 1.3.28' },
+        credit: { hi: 'बृहदारण्यक उपनिषद् १.३.२८', en: 'Brihadaranyaka Upanishad 1.3.28' },
         meaning: {
             hi: '',
             en: 'From darkness, lead me to light.',
@@ -78,11 +78,11 @@ const PAGE_1 = {
     en: {
         title: '🌀 Cosmology 🌀',
         blocks: [
-            { type: 'para', text: 'Your journey through time and space is guided by a divine chariot. The chariot is the symbol of the path a soul travels toward Moksha, crossing the karmic winds of Saṁsāra.' },
-            { type: 'para', text: 'Every act you perform — Puṇya or Pāpa — bears fruit as a distortion of time (gati). Both Puṇya and Pāpa slow the chariot; both are bondage. Pāpa strikes the chariot directly (tremor and clouded vision), while Puṇya leads the mind astray through alluring temptation.' },
-            { type: 'term', label: '🌬️ Swāṁsa (breath)', text: 'The symbol of remaining lifespan — the count of breaths left in this cycle of life.' },
-            { type: 'term', label: '⚖️ Cosmic horizon — the moment of decision', text: 'When Samaya reaches zero, that is the moment of decision. If at that instant the soul is wholly free of karma, Chetanā is awakened (Samarpita ≥ 50), and full Nāma-Samarpaṇa (⬆️ / W) has been offered — only then is Moksha attained. Otherwise, Punarjanma follows.' },
-            { type: 'term', label: '👁️ Chetanā-jāgṛti — karmic immunity', text: 'When Chetanā awakens, the karmic effect of Māyā falls to zero. Karma no longer binds an awakened soul.' },
+            { type: 'para', text: 'Your journey through time and space is guided by a divine chariot. The chariot is the symbol of the path a soul travels toward Moksha, crossing the karmic winds of Samsara.' },
+            { type: 'para', text: 'Every act you perform — Punya or Papa — bears fruit as a distortion of time (gati). Both Punya and Papa slow the chariot; both are bondage. Papa strikes the chariot directly (tremor and clouded vision), while Punya leads the mind astray through alluring temptation.' },
+            { type: 'term', label: '🌬️ Swaansa (breath)', text: 'The symbol of remaining lifespan — the count of breaths left in this cycle of life.' },
+            { type: 'term', label: '⚖️ Cosmic horizon — the moment of decision', text: 'When Samaya reaches zero, that is the moment of decision. If at that instant the soul is wholly free of karma, Chetana is awakened (Samarpita ≥ 50), and full Naama-Samarpana (⬆️ / W) has been offered — only then is Moksha attained. Otherwise, Punarjanma follows.' },
+            { type: 'term', label: '👁️ Chetana-Jagriti — karmic immunity', text: 'When Chetana awakens, the karmic effect of Maya falls to zero. Karma no longer binds an awakened soul.' },
             { type: 'shloka', id: 'gita437' },
         ],
     },
@@ -109,7 +109,7 @@ const PAGE_2 = {
             { type: 'heading', text: '🏔️ अंतिम चरण 🏔️' },
             { type: 'term', label: '🙏 समर्पित (50)', text: 'चेतना जागृत होती है — मोक्ष-पथ की ओर।' },
             { type: 'term', label: '🌌 भक्ति-मार्ग', text: '1 नाम → पुण्य भस्म | 5 नाम → पाप भस्म | 10 नाम → प्रारब्ध भस्म।' },
-            { type: 'term', label: 'ॐ 🙏 नाम समर्पण : ⬆️ | RB/R1 | W', text: 'भक्ति-मार्ग के भीतर समस्त नाम समर्पित करें।' },
+            { type: 'term', label: 'ॐ 🙌 पूर्ण समर्पण : ⬆️ | RB/R1 | W', text: 'भक्ति-मार्ग के भीतर समस्त पूर्ण समर्पण करें।' },
             { type: 'note', text: '⚠️ केवल "अंतिम चरण" (समय < 100s) में।', color: '#ff3232' },
 
             // ── कर्मफल ──
@@ -128,33 +128,33 @@ const PAGE_2 = {
         blocks: [
             // ── Controls ──
             { type: 'term', label: '☸️ ⬅️ ➡️ | DPAD_LEFT/RIGHT | A/D (steer)', text: 'Steer the chariot.' },
-            { type: 'term', label: '📿 Nāma-Japa : RT/R1 | SPACE', text: 'Spend 1 Nāma to raise an expanding aura.' },
-            { type: 'term', label: '🪷 Vairāgya : ⬇️ / X | S', text: 'Refuse the lure of Puṇya — let go of attachment.' },
+            { type: 'term', label: '📿 Naama-Japa : RT/R1 | SPACE', text: 'Spend 1 Naama to raise an expanding aura.' },
+            { type: 'term', label: '🪷 Vairagya : ⬇️ / X | S', text: 'Refuse the lure of Punya — let go of attachment.' },
             { type: 'term', label: '🌊 Pralaya : LB/L1 | Q', text: 'Invoke dissolution — abandon the chariot willingly.' },
             { type: 'term', label: '♻️ Pure Punarjanma : LT/L2 | R', text: 'A new life with the entire karmic load set to zero.' },
-            { type: 'term', label: '📖 Śāstra : BACK | ESC', text: 'The door to Brahma-jñāna. Time stands still.' },
+            { type: 'term', label: '📖 Shastra : BACK | ESC', text: 'The door to Brahma-jnana. Time stands still.' },
             { type: 'term', label: '⏸️ Stambhana (pause) : START | F', text: 'Hold the cosmic flow for a moment.' },
-            { type: 'term', label: '🐚 Śaṅkha (quells the storm) : Y | GAMEPAD Y', text: 'Destroy the Māyā-Chakravāta with the sound of the conch.' },
-            { type: 'note', text: 'The Yantra path — for when Nāma is unavailable.', color: '#7dd3fc' },
-            { type: 'term', label: '🪔 Jyoti (light of sight) : B | GAMEPAD B', text: 'Regain vision in the darkness of Pāpa.' },
-            { type: 'note', text: 'Vision is obscured once Pāpa ≥ 3.', color: '#ffe932' },
+            { type: 'term', label: '🐚 Shankha (quells the storm) : Y | GAMEPAD Y', text: 'Destroy the Maya-Chakravaata with the sound of the conch.' },
+            { type: 'note', text: 'The Yantra path — for when Naama is unavailable.', color: '#7dd3fc' },
+            { type: 'term', label: '🪔 Jyoti (light of sight) : B | GAMEPAD B', text: 'Regain vision in the darkness of Papa.' },
+            { type: 'note', text: 'Vision is obscured once Papa ≥ 3.', color: '#ffe932' },
 
             // ── Final phase ──
             { type: 'heading', text: '🏔️ The Final Phase 🏔️' },
-            { type: 'term', label: '🙏 Samarpita (50)', text: 'Chetanā awakens — the path toward Moksha opens.' },
-            { type: 'term', label: '🌌 The Bhakti path', text: '1 Nāma → burns Puṇya | 5 Nāma → burns Pāpa | 10 Nāma → burns Prārabdha.' },
-            { type: 'term', label: 'ॐ 🙏 Nāma-Samarpaṇa : ⬆️ | RB/R1 | W', text: 'Surrender all your Nāma while inside the Bhakti path.' },
+            { type: 'term', label: '🙏 Samarpita (50)', text: 'Chetana awakens — the path toward Moksha opens.' },
+            { type: 'term', label: '🌌 The Bhakti path', text: '1 Naama → burns Punya | 5 Naama → burns Papa | 10 Naama → burns Prarabdha.' },
+            { type: 'term', label: 'ॐ 🙌 Purna-Samarpana : ⬆️ | RB/R1 | W', text: 'Surrender completely while inside the Bhakti path.' },
             { type: 'note', text: '⚠️ Only during the final phase (Samaya < 100s).', color: '#ff3232' },
 
             // ── Fruits of karma ──
             { type: 'heading', text: '⏳ Fruits of Karma ⏳' },
-            { type: 'term', label: '🌿 Puṇya', text: 'Good deeds — pleasant, yet bondage.' },
-            { type: 'term', label: '🥀 Pāpa', text: 'Ill deeds — a strike, and clouded vision.' },
-            { type: 'term', label: 'ॐ Nāma', text: 'The greatest aid in attaining Moksha.' },
-            { type: 'term', label: '✋ Kṛpā', text: '1 Kṛpā for every 20 Nāma. As Kṛpā grows, the Māyā of Pāpa wanes.' },
-            { type: 'term', label: '📜 Prārabdha', text: 'At every rebirth — however great the accumulated karma — Prārabdha rises by only +1. It hastens Samaya by ×1.15. Maximum 15. With 10 Nāma the rate of enduring doubles.' },
+            { type: 'term', label: '🌿 Punya', text: 'Good deeds — pleasant, yet bondage.' },
+            { type: 'term', label: '🥀 Papa', text: 'Ill deeds — a strike, and clouded vision.' },
+            { type: 'term', label: 'ॐ Naama', text: 'The greatest aid in attaining Moksha.' },
+            { type: 'term', label: '✋ Kripa', text: '1 Kripa for every 20 Naama. As Kripa grows, the Maya of Papa wanes.' },
+            { type: 'term', label: '📜 Prarabdha', text: 'At every rebirth — however great the accumulated karma — Prarabdha rises by only +1. It hastens Samaya by ×1.15. Maximum 15. With 10 Naama the rate of enduring doubles.' },
             { type: 'shloka', id: 'prarabdha' },
-            { type: 'term', label: '👁️ Chetanā-jāgṛti', text: 'On completing 50 Samarpita, Chetanā awakens — the effect of karmic Māyā falls to zero. The authentic condition of the path to Moksha.' },
+            { type: 'term', label: '👁️ Chetana-Jagriti', text: 'On completing 50 Samarpita, Chetana awakens — the effect of karmic Maya falls to zero. The authentic condition of the path to Moksha.' },
         ],
     },
 };
@@ -184,11 +184,11 @@ const PAGE_3 = {
             { type: 'term', label: '🪢 Reins (the mind)', text: 'The subtle element travelling toward balance among the six senses.' },
             { type: 'term', label: '☸️ Chariot (the body)', text: 'The gross form that carries the soul.' },
             { type: 'term', label: '🪈 Charioteer (Buddhi)', text: 'The active charioteer holding the reins of the senses.' },
-            { type: 'term', label: '🪔 Passenger (Ātman)', text: 'The divine conscious energy seated in the causal body.' },
-            { type: 'term', label: 'ॐ Nāma (self-remembrance)', text: 'The pure energy that burns Prārabdha to ash.' },
-            { type: 'term', label: '🌬️ Swāṁsa (remaining lifespan)', text: 'Every breath carries you nearer the last.' },
-            { type: 'term', label: '🐚 Śaṅkha (the Yantra path)', text: 'When Nāma-Japa is not possible, the sound of the conch pierces the Māyā-Chakravāta — the delusion of the world destroyed by the power of Yantra.' },
-            { type: 'term', label: '🪔 Jyoti (the path of light)', text: 'In the darkness of Pāpa, Jyoti restores sight.' },
+            { type: 'term', label: '🪔 Passenger (Atman)', text: 'The divine conscious energy seated in the causal body.' },
+            { type: 'term', label: 'ॐ Naama (self-remembrance)', text: 'The pure energy that burns Prarabdha to ash.' },
+            { type: 'term', label: '🌬️ Swaansa (remaining lifespan)', text: 'Every breath carries you nearer the last.' },
+            { type: 'term', label: '🐚 Shankha (the Yantra path)', text: 'When Naama-Japa is not possible, the sound of the conch pierces the Maya-Chakravaata — the delusion of the world destroyed by the power of Yantra.' },
+            { type: 'term', label: '🪔 Jyoti (the path of light)', text: 'In the darkness of Papa, Jyoti restores sight.' },
             { type: 'shloka', id: 'tamaso' },
         ],
     },
