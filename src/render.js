@@ -1355,7 +1355,7 @@ export const Renderer = {
         context.fillStyle    = '#ff9933';
         context.textAlign    = 'center';
         context.textBaseline = 'middle';
-        context.fillText('ENTER / TAP to continue', W / 2, BTN_Y + BTN_H / 2);
+        context.fillText(t('tutorial.dismiss'), W / 2, BTN_Y + BTN_H / 2);
 
         context.restore();
     },
