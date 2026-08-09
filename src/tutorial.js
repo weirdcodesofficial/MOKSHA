@@ -18,7 +18,7 @@
  *  1: maya      — naama माया पहचानो
  *  2: jaapa     — नाम-जाप करो (ENTER)
  *  3: tunnel    — भक्ति-मार्ग में जाओ
- *  4: prarabdha — प्रारब्ध ज्ञान (info card, dismiss = complete)
+ *  4: praarabdha — प्रारब्ध ज्ञान (info card, dismiss = complete)
  *
  * ── main.js में उपयोग ────────────────────────────────────────
  *  import { TutorialManager } from './tutorial.js';
@@ -77,7 +77,7 @@ const TUTORIAL_STEPS = [
         dismissToComplete: false,
     },
     {
-        id: 'prarabdha',
+        id: 'praarabdha',
         shloka: 'भोगेन क्षीयते पापं, तपसा क्षीयते मलः।',
         forceSpawn: null,
         dismissToComplete: true,   // dismiss = tutorial complete
@@ -233,7 +233,7 @@ export class TutorialManager {
                 break;
             }
 
-            case 'prarabdha':
+            case 'praarabdha':
                 // dismiss-only step — checkCompletion यहाँ कभी नहीं चलता
                 // (_cardVisible = true रहेगा dismiss तक)
                 break;

@@ -11,7 +11,7 @@
     <!-- Social share meta tags-->
 
     <meta property="og:title" content="मोक्ष — Moksha">
-    <meta property="og:description" content="जीवन और मृत्यु के चक्र से मुक्त हों। A spiritual HTML5 game rooted in Sanatan Shastra.">
+    <meta property="og:description" content="जीवन और मृत्यु के चक्र से मुक्त हों। A spiritual HTML5 game rooted in Sanatan Shaashtra.">
     <meta property="og:image" content="https://raw.githubusercontent.com/weirdcodesofficial/MOKSHA/main/assets/wclog.png">
     <meta property="og:image:width" content="1280">
     <meta property="og:image:height" content="640">
@@ -19,7 +19,7 @@
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="मोक्ष — Moksha">
-    <meta name="twitter:description" content="जीवन और मृत्यु के चक्र से मुक्त हों। A spiritual HTML5 game rooted in Sanatan Shastra.">
+    <meta name="twitter:description" content="जीवन और मृत्यु के चक्र से मुक्त हों। A spiritual HTML5 game rooted in Sanatan Shaashtra.">
     <meta name="twitter:image" content="https://raw.githubusercontent.com/weirdcodesofficial/MOKSHA/main/assets/wclog.png">    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload"
@@ -41,7 +41,7 @@
         <div class="stat-row">
             <div class="stat-line" id="punya"     title="पुण्य"    style="color:#32ff32;background:rgba(50,255,50,0.07);border:1px solid rgba(50,255,50,0.2);">🌿 0</div>
             <div class="stat-line" id="paap"      title="पाप"      style="color:#ff3232;background:rgba(255,50,50,0.07);border:1px solid rgba(255,50,50,0.2);">🥀 0</div>
-            <div class="stat-line" id="prarabdha" title="प्रारब्ध" style="color:#a78bfa;background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.2);">📜 0</div>
+            <div class="stat-line" id="praarabdha" title="प्रारब्ध" style="color:#a78bfa;background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.2);">📜 0</div>
         </div>
         <!-- Row 2: संग्रह — नाम, कृपा, शंख, ज्योति, समर्पित -->
         <div class="stat-row">
@@ -62,7 +62,7 @@
             <div class="stat-line" id="punaraJanma"    title="पुनर्जन्म"   style="color:#f87171;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);font-size:9.5px;padding:4px 7px;opacity:0.9;">♻️ 0</div>
             <div class="stat-line" id="chetana"         title="चेतना"       style="color:#93c5fd;background:rgba(147,197,253,0.07);border:1px solid rgba(147,197,253,0.2);font-size:9.5px;padding:4px 7px;opacity:0.9;">😴</div>
             <div class="stat-line" id="drishti"         title="दृष्टि"      style="color:#ffe9a8;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);font-size:9.5px;padding:4px 7px;opacity:0.9;">☀️</div>
-            <div class="stat-line" id="purnaSamarpana"  title="पूर्ण समर्पण" style="color:#fde68a;background:rgba(253,230,138,0.05);border:1px solid rgba(253,230,138,0.15);font-size:9.5px;padding:4px 7px;opacity:0.9;">🤲</div>
+            <div class="stat-line" id="poornaSamarpana"  title="पूर्ण समर्पण" style="color:#fde68a;background:rgba(253,230,138,0.05);border:1px solid rgba(253,230,138,0.15);font-size:9.5px;padding:4px 7px;opacity:0.9;">🤲</div>
         </div>
 </div><!-- /#ui-overlay -->
 
@@ -106,7 +106,7 @@
             <input type="range" id="music-volume-slider" min="0" max="100" value="100"
                 title="संगीत वॉल्यूम" aria-label="Background Music Volume">
             <button id="music-toggle-btn" class="hud-icon-btn" title="पृष्ठभूमि ध्वनि म्यूट/अनम्यूट करें">🔊</button>
-            <button id="shastra-help-btn" class="hud-icon-btn" title="शास्त्र पढ़ें (खेल की जानकारी)">❓</button>
+            <button id="shaashtra-help-btn" class="hud-icon-btn" title="शास्त्र पढ़ें (खेल की जानकारी)">❓</button>
             <div id="hud-credits" class="hud-icon-btn" style="cursor:default;" title="Developed by Weird Codes">🛠️</div>
         </div>
     </div>
@@ -135,6 +135,16 @@
             style="font-family:'Rajdhani',sans-serif;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.55);max-width:80%;font-weight:500;"></p>
         <p id="restart-hint-text" style="font-family:'Orbitron',sans-serif;color:rgba(255,255,255,0.2);margin-top:32px;font-size:10px;letter-spacing:3px;font-weight:700;text-transform:uppercase;">
             'R' दबाएं जीवन रथ को पुनः आरंभ करने के लिए</p>
+        <!-- पुनर्जन्म बटन — प्रलय/पुनर्जन्म screen पर; मोक्ष पर hidden रहेगा -->
+        <button id="punarjanma-btn"
+            style="display:none;margin-top:24px;padding:12px 36px;font-size:16px;font-weight:700;
+                   font-family:'Noto Sans Devanagari',sans-serif;color:#fff;
+                   background:rgba(248,113,113,0.12);border:1.5px solid #f87171;
+                   border-radius:8px;cursor:pointer;letter-spacing:1px;
+                   box-shadow:0 0 18px rgba(248,113,113,0.25);
+                   transition:transform 0.18s ease,box-shadow 0.18s ease;">
+            ♻️ पुनर्जन्म
+        </button>
     </div>
 
     <!-- ── Stambhan (Pause) Overlay ── -->
@@ -147,29 +157,29 @@
         </div>
     </div>
 
-    <!-- ── Shastra (Knowledge) Overlay ── -->
-    <div id="shastra-overlay">
-        <div class="shastra-content">
-            <button id="shastra-close-btn" title="बंद करें">✕</button>
-            <div class="shastra-header">
+    <!-- ── Shaashtra (Knowledge) Overlay ── -->
+    <div id="shaashtra-overlay">
+        <div class="shaashtra-content">
+            <button id="shaashtra-close-btn" title="बंद करें">✕</button>
+            <div class="shaashtra-header">
                 <h2>॥ शास्त्र ॥</h2>
                 <p>रथ का ज्ञान</p>
             </div>
 
-            <div class="shastra-body" id="shastra-body">
-                <!-- ⚠️ सामग्री अब src/shastra.js में है — यहाँ केवल खाली container।
-                    main.js की updateShastraPage() इन्हें भाषा के अनुसार भरती है। -->
-                <div class="shastra-page active" id="shastra-page-1"></div>
-                <div class="shastra-page" id="shastra-page-2"></div>
-                <div class="shastra-page" id="shastra-page-3"></div>
-            </div><!-- /.shastra-body -->
+            <div class="shaashtra-body" id="shaashtra-body">
+                <!-- ⚠️ सामग्री अब src/shaashtra.js में है — यहाँ केवल खाली container।
+                    main.js की updateShaashtraPage() इन्हें भाषा के अनुसार भरती है। -->
+                <div class="shaashtra-page active" id="shaashtra-page-1"></div>
+                <div class="shaashtra-page" id="shaashtra-page-2"></div>
+                <div class="shaashtra-page" id="shaashtra-page-3"></div>
+            </div><!-- /.shaashtra-body -->
 
-            <div class="shastra-footer" style="justify-content:center;">
-                <!-- पाठ main.js की updateShastraPage() भरती है -->
-                <button id="shastra-nav-btn"></button>                
+            <div class="shaashtra-footer" style="justify-content:center;">
+                <!-- पाठ main.js की updateShaashtraPage() भरती है -->
+                <button id="shaashtra-nav-btn"></button>                
             </div>
-        </div><!-- /.shastra-content -->
-    </div><!-- /#shastra-overlay -->
+        </div><!-- /.shaashtra-content -->
+    </div><!-- /#shaashtra-overlay -->
 
     <!-- ── Loading / Readiness Overlay (highest z-index) ── -->
     <div id="loading-overlay">

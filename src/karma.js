@@ -42,7 +42,7 @@ export const KarmaMixin = {
     _syncOrbitCounts() {
         this.outerOrbits[0].count = this.shuvhaKarma;
         this.outerOrbits[1].count = this.ashuvhaKarma;
-        this.outerOrbits[2].count = this.prarabdha;
+        this.outerOrbits[2].count = this.praarabdha;
         this.outerOrbits[3].count = this.activeNaam;
         this.outerOrbits[4].count = this.kripa;
         this.outerOrbits[5].count = this.shankha;
@@ -63,9 +63,9 @@ export const KarmaMixin = {
             this.shuvhaKarma    === 0 &&
             this.ashuvhaKarma   === 0 &&
             !this._pendingGoodKarma   &&
-            this.prarabdha      === 0 &&
+            this.praarabdha      === 0 &&
             this.chetanaaJaagrita      &&
-            this.purnaSamarpana
+            this.poornaSamarpana
         ) {
             if (this._UI?.samayaVal)  this._UI.samayaVal.innerText  = t('end.moksha.samayaLabel');            if (this._UI?.swaansaVal) this._UI.swaansaVal.innerText = `0`;
             if (!this.gameOver) {
@@ -82,7 +82,7 @@ export const KarmaMixin = {
             this.activeNaam >= 20 || this.samarpita >= 30 || this.chetanaaJaagrita
         );
         // ── Bug 5 fix: pendingGoodKarma clear करने से पहले capture करें ──
-        // पहले false किया → hasSanchitaKarma में already false → prarabdha +1 miss
+        // पहले false किया → hasSanchitaKarma में already false → praarabdha +1 miss
         const _hadPendingKarma = this._pendingGoodKarma;
 
         // ── pendingGoodKarma साफ करें — प्रारब्ध में count नहीं जोड़ेंगे ──
@@ -98,24 +98,24 @@ export const KarmaMixin = {
         // एक जन्म का भार = एक प्रारब्ध।
         // _hadPendingKarma: captured value — clear होने से पहले का सच
         const hasSanchitaKarma = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0 || _hadPendingKarma);
-        const prevPrarabdha    = this.prarabdha;
+        const prevPraarabdha    = this.praarabdha;
         if (hasSanchitaKarma) {
-            this.prarabdha = Math.min(MAX_PRARABDHA, this.prarabdha + 1);
+            this.praarabdha = Math.min(MAX_PRARABDHA, this.praarabdha + 1);
         }
-        const actualAdded = this.prarabdha - prevPrarabdha;
+        const actualAdded = this.praarabdha - prevPraarabdha;
         if (actualAdded > 0) {
-            this.prarabdhaTimer += PRARABDHA_BHOG_FRAMES; // सदा 1× — +1 प्रारब्ध = 1 भोग-चक्र
+            this.praarabdhaTimer += PRARABDHA_BHOG_FRAMES; // सदा 1× — +1 प्रारब्ध = 1 भोग-चक्र
             this._addFloatingText(`+1 📜`, "#a78bfa");
         }
         // cap hit होने पर player को सूचित करें
         if (hasSanchitaKarma && actualAdded === 0) {
-            this._alertKey('errPrarabdhaMax', '⚠️', 'warning', { n: MAX_PRARABDHA });
+            this._alertKey('errPraarabdhaMax', '⚠️', 'warning', { n: MAX_PRARABDHA });
         }
 
-        // पूर्व-जन्म का gati-भार prarabdha में store करें — multiply (हर जन्म का बोझ जुड़े)
-        this.prarabdhaGatiModifier *= this._currentGatiModifier;
+        // पूर्व-जन्म का gati-भार praarabdha में store करें — multiply (हर जन्म का बोझ जुड़े)
+        this.praarabdhaGatiModifier *= this._currentGatiModifier;
         // 0 तक न जाने दें — minimum gati 1% बनाए रखें
-        this.prarabdhaGatiModifier  = Math.max(0.01, this.prarabdhaGatiModifier);
+        this.praarabdhaGatiModifier  = Math.max(0.01, this.praarabdhaGatiModifier);
         this.ashuvhaKarma = 0; this.shuvhaKarma = 0;        this.punaraJanmaCount++;
         this._triggerBlast("#f87171");
         this.samaya          = SAMAYA_PRAARAMBHIKA;
@@ -133,7 +133,7 @@ export const KarmaMixin = {
 
         // चेतना जागृत है तो पुनर्जन्म पर भी कर्म-रक्षा बनी रहे
         this.isKarmaImmune  = this.chetanaaJaagrita;
-        this.purnaSamarpana = false;
+        this.poornaSamarpana = false;
         
         if (isApavitra) {
             this._alertKey('punarjanmaApavitra', '♻️', 'warning');
@@ -468,7 +468,7 @@ export const KarmaMixin = {
         this.activeNaam      = 0;
         this.shankha         = 0;
         this.jyoti           = 0;
-        this.purnaSamarpana  = true;
+        this.poornaSamarpana  = true;
         this.isKarmaImmune   = true;
         this._addFloatingText(`+${gained} ॐ🙏`, "#ffff00", { alpha:1.5, vy:-2, isBigName:true, yOffset:-10 });
         this._alertKey('naamaSamarpita', '🌿', 'achievement', { n: gained });

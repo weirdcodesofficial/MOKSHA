@@ -251,7 +251,7 @@ button.hud-icon-btn:hover {
 #naama        { color: #ffffff; }          /* ॐ नाम     — शुद्ध श्वेत */
 #punya        { color: #32ff80; }          /* 🌿 पुण्य   — दिव्य हरा  */
 #paap         { color: #ff2244; }          /* 🥀 पाप    — रक्त-वर्ण   */
-#prarabdha    { color: #a78bfa; }          /* 📜 प्रारब्ध — नील-बैंगनी */
+#praarabdha    { color: #a78bfa; }          /* 📜 प्रारब्ध — नील-बैंगनी */
 #samarpita    { color: #fb923c; }          /* 🙏 समर्पित — नारंगी     */
 #punaraJanma  { color: #f87171; }          /* ♻️ जन्म   — गुलाबी-लाल  */
 #kripa        { color: #ffe9a8; }          /* ✋ कृपा   — सोनारंग     */
@@ -259,7 +259,7 @@ button.hud-icon-btn:hover {
 #jyoti        { color: #ffe932; }          /* 🪔 ज्योति — सुवर्ण-पीत  */
 #chetana      { color: #2dd4bf; }          /* 👁️ चेतना — वैदूर्य-हरा  */
 #drishti      { color: #facc15; }          /* ☀️ दृष्टि — तेज-पीत     */
-#purnaSamarpana { color: #e879f9; }        /* 🙌 पूर्ण  — दिव्य-नील   */
+#poornaSamarpana { color: #e879f9; }        /* 🙌 पूर्ण  — दिव्य-नील   */
 
 /* ====================== PAUSE (VIRAAMA) OVERLAY ====================== */
 #viraama-overlay {
@@ -315,7 +315,7 @@ button.hud-icon-btn:hover {
 }
 
 /* ====================== SHASTRA OVERLAY ====================== */
-#shastra-overlay {
+#shaashtra-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -332,7 +332,7 @@ button.hud-icon-btn:hover {
     /* z-index:20 था → start-screen (z-index:50) के पीछे छुप जाता था — अब सभी overlays से ऊँचा */
 }
 
-.shastra-content {
+.shaashtra-content {
     position: relative;
     width: 100%;
     height: 100%;
@@ -352,7 +352,7 @@ button.hud-icon-btn:hover {
 }
 
 /* शास्त्र बंद करने का स्पष्ट बटन */
-#shastra-close-btn {
+#shaashtra-close-btn {
     position: absolute;
     top: 14px;
     right: 16px;
@@ -370,18 +370,18 @@ button.hud-icon-btn:hover {
     z-index: 1;
 }
 
-#shastra-close-btn:hover {
+#shaashtra-close-btn:hover {
     background: rgba(255, 120, 30, 0.28);
     box-shadow: 0 0 12px rgba(255, 120, 30, 0.5);
 }
 
-.shastra-header {
+.shaashtra-header {
     border-bottom: 1px solid rgba(255, 136, 0, 0.3);
     padding-bottom: 10px;
     margin-bottom: 15px;
 }
 
-.shastra-header h2 {
+.shaashtra-header h2 {
     font-family: 'Orbitron', sans-serif;
     font-size: 32px;
     margin: 0;
@@ -389,13 +389,13 @@ button.hud-icon-btn:hover {
     text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
 }
 
-.shastra-header p {
+.shaashtra-header p {
     margin: 5px 0 0 0;
     color: #ccc;
     font-style: italic;
 }
 
-.shastra-body {
+.shaashtra-body {
     flex: 1;
     overflow-y: auto;
     padding: 10px 20px;
@@ -409,20 +409,20 @@ button.hud-icon-btn:hover {
     scrollbar-width: none;
 }
 
-.shastra-body::-webkit-scrollbar {
+.shaashtra-body::-webkit-scrollbar {
     display: none;
 }
 
-.shastra-page {
+.shaashtra-page {
     display: none;
     animation: fadeIn 0.4s ease-in-out;
 }
 
-.shastra-page.active {
+.shaashtra-page.active {
     display: block;
 }
 
-.shastra-page h3 {
+.shaashtra-page h3 {
     font-family: 'Orbitron', sans-serif;
     color: #ffa600;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -430,11 +430,11 @@ button.hud-icon-btn:hover {
     margin-bottom: 15px;
 }
 
-.shastra-page p strong {
+.shaashtra-page p strong {
     color: #ffa600;
 }
 
-.shastra-footer {
+.shaashtra-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -442,7 +442,7 @@ button.hud-icon-btn:hover {
     border-top: 1px solid rgba(255, 136, 0, 0.3);
 }
 
-.shastra-footer button {
+.shaashtra-footer button {
     background: rgba(255, 136, 0, 0.15);
     color: #ffa600;
     font-family: 'Orbitron', sans-serif;
@@ -456,7 +456,7 @@ button.hud-icon-btn:hover {
     text-align: center;
 }
 
-.shastra-footer button:hover {
+.shaashtra-footer button:hover {
     background: rgba(255, 120, 30, 0.25);
     filter: drop-shadow(0 0 8px rgba(255, 120, 30, 0.6));
 }

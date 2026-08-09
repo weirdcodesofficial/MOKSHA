@@ -177,12 +177,12 @@ function drawKarmaChain(cx, baseY, color, strength = 1, isHeavy = false, frameNo
     ctx.save();
     let swayPeriod = isHeavy ? 480 : 200;
     let pulse = Math.sin(frameNow / swayPeriod) * (isHeavy ? 7 : 5);
-    // prarabdha chain — orbits से visually अलग करने हेतु Y नीचे shift
+    // praarabdha chain — orbits से visually अलग करने हेतु Y नीचे shift
     let weightDropOffset = isHeavy ? (strength * 12) + 8 : 0;
     let y = baseY + pulse + weightDropOffset;
     let fontSize = isHeavy ? (32 + strength * 16) : (22 + strength * 14);
 
-    // prarabdha chain subtle opacity — orbit rings से distinguish हो
+    // praarabdha chain subtle opacity — orbit rings से distinguish हो
     ctx.globalAlpha = isHeavy ? 0.72 : 1.0;
     ctx.font = `${fontSize}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.shadowColor = color; ctx.shadowBlur = isHeavy ? (28 + strength * 22) : (25 + strength * 20);
@@ -422,13 +422,13 @@ export const Renderer = {
             WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH, SAMAYA_PRAARAMBHIKA,
             frameNow, shakeTimer, samaya, swaansaSamapta, stars, tunnelSparkles,
             particlePool, glowEffectPool, player, smoothSize, glowRings,
-            shuvhaKarma, ashuvhaKarma, prarabdha, activeNaam, kripa, shankha, jyoti,
-            samarpita, punaraJanmaCount, chetanaaJaagrita, purnaSamarpana, chainSlots,
+            shuvhaKarma, ashuvhaKarma, praarabdha, activeNaam, kripa, shankha, jyoti,
+            samarpita, punaraJanmaCount, chetanaaJaagrita, poornaSamarpana, chainSlots,
             finalHorsePositions, pulledHorseIndex, pulledHorseX, pulledHorseY,
             isPaused, gameOver, mayaPool, pendingGoodKarma, punyaTimer,
             pendingGoodKarmaCount, floatingTextPool, isNaamaJaapa, naamaGhera,
             outerOrbits, notifyTimer, notifyText, swaansaTimer, swaansa,
-            naamaGlowTimer, bodyGlowTimer, bodyGlowColor, prarabdhaTimer,
+            naamaGlowTimer, bodyGlowTimer, bodyGlowColor, praarabdhaTimer,
             alertQueue
         } = state;
 
@@ -526,7 +526,7 @@ export const Renderer = {
         let activeChainCount = 0;
         if (shuvhaKarma > 0) { let s = chainSlots[activeChainCount++]; s.active = true; s.color = "#32ff32"; s.strength = Math.min(1, shuvhaKarma / 5); s.isHeavy = false; }
         if (ashuvhaKarma > 0) { let s = chainSlots[activeChainCount++]; s.active = true; s.color = "#ff3232"; s.strength = Math.min(1, ashuvhaKarma / 5); s.isHeavy = false; }
-        if (prarabdha > 0) { let s = chainSlots[activeChainCount++]; s.active = true; s.color = "#8b0000"; s.strength = Math.min(1, prarabdha / 10); s.isHeavy = true; }
+        if (praarabdha > 0) { let s = chainSlots[activeChainCount++]; s.active = true; s.color = "#8b0000"; s.strength = Math.min(1, praarabdha / 10); s.isHeavy = true; }
         for (let i = activeChainCount; i < chainSlots.length; i++) chainSlots[i].active = false; 
 
         drawCenteredRow(cx, cy + 50, activeChainCount, CHAIN_GAP, (chainCx, chainCy, i) => {
@@ -689,10 +689,10 @@ export const Renderer = {
             }
             ctx.textAlign = "left";
         });
-        // ── punyaTimer + prarabdhaTimer — player के ऊपर, side-by-side ──
+        // ── punyaTimer + praarabdhaTimer — player के ऊपर, side-by-side ──
         {
             const hasPunya     = pendingGoodKarma && !gameOver;
-            const hasPrarabdha = prarabdhaTimer > 0 && prarabdha > 0 && !gameOver;
+            const hasPraarabdha = praarabdhaTimer > 0 && praarabdha > 0 && !gameOver;
 
             // player के ऊपर position — chains/maya से दूर
             const HALF_GAP = 52;
@@ -700,7 +700,7 @@ export const Renderer = {
             const PILL_W   = 96; const PILL_H = 48; const PILL_R = 10;
 
             if (hasPunya) {
-                const timerCx     = hasPrarabdha ? cx - HALF_GAP : cx;
+                const timerCx     = hasPraarabdha ? cx - HALF_GAP : cx;
                 const secondsLeft = Math.ceil(punyaTimer / 60);
                 const pulse       = (Math.sin(frameNow / 150) + 1) / 2;
                 ctx.save();
@@ -727,9 +727,9 @@ export const Renderer = {
                 ctx.restore();
             }
 
-            if (hasPrarabdha) {
+            if (hasPraarabdha) {
                 const timerCx = hasPunya ? cx + HALF_GAP : cx;
-                const secLeft = Math.ceil(prarabdhaTimer / 60);
+                const secLeft = Math.ceil(praarabdhaTimer / 60);
                 const pulse   = (Math.sin(frameNow / 150) + 1) / 2;
                 ctx.save();
                 // pill background
@@ -744,7 +744,7 @@ export const Renderer = {
                 ctx.font      = "700 9px 'Orbitron', sans-serif";
                 ctx.fillStyle = "rgba(200, 180, 255, 0.85)";
                 ctx.shadowBlur = 0;
-                ctx.fillText(t('hud.prarabdhaTimerLabel', { n: prarabdha }), timerCx, baseY - 13);
+                ctx.fillText(t('hud.praarabdhaTimerLabel', { n: praarabdha }), timerCx, baseY - 13);
                 // countdown
                 ctx.font      = "900 " + (20 + pulse * 3) + "px 'Orbitron', sans-serif";
                 ctx.fillStyle = "#ffffff";
@@ -1049,12 +1049,12 @@ export const Renderer = {
         let innerOrbit = [
             chetanaaJaagrita ? "👁️" : "😴",
             ashuvhaKarma >= 3 ? "⚫" : "☀️",
-            purnaSamarpana ? "🙌" : "🤲"
+            poornaSamarpana ? "🙌" : "🤲"
         ];
         if (punaraJanmaCount > 0) innerOrbit.push("♻️");
         if (shuvhaKarma > 0) innerOrbit.push("🌿");
         if (ashuvhaKarma > 0) innerOrbit.push("🥀");
-        if (prarabdha > 0) innerOrbit.push("📜");
+        if (praarabdha > 0) innerOrbit.push("📜");
         if (activeNaam > 0) innerOrbit.push("ॐ");
         if (kripa > 0) innerOrbit.push("✋");
         if (shankha > 0) innerOrbit.push("🐚");
@@ -1084,7 +1084,7 @@ export const Renderer = {
                 ctx.save();
                 let extraGlow = (orbit.glowTimer && orbit.glowTimer > 0) ? (orbit.glowTimer / 60) * 22 : 0;
                 // 📜 प्रारब्ध orbit — भोग-timer सक्रिय होने पर subtle pulse glow
-                if (o === 2 && prarabdhaTimer > 0) {
+                if (o === 2 && praarabdhaTimer > 0) {
                     extraGlow += (Math.sin(frameNow / 300) * 0.5 + 0.5) * 12;
                 }
                 // extraGlow cap — over-bright orbit clutter रोकें
