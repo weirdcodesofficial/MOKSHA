@@ -19,7 +19,7 @@
  *
  * ── शास्त्रीय नियम ──────────────────────────────────────────
  *  type:'shloka' के blocks दोनों भाषाओं में समान रहते हैं।
- *  इसलिए वे SHASTRA_SHLOKAS में एक ही बार लिखे जाते हैं और
+ *  इसलिए वे SHAASHTRA_SHLOKAS में एक ही बार लिखे जाते हैं और
  *  दोनों भाषाओं से id द्वारा referenced होते हैं — duplication
  *  नहीं, इसलिए एक जगह सुधारने पर दोनों भाषाओं में सुधरता है।
  * ============================================================
@@ -27,7 +27,7 @@
 
 // ── श्लोक-कोश — भाषा-निरपेक्ष (नियम E-1) ─────────────────────
 // अर्थ भाषा के अनुसार बदलता है; मूल पाठ कभी नहीं।
-export const SHASTRA_SHLOKAS = {
+export const SHAASHTRA_SHLOKAS = {
     gita437: {
         text:   'ज्ञानाग्निः सर्वकर्माणि भस्मसात् कुरुते',
         credit: { hi: 'गीता ४.३७', en: 'Bhagavad Gita 4.37' },
@@ -196,7 +196,7 @@ const PAGE_3 = {
 // ── सम्पूर्ण ग्रंथ ───────────────────────────────────────────
 // ⚠️ PAGE_2, PAGE_3 अगले पैच में जुड़ेंगे।
 // ⚠️ PAGE_3 अगले पैच में जुड़ेगा।
-export const SHASTRA_PAGES = [PAGE_1, PAGE_2, PAGE_3];
+export const SHAASHTRA_PAGES = [PAGE_1, PAGE_2, PAGE_3];
 
 /**
  * escapeHtml — पाठ को सुरक्षित बनाएँ।
@@ -217,8 +217,8 @@ function escapeHtml(s) {
  * @returns {string} — HTML string
  */
 export function renderShaashtraPage(pageIndex, lang) {
-    const page = SHASTRA_PAGES[pageIndex]?.[lang]
-              ?? SHASTRA_PAGES[pageIndex]?.hi;      // fallback
+    const page = SHAASHTRA_PAGES[pageIndex]?.[lang]
+              ?? SHAASHTRA_PAGES[pageIndex]?.hi;      // fallback
     if (!page) return '';
 
     let html = `<h3>${escapeHtml(page.title)}</h3>`;
@@ -243,7 +243,7 @@ export function renderShaashtraPage(pageIndex, lang) {
 
             case 'shloka': {
                 // ⚠️ मूल देवनागरी दोनों भाषाओं में समान (नियम E-1)
-                const sh = SHASTRA_SHLOKAS[b.id];
+                const sh = SHAASHTRA_SHLOKAS[b.id];
                 if (!sh) break;
                 html += `<p style="text-align:center;margin:14px 0;">`
                      +  `<em style="color:#ffecb4;">`

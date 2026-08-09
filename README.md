@@ -3,7 +3,7 @@
 > **"मोक्ष प्राप्ति का एकमात्र मार्ग — त्याग।"**
 > *The only path to liberation — is let it go.*
 
-An HTML5 browser game rooted in **Sanatan Shastra** and **Karmic Philosophy**.
+An HTML5 browser game rooted in **Sanatan shaashtra** and **Karmic Philosophy**.
 Control your chariot through the cosmic field, master your senses, burn your karma, and attain **Moksha**.
 
 🎮 **[Play on itch.io](https://weirdcodes.itch.io/moksha)** &nbsp;|&nbsp;
@@ -51,11 +51,11 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | Naam Samarpana | `W`, `↑` | RB (5) | Only in final phase (samaya < 100) |
 | Pralaya (Sacrifice) | `Q` | LB (4) | Voluntary chariot dissolution |
 | Pure Rebirth | `R` | LT (6) | Zero karma → new life |
-| Shastra (Knowledge) | `ESC` | BACK (8) | Open wisdom scroll |
+| shaashtra (Knowledge) | `ESC` | BACK (8) | Open wisdom scroll |
 | Pause | `F` | START (9) | Stillness |
 | Shankha (Conch) | `Y` | Y (0) | Dispel chakravaata (यंत्र-मार्ग, when Naam unavailable) |
 | Jyoti (Lamp) | `B` | B (1) | Restore vision in bad-karma darkness |
-| Shastra Scroll | `↑` / `↓` (hold) | DPAD U/D | Navigate wisdom text |
+| shaashtra Scroll | `↑` / `↓` (hold) | DPAD U/D | Navigate wisdom text |
 
 ---
 
@@ -69,7 +69,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 - 🏆 **Three End States** — Moksha (liberation), Pralaya (dissolution), Punarjanma (rebirth)
 - 🎮 **Full Gamepad Support** — Xbox/generic controller with deadzone handling
 - ⚡ **60fps Performance** — Pool-based architecture (no GC pressure), sprite caching, emoji sprite cache, gradient buckets
-- 📜 **In-Game Shastra** — Full philosophical treatise accessible via ESC
+- 📜 **In-Game shaashtra** — Full philosophical treatise accessible via ESC
 - 🔔 **Canvas Alert Queue** — Contextual slide-in alert cards (top-right), category-colored, auto-dismiss; de-duplicated (no per-second flood)
 - ⚖️ **Prarabdha Bhog System** — Endure past karma over time; unit-break explosion; MAX 15 cap; samaya penalty ×1.15
 - 🧘 **Chetanaa Immunity** — चेतना-जागृति grants karma immunity (गीता 4.37 — ज्ञानाग्निः सर्वकर्माणि भस्मसात्)
@@ -155,7 +155,7 @@ MOKSHA/
     ├── audio.js      — AudioManager: 28-mp3 preload, ambient layers, duck system
     ├── engine.js     — KarmaEngine: slim orchestrator, core loop, pools, state transitions
     ├── i18n.js       — भाषा-प्रबंधक: 134 keys (hi/en), persistence, late-binding resolveAlert
-    ├── shastra.js    — शास्त्र-ग्रंथ: 3 pages, संरचित blocks, श्लोक-कोश (भाषा-निरपेक्ष)    
+    ├── shaashtra.js    — शास्त्र-ग्रंथ: 3 pages, संरचित blocks, श्लोक-कोश (भाषा-निरपेक्ष)    
     ├── karma.js      — KarmaMixin: Vedic logic, maya spawn, kripa, keyboard actions
     ├── physics.js    — PhysicsMixin: glow-rings, particles, floating text, pool helpers
     ├── state.js      — StateMixin: HUD updates, alert queue, triggerAlert, animations
@@ -376,7 +376,7 @@ getEmojiSprite(emoji, fontSize) // orbit/innerOrbit emoji cache (नई)
 | ज्योति | B | B (1) | पाप-अंधकार में दृष्टि |
 | शास्त्र-नेविगेशन | ↑↓ (held) | DPAD U/D (12/13) | scroll; DPAD = PageUp/Down |
 
-> ⚠️ `handleShastraGamepadNav()` अब `pollGamepadOnStartScreen()` से भी कॉल होता है।
+> ⚠️ `handleshaashtraGamepadNav()` अब `pollGamepadOnStartScreen()` से भी कॉल होता है।
 
 ---
 
@@ -404,7 +404,7 @@ RUNNING_HORSES_DUCK_REDUCTION  = 0.15
 ### 4.3 गेटिंग
 ```js
 // AudioManager internal — game state getter से poll
-isGameStarted && !gameOver && !won && !isPaused && !isShastraVisible
+isGameStarted && !gameOver && !won && !isPaused && !isshaashtraVisible
 // setTargetAtTime() से smooth fade — कोई click/pop नहीं
 ```
 
@@ -429,7 +429,7 @@ Deferred load (6): bgMusic, chetanaJaagrita, pralaya, jaagritaSwaansa,
 ### 4.6 AudioManager dependency injection (main.js में)
 ```js
 Audio.setGameStateGetter(() => ({ isGameStarted, gameOver, won,
-                                   isPaused, isShastraVisible, chetanaaJaagrita }));
+                                   isPaused, isshaashtraVisible, chetanaaJaagrita }));
 Audio.setVibrateCallback(vibrateGamepad);
 Audio.setReadinessGetters({ getFontsReady: () => isFontsReady,
                              getScaleGameDone: () => isScaleGameDone });
@@ -562,7 +562,7 @@ AM.updateAmbientVolumes();
 | ~220 | `setCallbacks()`, `setUI()` |
 | ~240 | `init()` — pool + stars initialization |
 | ~280 | `update(dt, keys, frameNow)` — मुख्य game logic tick |
-| ~730 | `toggleShastra()` |
+| ~730 | `toggleshaashtra()` |
 | ~760 | `showEndScreen(reason)` |
 | ~830 | `reset()` — punahaPrarambha |
 | ~930 | `getState()` — renderer snapshot |
@@ -647,7 +647,7 @@ AM.updateAmbientVolumes();
 | ~44 | UI DOM references |
 | ~100 | Event listeners (keyboard, gamepad, buttons, wheel) |
 | ~200 | Gamepad module (pollGamepad, vibrateGamepad) |
-| ~300 | `toggleShastra()`, `updateShastraPage()` |
+| ~300 | `toggleshaashtra()`, `updateshaashtraPage()` |
 | ~360 | `draw()` — engine state + Renderer calls |
 | ~430 | `gameLoop()` — RAF loop |
 | ~470 | `scaleGame()`, `debounce()` |
