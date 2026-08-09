@@ -87,6 +87,8 @@ const STRINGS = {
         'alert.punarjanmaNaya.subtitle': 'नया सफर शुरू होता है।',
         'alert.kripaAtirikta.title': 'अतिरिक्त कृपा',
         'alert.kripaAtirikta.subtitle': 'कृपा लेकर नए जीवन में प्रवेश!',
+        'alert.prathamaJanma.title': 'प्रथम जन्म',
+        'alert.prathamaJanma.subtitle': 'आत्मा-यात्रा का शुभारम्भ।',
 
         // ── क्रियाएँ ──
         'alert.naamaSumirana.title': 'नाम सुमिरन',
@@ -177,6 +179,7 @@ const STRINGS = {
         'hud.praarabdhaTimerLabel': 'प्रारब्ध {n} शेष',
         // ── notify overlay ──
         'notify.praarabdhaMukta':   '📜🔥 मुक्त!',
+        'notify.prathamaJanma':     '🌅 प्रथम जन्म',
         // ── end screens ──
         'end.punarjanmaLabel':     'पुनर्जन्म:',
         'end.moksha.samayaLabel':  'मोक्ष 🌿',
@@ -271,6 +274,8 @@ const STRINGS = {
         'alert.punarjanmaNaya.subtitle': 'A new journey begins.',
         'alert.kripaAtirikta.title': 'Extra Blessing',
         'alert.kripaAtirikta.subtitle': 'Entering the new life carrying Blessing!',
+        'alert.prathamaJanma.title': 'Prathama Janma',
+        'alert.prathamaJanma.subtitle': 'Your soul-journey begins.',
 
         // ── Actions ──
         'alert.naamaSumirana.title': 'Naama-Sumirana',
@@ -355,6 +360,7 @@ const STRINGS = {
         'hud.praarabdhaTimerLabel': 'Praarabdha {n} remaining',
         // ── notify overlay ──
         'notify.praarabdhaMukta':   '📜🔥 Freed!',
+        'notify.prathamaJanma':     '🌅 First Birth',
         // ── end screens ──
         'end.punarjanmaLabel':     'Rebirths:',
         'end.moksha.samayaLabel':  'Moksha 🌿',
