@@ -683,6 +683,10 @@ startBtn?.addEventListener('click', () => {
     touch.unblock('start');   // start-screen हटा — controls दिखाएँ
     isGameStarted = true;
     document.getElementById('start-screen')?.remove();
+    // ── प्रथम जन्म alert — Issue #73 ──
+    engine._alertKey('prathamaJanma', '🌅', 'achievement');
+    engine.notifyTimer = 120;
+    engine.notifyText  = t('notify.prathamaJanma');
     // गुरु-दीक्षा — पहली बार खेलने पर tutorial शुरू
     tutorial.start(engine.player.x);
     lastTime = performance.now();
@@ -700,6 +704,10 @@ tutorialBtn?.addEventListener('click', () => {
     try { localStorage.removeItem('moksha_tutorial_seen');} catch (_) {}
     isGameStarted = true;
     document.getElementById('start-screen')?.remove();
+    // ── प्रथम जन्म alert — Issue #73 ──
+    engine._alertKey('prathamaJanma', '🌅', 'achievement');
+    engine.notifyTimer = 120;
+    engine.notifyText  = t('notify.prathamaJanma');
     // tutorial.start() अब localStorage clear होने के बाद — guaranteed fresh tutorial
     tutorial.start(engine.player.x);
     lastTime = performance.now();
