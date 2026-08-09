@@ -19,7 +19,7 @@
  * ── बाहरी निर्भरताएँ (injected callbacks) ─────────────────
  *  Audio.setGameStateGetter(fn)
  *      fn() → { isGameStarted, gameOver, won, isPaused,
- *                isShastraVisible, chetanaaJaagrita }
+ *                isShaashtraVisible, chetanaaJaagrita }
  *
  *  Audio.setVibrateCallback(fn)
  *      fn(weakMagnitude, strongMagnitude, duration) → void
@@ -32,7 +32,7 @@
  *  // पेज-लोड पर एक बार:
  *  Audio.setGameStateGetter(() => ({
  *      isGameStarted, gameOver, won, isPaused,
- *      isShastraVisible, chetanaaJaagrita
+ *      isShaashtraVisible, chetanaaJaagrita
  *  }));
  *  Audio.setVibrateCallback(vibrateGamepad);
  *  Audio.setReadinessGetters({
@@ -98,11 +98,11 @@ const SUSHUPTI_SWAANSA_DUCK_REDUCTION = 0.20;
  * हल्के SFX कम।
  */
 const DUCK_STRENGTH = new Map([
-    ['purnaSamarpana',    0.60],
-    ['drishti',           0.35],
+    ['poornaSamarpana',   0.60],
+    ['drishtee',          0.35],
     ['andhakaara',        0.40],
     ['shuvha',            0.50],
-    ['ashuvha',             0.55],
+    ['ashuvha',           0.55],
     ['jaapa',             0.55],
     ['samarpita',         0.45],
     ['naamaSamarpita',    0.55],
@@ -120,7 +120,7 @@ const DUCK_STRENGTH = new Map([
     ['punyaBandhana',     0.40],
     ['bandhanaMukta',     0.35],
     ['naama',             0.45],
-    ['antimaCharana',      0.35],
+    ['antimaCharana',     0.35],
     ['kripa',             0.50],
     ['shankhaDhwani',     0.45],
     ['jyotiDhwani',       0.40],
@@ -179,12 +179,12 @@ class AudioManager {
             jyotiDhwani:        null,  // B-press ज्योति
             shankhaPrapta:      null,  // शंख-संग्रह
             jyotiPrapta:        null,  // ज्योति-संग्रह
-            purnaSamarpana:     null,  // पूर्ण-समर्पण
-            drishti:            null,  // दृष्टि लौटी
+            poornaSamarpana:     null,  // पूर्ण-समर्पण
+            drishtee:            null,  // दृष्टि लौटी
             andhakaara:         null,  // पाप-अंधकार
             // Batch-2 (deferred — भारी / देर से ज़रूरी)
             bgMusic:            null,  // पृष्ठभूमि संगीत (~6.5MB)
-            chetanaJaagrita:     null,  // चेतना-जागृति
+            chetanaaJaagrita:     null,  // चेतना-जागृति
             pralaya:            null,  // प्रलय
             jaagritaSwaansa:      null,  // अंतरिक्ष-श्वास (ambient loop)
             moksha:             null,  // मोक्ष-विजय
@@ -244,7 +244,7 @@ class AudioManager {
         // ── Injected callbacks ──────────────────────────────
         /**
          * () => { isGameStarted, gameOver, won, isPaused,
-         *          isShastraVisible, chetanaaJaagrita }
+         *          isShaashtraVisible, chetanaaJaagrita }
          */
         this._getGameState = null;
 
@@ -268,7 +268,7 @@ class AudioManager {
      * circular dependency को callback pattern से हल करता है।
      *
      * @param {Function} fn — () => { isGameStarted, gameOver, won,
-     *                                 isPaused, isShastraVisible, chetanaaJaagrita }
+     *                                 isPaused, isShaashtraVisible, chetanaaJaagrita }
      */
     setGameStateGetter(fn) {
         this._getGameState = fn;
@@ -455,19 +455,19 @@ class AudioManager {
                 this._vibrate?.(0.10, 0.05, 50);
                 break;
 
-            case 'purnaSamarpana':
+            case 'poornaSamarpana':
                 // अंतिम चरण में समस्त नाम-समर्पण (एक बार/जीवन-चक्र)
-                buf.purnaSamarpana
-                    ? this._playBufferedSound(buf.purnaSamarpana, ctx.destination, 0.65)
+                buf.poornaSamarpana
+                    ? this._playBufferedSound(buf.poornaSamarpana, ctx.destination, 0.65)
                     : this._playTone(987.77, 0.14, 'sine', 0.04, 1567.98);
                 this._vibrate?.(0.20, 0.25, 130);
                 break;
 
             // ── दृष्टि / अंधकार ────────────────────────────
-            case 'drishti':
+            case 'drishtee':
                 // पाप-अंधकार (ashuvhaKarma≥3) से बाहर आने पर
-                buf.drishti
-                    ? this._playBufferedSound(buf.drishti, ctx.destination, 0.55)
+                buf.drishtee
+                    ? this._playBufferedSound(buf.drishtee, ctx.destination, 0.55)
                     : this._playTone(880, 0.10, 'sine', 0.03, 1318.51);
                 this._vibrate?.(0.10, 0.08, 60);
                 break;
@@ -627,10 +627,10 @@ class AudioManager {
             // ── चेतना-जागृति (fade-in envelope) ────────────
             case 'chetana':
                 // समर्पित≥50 पर एक बार — पूरी buffer-duration तक प्राकृतिक रूप से बजे
-                if (buf.chetanaJaagrita) {
+                if (buf.chetanaaJaagrita) {
                     const cNow  = ctx.currentTime;
                     const cSrc  = ctx.createBufferSource();
-                    cSrc.buffer = buf.chetanaJaagrita;
+                    cSrc.buffer = buf.chetanaaJaagrita;
                     const cGain = ctx.createGain();
                     cGain.gain.setValueAtTime(0.0001, cNow);
                     cGain.gain.exponentialRampToValueAtTime(0.7, cNow + 0.05); // हल्का fade-in
@@ -639,7 +639,7 @@ class AudioManager {
                     cSrc.start(cNow);
                     // premature stop() नहीं — पूरी duration तक बजे (शास्त्र-संगत)
                 } else {
-                    console.warn('⚠️ chetanaJaagrita.mp3 लोड नहीं हुई — ./audio/chetanaJaagrita.mp3 path जाँचें');
+                    console.warn('⚠️ chetanaaJaagrita.mp3 लोड नहीं हुई — ./audio/chetanaaJaagrita.mp3 path जाँचें');
                 }
                 break;
 
@@ -774,7 +774,7 @@ class AudioManager {
         }
 
         // ── jaagritaSwaansa — gameplay-gated, सांस-सिंक ──
-        // 🛠️ बग-फिक्स: पहले pause/shastra/pralaya/moksha में भी बजती थी
+        // 🛠️ बग-फिक्स: पहले pause/shaashtra/pralaya/moksha में भी बजती थी
         if (this._jaagritaSwaansaGain) {
             const swaansaVol = JAAGRITA_SWAANSA_VOLUME *
                 (1 - BG_SWAANSA_MOD_RANGE + bp * BG_SWAANSA_MOD_RANGE);
@@ -783,7 +783,7 @@ class AudioManager {
         }
 
         // ── sushuptiSwaansa — gameplay-gated, सांस-सिंक (pre-chetanaaJaagrita) ──
-        // 🛠️ बग-फिक्स: shathendriya जैसा gameplay-gating — pause/shastra पर मौन
+        // 🛠️ बग-फिक्स: shathendriya जैसा gameplay-gating — pause/shaashtra पर मौन
         if (this._sushuptiSwaansaGain) {
             const dreamVol = SUSHUPTI_SWAANSA_VOLUME *
                 (1 - BG_SWAANSA_MOD_RANGE + bp * BG_SWAANSA_MOD_RANGE);
@@ -827,7 +827,7 @@ class AudioManager {
     }
 
     /**
-     * punahaPrarambha() में बुलाएँ — jaagritaSwaansa बंद करें।
+     * punahaPraarambha() में बुलाएँ — jaagritaSwaansa बंद करें।
      * अगले जीवन में chetanaaJaagrita होने पर दोबारा शुरू होगी।
      * (replaces stopJaagritaSwaansaLayer())
      */
@@ -842,8 +842,8 @@ class AudioManager {
     }
 
     /**
-     * punahaPrarambha() में बुलाएँ — नए जीवन-चक्र के लिए sushuptiSwaansa फिर शुरू।
-     * (replaces startSushuptiSwaansaLayer() public call in punahaPrarambha)
+     * punahaPraarambha() में बुलाएँ — नए जीवन-चक्र के लिए sushuptiSwaansa फिर शुरू।
+     * (replaces startSushuptiSwaansaLayer() public call in punahaPraarambha)
      */
 
     startJaagritaSwaansaLayer() {
@@ -883,7 +883,7 @@ class AudioManager {
     _isActiveGameplay() {
         const s = this._getGameState?.();
         if (!s) return false;
-        return s.isGameStarted && !s.gameOver && !s.won && !s.isPaused && !s.isShastraVisible;
+        return s.isGameStarted && !s.gameOver && !s.won && !s.isPaused && !s.isShaashtraVisible;
     }
 
     // ── Synth / buffer playback ─────────────────────────────
@@ -1047,7 +1047,7 @@ class AudioManager {
             { url: './audio/shathendriya.mp3', key: 'shathendriya'},
             { url: './audio/sushuptiSwaansa.mp3', key: 'sushuptiSwaansa'},
             { url: './audio/timer.mp3', key: 'timer'},
-            { url: './audio/prarabdhaBandhana.mp3', key: 'prarabdhaBandhana'},
+            { url: './audio/praarabdhaBandhana.mp3', key: 'prarabdhaBandhana'},
             { url: './audio/paapaBandhana.mp3', key: 'paapaBandhana'},
             { url: './audio/punyaBandhana.mp3', key: 'punyaBandhana'},
             { url: './audio/bandhanaMukta.mp3', key: 'bandhanaMukta'},
@@ -1059,9 +1059,9 @@ class AudioManager {
             { url: './audio/shankhaDhwani.mp3', key: 'shankhaDhwani'},
             { url: './audio/jyotiDhwani.mp3', key: 'jyotiDhwani'},
             { url: './audio/jyotiPrapta.mp3', key: 'jyotiPrapta'},
-            { url: './audio/drishti.mp3', key: 'drishti'},
+            { url: './audio/drishtee.mp3', key: 'drishtee'},
             { url: './audio/shankhaPrapta.mp3', key: 'shankhaPrapta'},
-            { url: './audio/purnaSamarpana.mp3', key: 'purnaSamarpana'},
+            { url: './audio/poornaSamarpana.mp3', key: 'poornaSamarpana'},
             { url: './audio/andhakaara.mp3', key: 'andhakaara'}
         ];
 
@@ -1107,7 +1107,7 @@ class AudioManager {
         };
         const [bg, chetana, pralaya, jaagritaSwaansa, moksha, antimaCharana] = await Promise.all([
             _loadAmbient('./audio/bgMusic.mp3'),
-            _loadAmbient('./audio/chetanaJaagrita.mp3'),
+            _loadAmbient('./audio/chetanaaJaagrita.mp3'),
             _loadAmbient('./audio/pralaya.mp3'),
             _loadAmbient('./audio/jaagritaSwaansa.mp3'),
             _loadAmbient('./audio/moksha.mp3'),
@@ -1116,7 +1116,7 @@ class AudioManager {
 
         Object.assign(this.audioBuffers, {
             bgMusic:        bg,
-            chetanaJaagrita: chetana,
+            chetanaaJaagrita: chetana,
             pralaya,
             jaagritaSwaansa,
             moksha,
@@ -1230,7 +1230,7 @@ class AudioManager {
         this._jaagritaSwaansaGain = this.audioCtx.createGain();
 
         // 🛠️ बग-फिक्स: node बनने के तुरंत बाद isActiveGameplay() check —
-        // ताकि pause/shastra के दौरान node बनते ही पूर्ण-स्तर gain न मिले
+        // ताकि pause/shaashtra के दौरान node बनते ही पूर्ण-स्तर gain न मिले
         const initVol = this._isActiveGameplay() ? JAAGRITA_SWAANSA_VOLUME : 0;
         this._jaagritaSwaansaGain.gain.setValueAtTime(initVol, now);
         this._jaagritaSwaansaGain.connect(this._bgMasterGain);

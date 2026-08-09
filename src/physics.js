@@ -55,7 +55,7 @@ export const PhysicsMixin = {
 
     /**
      * सभी glow-rings निष्क्रिय/reset करें।
-     * punahaPrarambha (reset) में प्रयुक्त।
+     * punahaPraarambha (reset) में प्रयुक्त।
      */
     _resetAllGlowRings() {
         for (let key in this.glowRings) {

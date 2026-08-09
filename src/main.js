@@ -14,7 +14,7 @@
  *   • Event listeners (keyboard, gamepad, buttons, wheel)
  *   • scaleGame() / debounce()
  *   • Gamepad module (pollGamepad, vibrateGamepad, etc.)
- *   • Shastra navigation (toggleShastra, updateShastraPage)
+ *   • Shaashtra navigation (toggleShaashtra, updateShaashtraPage)
  *   • draw() — engine.getState() + Renderer calls
  *   • gameLoop() — रा॒फ़ loop
  *   • Start-screen poller
@@ -26,7 +26,7 @@ import { Renderer }     from './render.js';
 import { KarmaEngine, SAMAYA_PRAARAMBHIKA }  from './engine.js';
 import Audio from './audio.js';
 import { TutorialManager } from './tutorial.js';
-import { renderShastraPage } from './shastra.js';
+import { renderShaashtraPage } from './shaashtra.js';
 import { TouchControls }   from './touch.js';
 const AM = Audio;
 // ====================== CANVAS SETUP ======================
@@ -50,14 +50,14 @@ const UI = {
     naama:           document.getElementById('naama'),
     punya:           document.getElementById('punya'),
     paap:            document.getElementById('paap'),
-    prarabdha:       document.getElementById('prarabdha'),
+    praarabdha:       document.getElementById('praarabdha'),
     samarpita:       document.getElementById('samarpita'),
     punaraJanma:     document.getElementById('punaraJanma'),
     kripa:           document.getElementById('kripa'),
     shankha:         document.getElementById('shankha'),
     jyoti:           document.getElementById('jyoti'),
     drishti:         document.getElementById('drishti'),
-    purnaSamarpana:  document.getElementById('purnaSamarpana'),
+    poornaSamarpana:  document.getElementById('poornaSamarpana'),
     chetana:         document.getElementById('chetana'),
     samayaVal:       document.getElementById('ui-samaya-val'),
     swaansaVal:      document.getElementById('ui-swaansa-val'),
@@ -67,7 +67,8 @@ const UI = {
     overlayTitle:    document.getElementById('overlay-title'),
     overlaySubtitle: document.getElementById('overlay-subtitle'),
     viraamaOverlay:  document.getElementById('viraama-overlay'),
-    shastraOverlay:  document.getElementById('shastra-overlay'),
+    shaashtraOverlay:  document.getElementById('shaashtra-overlay'),
+    punarjanmaBtn:   document.getElementById('punarjanma-btn'),
 };
 
 // ====================== ENGINE INIT ======================
@@ -107,10 +108,10 @@ let isFontsReady    = false;
 let isScaleGameDone = false;
 
 // ====================== SHASTRA STATE ======================
-let currentShastraPage = 1;
+let currentShaashtraPage = 1;
 // 🛠️ key-repeat बिना continuous scroll (dpad-stick जैसी consistency)
-let shastraKeyState = { up: false, down: false };
-const shastraBody = document.getElementById('shastra-body'); // one time cashe
+let shaashtraKeyState = { up: false, down: false };
+const shaashtraBody = document.getElementById('shaashtra-body'); // one time cashe
 
 // ====================== GAMEPAD MODULE ======================
 const GAMEPAD_DEADZONE  = 0.18;
@@ -154,14 +155,14 @@ function handleDiscreteButton(gp, buttonIndex, keyName) {
 }
 
 /** edge-triggered helper for any boolean condition */
-function handleShastraDirection(stateKey, isActiveNow, onRise) {
+function handleShaashtraDirection(stateKey, isActiveNow, onRise) {
     const wasActive = !!gpButtonStates[stateKey];
     if (isActiveNow && !wasActive) onRise();
     gpButtonStates[stateKey] = isActiveNow;
 }
 
 /** शास्त्र-नेविगेशन (shared between pollGamepad + pollGamepadOnStartScreen) */
-function handleShastraGamepadNav(gp) {
+function handleShaashtraGamepadNav(gp) {
     const stickX    = gp.axes[0] || 0;
     const stickY    = gp.axes[1] || 0;
     const dpadLeft  = !!gp.buttons[GAMEPAD_BUTTON.DPAD_LEFT]?.pressed;
@@ -172,14 +173,14 @@ function handleShastraGamepadNav(gp) {
     const left  = (stickX < -GAMEPAD_DEADZONE) || dpadLeft;
     const right = (stickX > GAMEPAD_DEADZONE)  || dpadRight;
 
-    handleShastraDirection('shastra_left',      left,    () => dispatchKey('keydown', 'ArrowLeft'));
-    handleShastraDirection('shastra_right',     right,   () => dispatchKey('keydown', 'ArrowRight'));
-    handleShastraDirection('shastra_dpad_up',   dpadUp,  () => dispatchKey('keydown', 'PageUp'));
-    handleShastraDirection('shastra_dpad_down', dpadDown,() => dispatchKey('keydown', 'PageDown'));
+    handleShaashtraDirection('shaashtra_left',      left,    () => dispatchKey('keydown', 'ArrowLeft'));
+    handleShaashtraDirection('shaashtra_right',     right,   () => dispatchKey('keydown', 'ArrowRight'));
+    handleShaashtraDirection('shaashtra_dpad_up',   dpadUp,  () => dispatchKey('keydown', 'PageUp'));
+    handleShaashtraDirection('shaashtra_dpad_down', dpadDown,() => dispatchKey('keydown', 'PageDown'));
 
     // Analog stick → smooth scroll (collision-free)
     if (stickY < -GAMEPAD_DEADZONE || stickY > GAMEPAD_DEADZONE) {
-        const body = document.getElementById('shastra-body');
+        const body = document.getElementById('shaashtra-body');
         if (body) body.scrollTop += stickY * 6 * 2;
     }
 }
@@ -207,8 +208,8 @@ function pollGamepad() {
     }
     gpButtonStates['_tut_start'] = _tStartPressed;
 
-    if (engine.isShastraVisible) {
-        handleShastraGamepadNav(gp);
+    if (engine.isShaashtraVisible) {
+        handleShaashtraGamepadNav(gp);
         keys['arrowleft'] = false; keys['arrowright'] = false;
     } else {
         // Movement
@@ -230,7 +231,7 @@ function pollGamepad() {
 
 // ====================== SHASTRA UI ======================
 
-function updateShastraPage() {
+function updateShaashtraPage() {
     const lang  = getLang();
     const TOTAL = 3;
 
@@ -238,62 +239,62 @@ function updateShastraPage() {
     // dataset.lang से जाँचते हैं कि यह page पहले से इसी भाषा में तो नहीं;
     // वरना हर nav-click पर व्यर्थ innerHTML लिखना पड़ता।
     for (let p = 1; p <= TOTAL; p++) {
-        const el = document.getElementById(`shastra-page-${p}`);
+        const el = document.getElementById(`shaashtra-page-${p}`);
         if (el && el.dataset.lang !== lang) {
-            el.innerHTML   = renderShastraPage(p - 1, lang);   // 0-based index
+            el.innerHTML   = renderShaashtraPage(p - 1, lang);   // 0-based index
             el.dataset.lang = lang;
         }
     }    
     for (let p = 1; p <= 3; p++) {
-        document.getElementById(`shastra-page-${p}`)?.classList.remove('active');
+        document.getElementById(`shaashtra-page-${p}`)?.classList.remove('active');
     }
-    document.getElementById(`shastra-page-${currentShastraPage}`)?.classList.add('active');
-    const navBtn = document.getElementById('shastra-nav-btn');
+    document.getElementById(`shaashtra-page-${currentShaashtraPage}`)?.classList.add('active');
+    const navBtn = document.getElementById('shaashtra-nav-btn');
     if (navBtn) {
-        const key = currentShastraPage < TOTAL ? 'shastra.next' : 'shastra.prev';
-        navBtn.textContent = t(key, { page: currentShastraPage, total: TOTAL });        
+        const key = currentShaashtraPage < TOTAL ? 'shaashtra.next' : 'shaashtra.prev';
+        navBtn.textContent = t(key, { page: currentShaashtraPage, total: TOTAL });        
     }
 }
 
 /**
  * शास्त्र toggle — engine state + DOM overlay एक साथ update।
- * (DRY: ESC key, shastra-help-btn, shastra-close-btn तीनों यही बुलाते हैं)
+ * (DRY: ESC key, shaashtra-help-btn, shaashtra-close-btn तीनों यही बुलाते हैं)
  */
-function toggleShastra() {
-    engine.toggleShastra(); // engine internal state update
-    if (engine.isShastraVisible) {
-        touch.block('shastra');
+function toggleShaashtra() {
+    engine.toggleShaashtra(); // engine internal state update
+    if (engine.isShaashtraVisible) {
+        touch.block('shaashtra');
         // overlay DOM
-        currentShastraPage = 1; updateShastraPage();
+        currentShaashtraPage = 1; updateShaashtraPage();
         // keys reassign नहीं — TouchControls reference safe रहे
         Object.keys(keys).forEach(k => { keys[k] = false; });
         touch.clearAll();
     } else {
-        touch.unblock('shastra');
+        touch.unblock('shaashtra');
         Object.keys(keys).forEach(k => { keys[k] = false; });
         touch.clearAll();
-        // engine.toggleShastra() already restores pause state correctly.
+        // engine.toggleShaashtra() already restores pause state correctly.
         // Only reset lastTime when the game is actually unpaused.
         if (!engine.isPaused) {
-            lastTime = performance.now(); // Shastra में बिताया time → dt spike रोकें
+            lastTime = performance.now(); // Shaashtra में बिताया time → dt spike रोकें
         }
     }
 }
 
 // ====================== CONTINUOUS SHASTRA SCROLL ======================
 // ArrowUp/Down को OS key-repeat पर निर्भर न रखकर — held-flag से smooth scroll
-let _shastraScrollRafId = null;
-function continuousShastraScrollLoop() {
-    if (engine.isShastraVisible) {
-        const body = document.getElementById('shastra-body');
+let _shaashtraScrollRafId = null;
+function continuousShaashtraScrollLoop() {
+    if (engine.isShaashtraVisible) {
+        const body = document.getElementById('shaashtra-body');
         if(body) {
-        if (shastraKeyState.up) body.scrollTop -= 6;
-        if (shastraKeyState.down) body.scrollTop += 6;
+        if (shaashtraKeyState.up) body.scrollTop -= 6;
+        if (shaashtraKeyState.down) body.scrollTop += 6;
         }
     }
-    _shastraScrollRafId = requestAnimationFrame(continuousShastraScrollLoop);
+    _shaashtraScrollRafId = requestAnimationFrame(continuousShaashtraScrollLoop);
 }
-_shastraScrollRafId = requestAnimationFrame(continuousShastraScrollLoop);
+_shaashtraScrollRafId = requestAnimationFrame(continuousShaashtraScrollLoop);
 
 // ====================== UTILITY ======================
 function debounce(func, delay) {
@@ -333,11 +334,11 @@ window.addEventListener('orientationchange', () => setTimeout(scaleGame, 300));
 
 // ====================== EVENT LISTENERS ======================
 
-// ── Wheel (shastra scroll) ──
+// ── Wheel (shaashtra scroll) ──
 window.addEventListener('wheel', (e) => {
-    if (!engine.isShastraVisible) return;
+    if (!engine.isShaashtraVisible) return;
     e.preventDefault();
-    const body = document.getElementById('shastra-body');
+    const body = document.getElementById('shaashtra-body');
     if (body) body.scrollTop += e.deltaY; // direct — collision-free
 }, { passive: false });
 
@@ -345,7 +346,7 @@ window.addEventListener('wheel', (e) => {
 window.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
 
-    if (!isGameStarted && key !== 'escape' && !engine.isShastraVisible) return;
+    if (!isGameStarted && key !== 'escape' && !engine.isShaashtraVisible) return;
     AM?.ensureAudio();
 
     if (['arrowup','arrowdown','arrowleft','arrowright',' ','q','f','r','escape','enter','pageup','pagedown'].includes(key)) {
@@ -356,17 +357,17 @@ window.addEventListener('keydown', (e) => {
     if (key === 'enter') { tutorial.dismiss(); return; }
     if (key === 'escape') {
         if (!tutorial.isDone()) { tutorial.skip(); return; }
-        toggleShastra(); return;
+        toggleShaashtra(); return;
     }
     
 
 
-    if (engine.isShastraVisible) {
-        const body = document.getElementById('shastra-body');
-        if (key === 'arrowleft'  && currentShastraPage > 1) { currentShastraPage--; updateShastraPage(); if (body) body.scrollTop = 0; }
-        if (key === 'arrowright' && currentShastraPage < 3) { currentShastraPage++; updateShastraPage(); if (body) body.scrollTop = 0; }
-        if (key === 'arrowup')   shastraKeyState.up   = true;
-        if (key === 'arrowdown') shastraKeyState.down = true;
+    if (engine.isShaashtraVisible) {
+        const body = document.getElementById('shaashtra-body');
+        if (key === 'arrowleft'  && currentShaashtraPage > 1) { currentShaashtraPage--; updateShaashtraPage(); if (body) body.scrollTop = 0; }
+        if (key === 'arrowright' && currentShaashtraPage < 3) { currentShaashtraPage++; updateShaashtraPage(); if (body) body.scrollTop = 0; }
+        if (key === 'arrowup')   shaashtraKeyState.up   = true;
+        if (key === 'arrowdown') shaashtraKeyState.down = true;
         if (key === 'pageup')   { if (body) body.scrollTop -= body.clientHeight * 0.9; }
         if (key === 'pagedown') { if (body) body.scrollTop += body.clientHeight * 0.9; }
         return;
@@ -396,8 +397,8 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => {
     const key = e.key.toLowerCase();
     keys[key] = false;
-    if (key === 'arrowup')   shastraKeyState.up   = false;
-    if (key === 'arrowdown') shastraKeyState.down = false;
+    if (key === 'arrowup')   shaashtraKeyState.up   = false;
+    if (key === 'arrowdown') shaashtraKeyState.down = false;
 });
 
 window.addEventListener('blur', () => {
@@ -437,7 +438,7 @@ window.addEventListener('gamepaddisconnected', (e) => {
 document.addEventListener('visibilitychange', () => {
     if (document.hidden && isGameStarted &&
         !engine.gameOver && !engine.won &&
-        !engine.isPaused && !engine.isShastraVisible) {
+        !engine.isPaused && !engine.isShaashtraVisible) {
         engine.isPaused = true;
         if (UI.viraamaOverlay) UI.viraamaOverlay.style.display = 'flex';
         AM?.playSound('viraama');
@@ -456,6 +457,10 @@ document.getElementById('restart-btn')?.addEventListener('click', () => {
     UI.viraamaOverlay.style.display = 'none';
     engine.reset(); lastTime = performance.now();
 });
+// ── पुनर्जन्म बटन (end screen) — प्रलय/पुनर्जन्म के बाद नया चक्र ──
+document.getElementById('punarjanma-btn')?.addEventListener('click', () => {
+    engine.reset(); lastTime = performance.now();
+});
 document.getElementById('quit-btn')?.addEventListener('click', () => {
     UI.viraamaOverlay.style.display = 'none';
     engine.actionPralaya();
@@ -463,16 +468,16 @@ document.getElementById('quit-btn')?.addEventListener('click', () => {
 document.getElementById('music-toggle-btn')?.addEventListener('click', () => {
     AM?.ensureAudio(); AM?.toggleBgMusic();
 });
-document.getElementById('shastra-help-btn')?.addEventListener('click', () => {
-    AM?.ensureAudio(); toggleShastra();
+document.getElementById('shaashtra-help-btn')?.addEventListener('click', () => {
+    AM?.ensureAudio(); toggleShaashtra();
 });
-document.getElementById('shastra-close-btn')?.addEventListener('click', () => {
-    toggleShastra();
+document.getElementById('shaashtra-close-btn')?.addEventListener('click', () => {
+    toggleShaashtra();
 });
-document.getElementById('shastra-nav-btn')?.addEventListener('click', () => {
-    currentShastraPage = currentShastraPage < 3 ? currentShastraPage + 1 : 1;
-    updateShastraPage();
-    const body = document.getElementById('shastra-body');
+document.getElementById('shaashtra-nav-btn')?.addEventListener('click', () => {
+    currentShaashtraPage = currentShaashtraPage < 3 ? currentShaashtraPage + 1 : 1;
+    updateShaashtraPage();
+    const body = document.getElementById('shaashtra-body');
     if (body) body.scrollTop = 0;
 });
 document.getElementById('music-volume-slider')?.addEventListener('input', (e) => {
@@ -525,7 +530,7 @@ lastTime = performance.now();
 
 function gameLoop(ts) {
     pollGamepad();
-    if (!engine.isPaused && !engine.gameOver && !engine.won && !engine.isShastraVisible) {
+    if (!engine.isPaused && !engine.gameOver && !engine.won && !engine.isShaashtraVisible) {
         const rawDt = Math.min((ts - lastTime) / (1000 / 60), 2);
         // tutorial card visible होने पर slow-motion (dt × 0.3)
         const dt = tutorial.isSlowMode() ? rawDt * 0.3 : rawDt;
@@ -592,9 +597,11 @@ function applyStartScreenLanguage() {
     metaDescription?.setAttribute('content', t('start.pageDescription'));
     hindiLabel?.classList.toggle('active', !isEnglish);
     englishLabel?.classList.toggle('active', isEnglish);
-    updateShastraPage(); // शास्त्र content भी language के अनुसार update करें
-    const restartHintEl = document.getElementById('restart-hint-text');
+    updateShaashtraPage(); // शास्त्र content भी language के अनुसार update करें
+    const restartHintEl  = document.getElementById('restart-hint-text');
     if (restartHintEl) restartHintEl.textContent = t('end.restartHint');
+    const punarjBtnEl    = document.getElementById('punarjanma-btn');
+    if (punarjBtnEl) punarjBtnEl.textContent = t('end.punarjanmaBtn');
 
     // ── Pause (स्तम्भन) overlay — भाषा के अनुसार update ──
     const viraamaTitle  = document.querySelector('.viraama-content h2');
@@ -606,11 +613,11 @@ function applyStartScreenLanguage() {
     if (restartBtnEl) restartBtnEl.textContent = t('viraama.restart');
     if (quitBtn)      quitBtn.textContent      = t('viraama.quit');
 
-    // ── Shastra overlay header — भाषा के अनुसार update ──
-    const shastraH2 = document.querySelector('#shastra-overlay .shastra-header h2');
-    const shastraP  = document.querySelector('#shastra-overlay .shastra-header p');
-    if (shastraH2) shastraH2.textContent = t('shastra.title');
-    if (shastraP)  shastraP.textContent  = t('shastra.subtitle');
+    // ── Shaashtra overlay header — भाषा के अनुसार update ──
+    const shaashtraH2 = document.querySelector('#shaashtra-overlay .shaashtra-header h2');
+    const shaashtraP  = document.querySelector('#shaashtra-overlay .shaashtra-header p');
+    if (shaashtraH2) shaashtraH2.textContent = t('shaashtra.title');
+    if (shaashtraP)  shaashtraP.textContent  = t('shaashtra.subtitle');
 
     // ── Loading overlay text — भाषा के अनुसार update ──
     const loadingText = document.getElementById('loading-overlay-text');
@@ -651,7 +658,7 @@ function pollGamepadOnStartScreen() {
         const startRise     = startPressed && !startScreenGpState.start;
         startScreenGpState.start = startPressed;
 
-        if (startRise && !engine.isShastraVisible) {
+        if (startRise && !engine.isShaashtraVisible) {
             gpButtonStates[GAMEPAD_BUTTON.START] = true;
             startBtn?.click();
         }
@@ -662,7 +669,7 @@ function pollGamepadOnStartScreen() {
         startScreenGpState.back = backPressed;
         if (backRise) dispatchKey('keydown', 'Escape');
 
-        if (engine.isShastraVisible) handleShastraGamepadNav(gp);
+        if (engine.isShaashtraVisible) handleShaashtraGamepadNav(gp);
 }
 
     requestAnimationFrame(pollGamepadOnStartScreen);
@@ -707,7 +714,7 @@ AM?.setGameStateProvider?.(() => ({
     gameOver:        engine.gameOver,
     won:             engine.won,
     isPaused:        engine.isPaused,
-    isShastraVisible: engine.isShastraVisible,
+    isShaashtraVisible: engine.isShaashtraVisible,
     chetanaaJaagrita: engine.chetanaaJaagrita,
 }));
 // पुराना API compatibility
@@ -716,7 +723,7 @@ AM?.setGameStateGetter?.(() => ({
     gameOver:        engine.gameOver,
     won:             engine.won,
     isPaused:        engine.isPaused,
-    isShastraVisible: engine.isShastraVisible,
+    isShaashtraVisible: engine.isShaashtraVisible,
     chetanaaJaagrita: engine.chetanaaJaagrita,
 }));
 AM?.setVibrateGamepad?.(vibrateGamepad);

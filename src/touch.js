@@ -118,7 +118,7 @@ export class TouchControls {
      */
     /**
      * किसी कारण से controls block करें (hide)।
-     * @param {string} reason — 'start' | 'tutorial' | 'shastra' | 'viraama' | 'end'
+     * @param {string} reason — 'start' | 'tutorial' | 'shaashtra' | 'viraama' | 'end'
      */
     block(reason) {
         if (!this._active) return;

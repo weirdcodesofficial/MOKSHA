@@ -130,16 +130,16 @@ export const StateMixin = {
 
         this._updateStatWithPulse(this._UI.paap, 'paap', this.ashuvhaKarma, '🥀');
 
-        // 📜 prarabdha — bhog-timer active होने पर live countdown दिखे
-        if (this._UI?.prarabdha) {
-            const bhogSec    = this.prarabdhaTimer > 0
-                ? ` ⏱${Math.ceil(this.prarabdhaTimer / 60)}s` : '';
-            const newDisplay = `📜 ${this.prarabdha}${bhogSec}`;
-            if (this._UI.prarabdha.textContent !== newDisplay) {
-                this._UI.prarabdha.textContent = newDisplay;
-                this._uiScales.prarabdha = 1.15;
-                this._uiGlows.prarabdha  = 1.0;
-                this._oldStats.prarabdha = this.prarabdha;
+        // 📜 praarabdha — bhog-timer active होने पर live countdown दिखे
+        if (this._UI?.praarabdha) {
+            const bhogSec    = this.praarabdhaTimer > 0
+                ? ` ⏱${Math.ceil(this.praarabdhaTimer / 60)}s` : '';
+            const newDisplay = `📜 ${this.praarabdha}${bhogSec}`;
+            if (this._UI.praarabdha.textContent !== newDisplay) {
+                this._UI.praarabdha.textContent = newDisplay;
+                this._uiScales.praarabdha = 1.15;
+                this._uiGlows.praarabdha  = 1.0;
+                this._oldStats.praarabdha = this.praarabdha;
             }
         }
 
@@ -154,14 +154,14 @@ export const StateMixin = {
             this.chetanaaJaagrita ? "👁️" : "😴", "");
         this._updateStatWithPulse(this._UI.drishti,     'drishti',
             this.ashuvhaKarma >= 3 ? "⚫" : "☀️", "");
-        this._updateStatWithPulse(this._UI.purnaSamarpana, 'purnaSamarpana',
-            this.purnaSamarpana ? "🙌" : "🤲", "");
+        this._updateStatWithPulse(this._UI.poornaSamarpana, 'poornaSamarpana',
+            this.poornaSamarpana ? "🙌" : "🤲", "");
     },
 
     /** HUD scale/glow animation एक frame advance करें */
     _updateHUDAnimations(dt) {
         const uiKeys = [
-            'purnaSamarpana', 'naama', 'punya', 'paap', 'prarabdha',
+            'poornaSamarpana', 'naama', 'punya', 'paap', 'praarabdha',
             'samarpita', 'punaraJanma', 'gatee', 'chetana',
             'shankha', 'drishti', 'jyoti', 'kripa',
         ];
