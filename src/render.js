@@ -1215,6 +1215,13 @@ export const Renderer = {
         const CARD_X  = (W - CARD_W) / 2;
         const CARD_Y  = (H - CARD_H) / 2 + 30; /* HUD top offset */
         const RADIUS  = 14;
+        // ── Skip button constants — hit-test के लिए main.js इसे पढ़ेगा ──
+        const SKIP_W  = 72;
+        const SKIP_H  = 22;
+        const SKIP_X  = CARD_X + CARD_W - SKIP_W - 10;
+        const SKIP_Y  = CARD_Y + 10;
+        // canvas-space bounds बाहर store करें (click handler इसे पढ़ेगा)
+        Renderer._tutorialSkipBounds = { x: SKIP_X, y: SKIP_Y, w: SKIP_W, h: SKIP_H };
 
         context.save();
 
@@ -1261,6 +1268,20 @@ export const Renderer = {
             CARD_X + CARD_W - 16,
             CARD_Y + 14
         );
+        // ── 6b. ✕ छोड़ें — Skip button (top-left of card) ──
+        context.fillStyle   = 'rgba(255, 70, 70, 0.15)';
+        context.strokeStyle = 'rgba(255, 100, 100, 0.60)';
+        context.lineWidth   = 1;
+        context.beginPath();
+        context.roundRect(SKIP_X, SKIP_Y, SKIP_W, SKIP_H, 5);
+        context.fill();
+        context.stroke();
+        context.font         = "700 9px 'Orbitron', sans-serif";
+        context.fillStyle    = 'rgba(255, 130, 130, 0.90)';
+        context.textAlign    = 'center';
+        context.textBaseline = 'middle';
+        context.fillText('✕ छोड़ें', SKIP_X + SKIP_W / 2, SKIP_Y + SKIP_H / 2);
+        
 
         // ── 7. ॐ Header icon ──
         context.font      = "26px 'Noto Sans Devanagari', sans-serif";

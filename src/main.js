@@ -468,8 +468,23 @@ window.addEventListener('pointerdown', () => AM?.ensureAudio(), { passive: true 
 // ── Tutorial card — tap/click to dismiss ──
 // Ghost click guard: game start के 600ms बाद ही canvas click allow करें
 let _tutorialClickReady = false;
-canvas.addEventListener('click', () => {
-    if (!tutorial.isDone() && _tutorialClickReady) tutorial.dismiss();
+canvas.addEventListener('click', (e) => {
+    if (!tutorial.isDone() && _tutorialClickReady) {
+        // canvas CSS-scale को compensate करें — client coords → canvas coords
+        const rect  = canvas.getBoundingClientRect();
+        const scaleX = canvas.width  / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const cx = (e.clientX - rect.left)  * scaleX;
+        const cy = (e.clientY - rect.top)   * scaleY;
+
+        // ✕ छोड़ें — skip button hit-test
+        const sb = Renderer._tutorialSkipBounds;
+        if (sb && cx >= sb.x && cx <= sb.x + sb.w && cy >= sb.y && cy <= sb.y + sb.h) {
+            tutorial.skip();
+        } else {
+            tutorial.dismiss();
+        }
+    }
 });
 
 // ── Mobile AudioContext unlock — पहले touch पर resume ──
