@@ -100,24 +100,8 @@
         <div id="credits">Developed by Weird Codes</div>
     </div>
 
-    <!-- ── HUD Controls (volume slider, mute, help) ── -->
-    <div id="hud-controls">
-        <div class="hud-right-group">
-            <input type="range" id="music-volume-slider" min="0" max="100" value="100"
-                title="संगीत वॉल्यूम" aria-label="Background Music Volume">
-            <button id="music-toggle-btn" class="hud-icon-btn" title="पृष्ठभूमि ध्वनि म्यूट/अनम्यूट करें">🔊</button>
-            <button id="shaashtra-help-btn" class="hud-icon-btn" title="शास्त्र पढ़ें (खेल की जानकारी)">❓</button>
-            <div id="hud-credits" class="hud-icon-btn" style="cursor:default;" title="Developed by Weird Codes">🛠️</div>
-        </div>
-    </div>
-
     <!-- ── Canvas ── -->
     <canvas id="gameCanvas" width="600" height="680"></canvas>
-
-    <!-- ── Footer (mode badge) ── -->
-    <div id="ui-footer">
-        <span id="mode-badge" class="mode-badge" title="तत्परता की जाँच हो रही है...">⏳ जाँच रहे हैं...</span>
-    </div>
 
     <!-- ── Alert Box ── -->
     <div id="alert-box"
@@ -189,6 +173,20 @@
 
 </main><!-- /#gameContainer -->
 </div><!-- /#moksha-outer -->
+
+<!-- ── Footer (mode badge + HUD controls) — screen bottom पर ── -->
+<div id="ui-footer">
+    <span id="mode-badge" class="mode-badge" title="तत्परता की जाँच हो रही है...">⏳ जाँच रहे हैं...</span>
+    <div id="hud-controls">
+        <div class="hud-right-group">
+            <input type="range" id="music-volume-slider" min="0" max="100" value="100"
+                title="संगीत वॉल्यूम" aria-label="Background Music Volume">
+            <button id="music-toggle-btn" class="hud-icon-btn" title="पृष्ठभूमि ध्वनि म्यूट/अनम्यूट करें">🔊</button>
+            <button id="shaashtra-help-btn" class="hud-icon-btn" title="शास्त्र पढ़ें (खेल की जानकारी)">❓</button>
+            <div id="hud-credits" class="hud-icon-btn" style="cursor:default;" title="Developed by Weird Codes">🛠️</div>
+        </div>
+    </div>
+</div>
 
 <!-- ── Touch Controls Overlay (mobile only — viewport-level, scale-independent) ── -->
 <div id="touch-controls">
