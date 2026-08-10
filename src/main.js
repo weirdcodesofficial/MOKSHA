@@ -623,10 +623,9 @@ lastTime = performance.now();
 
 function gameLoop(ts) {
     pollGamepad();
-    if (!engine.isPaused && !engine.gameOver && !engine.won && !engine.isShaashtraVisible) {
+    if (!engine.isPaused && !engine.gameOver && !engine.won && !engine.isShaashtraVisible && !tutorial.hasActiveCard()) {
         const rawDt = Math.min((ts - lastTime) / (1000 / 60), 2);
-        // tutorial card visible होने पर slow-motion (dt × 0.3)
-        const dt = tutorial.isSlowMode() ? rawDt * 0.3 : rawDt;
+        const dt = rawDt;
         frameNow += (ts - lastTime);
         // tutorial completion हर frame check करें
         tutorial.checkCompletion({
@@ -639,7 +638,8 @@ function gameLoop(ts) {
         touch.syncWithTutorial(tutorial.hasActiveCard());
         engine.update(dt, keys, frameNow);
     }
-    lastTime = ts;
+    // tutorial card dismiss होने पर dt spike न आए
+    if (!tutorial.hasActiveCard()) lastTime = ts;
     draw();
     _rafId = requestAnimationFrame(gameLoop);
 }
