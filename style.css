@@ -816,6 +816,14 @@ button.hud-icon-btn:hover {
     text-shadow: 0 0 20px rgba(255, 215, 0, 1.00);
 }
 
+/* ── Gyroscope button — active/running state ── */
+#gyro-btn.gyro-active {
+    background: rgba(0, 240, 180, 0.18);
+    border-color: rgba(0, 240, 180, 0.70);
+    color: #00f0b4;
+    box-shadow: 0 0 12px rgba(0, 240, 180, 0.30);
+}
+
 /* ── CSS fallback (JS load से पहले touch CSS media query) ── */
 @media (hover: none) and (pointer: coarse) {
     #touch-controls {

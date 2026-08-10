@@ -174,3 +174,161 @@ export class TouchControls {
         return this._active;
     }
 }
+
+// ============================================================
+// GyroscopeControls — Device Tilt Steering (Issue #28)
+// ============================================================
+/**
+ * Device को बाईं/दाईं झुकाने से रथ-संचालन।
+ * DeviceOrientation API (gamma axis) → keys object में inject।
+ * TouchControls के साथ same keys object — engine में zero changes।
+ *
+ * ── Axis ────────────────────────────────────────────────────
+ *  gamma: portrait mode में left/right झुकाव (-90° to +90°)
+ *  alpha/beta: portrait game के लिए प्रासंगिक नहीं।
+ *
+ * ── iOS Permission ──────────────────────────────────────────
+ *  iOS 13+: DeviceOrientationEvent.requestPermission() — user-gesture ज़रूरी।
+ *  Android: automatic — कोई dialog नहीं।
+ *
+ * ── Key Ownership ──────────────────────────────────────────
+ *  _setLeft/_setRight: gyro ने जो keys set कीं सिर्फ वही clear करे।
+ *  keyboard/touch द्वारा held keys neutral zone में override नहीं होंगी।
+ * ============================================================
+ */
+export class GyroscopeControls {
+
+    /**
+     * @param {Object} keys — main.js का shared keys object (by reference)
+     */
+    constructor(keys) {
+        this._keys      = keys;
+        this._active    = false;   // sensor चल रहा है?
+        this._bound     = null;    // listener ref — removeEventListener के लिए
+        this._baseline  = 0;       // calibration offset (gamma degrees)
+        this._needsCal  = false;   // अगला event baseline capture करे?
+        this._setLeft   = false;   // gyro ने arrowleft set किया है?
+        this._setRight  = false;   // gyro ने arrowright set किया है?
+
+        /** neutral zone — इतने झुकाव तक रथ सीधा रहेगा (degrees) */
+        this.deadzone   = 10;
+    }
+
+    // ── Public API ───────────────────────────────────────────
+
+    /**
+     * क्या DeviceOrientation API इस device पर उपलब्ध है?
+     * @returns {boolean}
+     */
+    isSupported() {
+        return 'DeviceOrientationEvent' in window;
+    }
+
+    /**
+     * Sensor शुरू करें।
+     * iOS 13+: permission dialog — user-gesture के अंदर call करें।
+     * Android: dialog नहीं — सीधे start।
+     *
+     * @returns {Promise<boolean>} — true: सफल; false: unsupported / denied
+     */
+    async requestPermission() {
+        if (!this.isSupported()) return false;
+
+        // iOS 13+ को explicit user permission चाहिए
+        if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
+            try {
+                const result = await DeviceOrientationEvent.requestPermission();
+                if (result !== 'granted') return false;
+            } catch (_) {
+                return false; // dialog dismiss / error
+            }
+        }
+
+        this._start();
+        return true;
+    }
+
+    /**
+     * अगले DeviceOrientation event को baseline (zero) मानें।
+     * Button re-click पर — device की वर्तमान स्थिति neutral बनाएँ।
+     */
+    calibrate() {
+        this._needsCal = true;
+    }
+
+    /**
+     * Sensor बंद करें और gyro-set keys clear करें।
+     */
+    stop() {
+        if (this._bound) {
+            window.removeEventListener('deviceorientation', this._bound);
+            this._bound = null;
+        }
+        this._active = false;
+        if (this._setLeft)  { this._keys['arrowleft']  = false; this._setLeft  = false; }
+        if (this._setRight) { this._keys['arrowright'] = false; this._setRight = false; }
+    }
+
+    /**
+     * क्या sensor अभी active (running) है?
+     * @returns {boolean}
+     */
+    isActive() {
+        return this._active;
+    }
+
+    // ── Private ──────────────────────────────────────────────
+
+    /** Event listener attach करें — एक बार ही। */
+    _start() {
+        if (this._bound) return;
+        this.calibrate();   // पहला event baseline होगा
+        this._bound = (e) => this._onOrientation(e);
+        window.addEventListener('deviceorientation', this._bound, { passive: true });
+        this._active = true;
+    }
+
+    /**
+     * DeviceOrientation event handler।
+     * gamma → calibration → deadzone → keys inject।
+     *
+     * ⚠️ Key ownership: सिर्फ gyro-set keys clear होंगी।
+     *    keyboard/touch से held arrowleft/arrowright neutral में safe रहेंगे।
+     *
+     * @param {DeviceOrientationEvent} e
+     */
+    _onOrientation(e) {
+        const g = e.gamma;
+        if (g === null || g === undefined) return; // sensor unavailable
+
+        // ── Calibration: पहले event में baseline capture ──
+        if (this._needsCal) {
+            this._baseline = g;
+            this._needsCal = false;
+        }
+
+        const tilt = g - this._baseline;
+
+        if (tilt < -this.deadzone) {
+            // बाईं ओर झुकाव
+            this._keys['arrowleft']  = true;
+            this._setLeft = true;
+            if (this._setRight) {
+                this._keys['arrowright'] = false;
+                this._setRight = false;
+            }
+        } else if (tilt > this.deadzone) {
+            // दाईं ओर झुकाव
+            this._keys['arrowright'] = true;
+            this._setRight = true;
+            if (this._setLeft) {
+                this._keys['arrowleft'] = false;
+                this._setLeft = false;
+            }
+        } else {
+            // तटस्थ — सिर्फ gyro-owned keys release करें
+            if (this._setLeft)  { this._keys['arrowleft']  = false; this._setLeft  = false; }
+            if (this._setRight) { this._keys['arrowright'] = false; this._setRight = false; }
+        }
+    }
+}
