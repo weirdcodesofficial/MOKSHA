@@ -187,7 +187,15 @@ const STRINGS = {
         'end.punarjanmaBtn':       '♻️ पुनर्जन्म',
         // ── शास्त्र-ग्रंथ (navigation) ──
         'shaashtra.next': 'अगला  [ {page} / {total} ]',
-        'shaashtra.prev': 'पिछला  [ {page} / {total} ]',                
+        'shaashtra.prev': 'पिछला  [ {page} / {total} ]',
+        'gyro.title':     'झुकाव-संचालन',
+        'gyro.recalibrate': 'पुनः-शून्य करें',
+        'alert.gyroEnabled.title':    'झुकाव-संचालन सक्रिय',
+        'alert.gyroEnabled.subtitle': 'device झुकाकर रथ चलाएँ।',
+        'alert.gyroDenied.title':     'अनुमति अस्वीकृत',
+        'alert.gyroDenied.subtitle':  'device settings में sensor अनुमति दें।',
+        'alert.gyroCalibrate.title':    'पुनः-शून्य किया',
+        'alert.gyroCalibrate.subtitle': 'वर्तमान झुकाव तटस्थ माना गया।',
     },
     en: {
         'start.title': 'MOKSHA',
@@ -367,7 +375,15 @@ const STRINGS = {
         'end.restartHint':         "Press 'R' to restart the life chariot",
         'end.punarjanmaBtn':       '♻️ Punarjanma',
         'shaashtra.next': 'Next  [ {page} / {total} ]',
-        'shaashtra.prev': 'Back  [ {page} / {total} ]',        
+        'shaashtra.prev': 'Back  [ {page} / {total} ]',
+        'gyro.title':     'Tilt Steering',
+        'gyro.recalibrate': 'Re-zero',
+        'alert.gyroEnabled.title':    'Tilt steering active',
+        'alert.gyroEnabled.subtitle': 'Tilt the device to steer the chariot.',
+        'alert.gyroDenied.title':     'Permission denied',
+        'alert.gyroDenied.subtitle':  'Allow sensor permission in device settings.',
+        'alert.gyroCalibrate.title':    'Re-zeroed',
+        'alert.gyroCalibrate.subtitle': 'Current tilt is now the neutral position.',
     },
 };
 

@@ -27,7 +27,7 @@ import { KarmaEngine, SAMAYA_PRAARAMBHIKA }  from './engine.js';
 import Audio from './audio.js';
 import { TutorialManager } from './tutorial.js';
 import { renderShaashtraPage } from './shaashtra.js';
-import { TouchControls }   from './touch.js';
+import { TouchControls, GyroscopeControls } from './touch.js';
 const AM = Audio;
 // ====================== CANVAS SETUP ======================
 const canvas = document.getElementById('gameCanvas');
@@ -104,6 +104,15 @@ let lastTime        = 0;
 let frameNow        = 0;
 let keys            = {};
 const touch         = new TouchControls(keys);
+const gyro          = new GyroscopeControls(keys);
+
+// ── Gyroscope button — touch + orientation-supported devices पर ही दिखाएँ ──
+// isSupported() सिर्फ API existence check है — permission अभी नहीं माँगते
+if (touch.isActive() && gyro.isSupported()) {
+    const _gyroEl = document.getElementById('gyro-btn');
+    if (_gyroEl) _gyroEl.style.display = 'flex';
+}
+
 let isFontsReady    = false;
 let isScaleGameDone = false;
 
@@ -487,6 +496,31 @@ document.getElementById('music-volume-slider')?.addEventListener('input', (e) =>
     }
 });
 
+// ── Gyroscope button — tilt steering enable / re-calibrate (Issue #28) ──
+document.getElementById('gyro-btn')?.addEventListener('click', async () => {
+    AM?.ensureAudio();
+    const btn = document.getElementById('gyro-btn');
+
+    if (gyro.isActive()) {
+        // पहले से active — re-click = re-calibrate (वर्तमान झुकाव शून्य)
+        gyro.calibrate();
+        if (isGameStarted) engine._alertKey('gyroCalibrate', '🌀', 'info');
+        return;
+    }
+
+    // पहली बार — permission माँगें (iOS) या सीधे start (Android)
+    const granted = await gyro.requestPermission();
+    if (granted) {
+        if (btn) {
+            btn.title = t('gyro.recalibrate');
+            btn.classList.add('gyro-active');
+        }
+        if (isGameStarted) engine._alertKey('gyroEnabled', '🌀', 'achievement');
+    } else {
+        if (isGameStarted) engine._alertKey('gyroDenied', '🌀', 'warning');
+    }
+});
+
 // ====================== DRAW FUNCTION ======================
 // engine.getState() से सभी visual state पढ़ता है।
 // Renderer utility functions + direct ctx draws — सब यहाँ।
@@ -622,6 +656,12 @@ function applyStartScreenLanguage() {
     // ── Loading overlay text — भाषा के अनुसार update ──
     const loadingText = document.getElementById('loading-overlay-text');
     if (loadingText) loadingText.textContent = t('loading.text');
+
+    // ── Gyroscope button title — भाषा के अनुसार update ──
+    const gyroBtnEl = document.getElementById('gyro-btn');
+    if (gyroBtnEl) {
+        gyroBtnEl.title = gyro.isActive() ? t('gyro.recalibrate') : t('gyro.title');
+    }
 }
 
 initLang();
