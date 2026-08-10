@@ -222,9 +222,14 @@ function pollGamepad() {
         keys['arrowleft'] = false; keys['arrowright'] = false;
     } else {
         // Movement
-        keys['arrowleft']  = (stickX < -GAMEPAD_DEADZONE) || dpadLeft;
-        keys['arrowright'] = (stickX > GAMEPAD_DEADZONE)  || dpadRight;
-
+        // Gyro active होने पर merge: gamepad input ≥ priority; neutral zone में gyro state intact
+        // Gyro active होने पर merge: gamepad ≥ priority; neutral zone में gyro state intact
+        const gpLeft  = (stickX < -GAMEPAD_DEADZONE) || dpadLeft;
+        const gpRight = (stickX > GAMEPAD_DEADZONE)  || dpadRight;
+        keys['arrowleft']  = gpLeft  || (gyro.isActive() && keys['arrowleft']);
+        keys['arrowright'] = gpRight || (gyro.isActive() && keys['arrowright']);
+        keys['arrowleft']  = gpLeft  || (gyro.isActive() && keys['arrowleft']);
+        keys['arrowright'] = gpRight || (gyro.isActive() && keys['arrowright']);
         // Discrete buttons
         handleDiscreteButton(gp, GAMEPAD_BUTTON.RT,    ' ');   // नाम-जाप
         handleDiscreteButton(gp, GAMEPAD_BUTTON.X,     's');   // वैराग्य
@@ -414,6 +419,7 @@ window.addEventListener('blur', () => {
     // keys reassign नहीं — TouchControls reference safe रहे
     Object.keys(keys).forEach(k => { keys[k] = false; });
     touch.clearAll();
+    gyro.clearState();   // stale tilt flags reset — blur पर gyro sync
 });
 window.addEventListener('pointerdown', () => AM?.ensureAudio(), { passive: true });
 
@@ -453,6 +459,7 @@ document.addEventListener('visibilitychange', () => {
         AM?.playSound('viraama');
         Object.keys(keys).forEach(k => { keys[k] = false; });
         touch.clearAll();
+        gyro.clearState();   // tab hidden पर gyro flags sync
         engine._alertKey('paused', '⏸️', 'guidance');
         AM?.updateAmbientVolumes();
     }
@@ -496,15 +503,25 @@ document.getElementById('music-volume-slider')?.addEventListener('input', (e) =>
     }
 });
 
-// ── Gyroscope button — tilt steering enable / re-calibrate (Issue #28) ──
+// ── Gyroscope button — tilt steering enable / stop toggle (Issue #28/#77) ──
+// Gyro ON होने पर < > touch buttons hide — gyro/touch conflict prevent करें
+const _gyroSteeringBtns = () =>
+    document.querySelectorAll('[data-key="arrowleft"], [data-key="arrowright"]');
+
 document.getElementById('gyro-btn')?.addEventListener('click', async () => {
     AM?.ensureAudio();
     const btn = document.getElementById('gyro-btn');
 
     if (gyro.isActive()) {
-        // पहले से active — re-click = re-calibrate (वर्तमान झुकाव शून्य)
-        gyro.calibrate();
-        if (isGameStarted) engine._alertKey('gyroCalibrate', '🌀', 'info');
+        // पहले से active — re-click = STOP (toggle off)
+        gyro.stop();
+        if (btn) {
+            btn.title = t('gyro.title');
+            btn.classList.remove('gyro-active');
+        }
+        // < > steering buttons वापस दिखाएँ
+        _gyroSteeringBtns().forEach(el => el.style.visibility = 'visible');        
+        if (isGameStarted) engine._alertKey('gyroStopped', '🌀', 'info');
         return;
     }
 
@@ -512,9 +529,11 @@ document.getElementById('gyro-btn')?.addEventListener('click', async () => {
     const granted = await gyro.requestPermission();
     if (granted) {
         if (btn) {
-            btn.title = t('gyro.recalibrate');
+            btn.title = t('gyro.title');
             btn.classList.add('gyro-active');
         }
+        // < > steering buttons hide — gyro/touch conflict prevent
+        _gyroSteeringBtns().forEach(el => el.style.visibility = 'hidden');        
         if (isGameStarted) engine._alertKey('gyroEnabled', '🌀', 'achievement');
     } else {
         if (isGameStarted) engine._alertKey('gyroDenied', '🌀', 'warning');
