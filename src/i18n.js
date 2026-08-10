@@ -196,6 +196,8 @@ const STRINGS = {
         'alert.gyroDenied.subtitle':  'device settings में sensor अनुमति दें।',
         'alert.gyroCalibrate.title':    'पुनः-शून्य किया',
         'alert.gyroCalibrate.subtitle': 'वर्तमान झुकाव तटस्थ माना गया।',
+        'alert.gyroStopped.title':    'झुकाव-संचालन बंद',
+        'alert.gyroStopped.subtitle': 'झुकाव-संचालन निष्क्रिय किया गया।',        
     },
     en: {
         'start.title': 'MOKSHA',
@@ -384,6 +386,8 @@ const STRINGS = {
         'alert.gyroDenied.subtitle':  'Allow sensor permission in device settings.',
         'alert.gyroCalibrate.title':    'Re-zeroed',
         'alert.gyroCalibrate.subtitle': 'Current tilt is now the neutral position.',
+        'alert.gyroStopped.title':    'Tilt steering stopped',
+        'alert.gyroStopped.subtitle': 'Tilt steering has been disabled.',        
     },
 };
 

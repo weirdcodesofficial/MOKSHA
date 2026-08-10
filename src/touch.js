@@ -270,6 +270,16 @@ export class GyroscopeControls {
     }
 
     /**
+     * Gyro-set keys और internal flags clear करें — keys object sync।
+     * sensor बंद नहीं होता — सिर्फ stale state reset।
+     * window.blur / visibilitychange पर call करें।
+     */
+    clearState() {
+        if (this._setLeft)  { this._keys['arrowleft']  = false; this._setLeft  = false; }
+        if (this._setRight) { this._keys['arrowright'] = false; this._setRight = false; }
+    }    
+
+    /**
      * क्या sensor अभी active (running) है?
      * @returns {boolean}
      */
