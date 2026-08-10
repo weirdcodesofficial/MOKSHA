@@ -106,11 +106,53 @@ let keys            = {};
 const touch         = new TouchControls(keys);
 const gyro          = new GyroscopeControls(keys);
 
-// ── Gyroscope button — touch + orientation-supported devices पर ही दिखाएँ ──
-// isSupported() सिर्फ API existence check है — permission अभी नहीं माँगते
+// ── Gyro ↔ touch steering toggle (gyro default on supported devices) ──
+const _touchSteerPair = () => document.getElementById('touch-steer-pair');
+const _gyroBtn        = () => document.getElementById('gyro-btn');
+let _preferGyroSteering = true;
+
+function _syncSteeringUI() {
+    const btn = _gyroBtn();
+    const steerPair = _touchSteerPair();
+    if (!touch.isActive() || !gyro.isSupported()) return;
+
+    if (btn) {
+        btn.style.display = 'flex';
+        btn.title = _preferGyroSteering ? t('gyro.switchTouch') : t('gyro.title');
+        btn.classList.toggle('gyro-active', _preferGyroSteering && gyro.isActive());
+    }
+    if (steerPair) steerPair.style.display = _preferGyroSteering ? 'none' : 'flex';
+}
+
+function _enableTouchSteering() {
+    _preferGyroSteering = false;
+    gyro.stop();
+    _syncSteeringUI();
+}
+
+async function _enableGyroSteering() {
+    if (!gyro.isSupported()) return false;
+    _preferGyroSteering = true;
+    const granted = await gyro.requestPermission();
+    if (!granted) {
+        _preferGyroSteering = false;
+        gyro.stop();
+    }
+    _syncSteeringUI();
+    return granted;
+}
+
+async function _initDefaultGyroSteering() {
+    if (!touch.isActive() || !gyro.isSupported() || !_preferGyroSteering) return;
+    await _enableGyroSteering();
+}
+
 if (touch.isActive() && gyro.isSupported()) {
-    const _gyroEl = document.getElementById('gyro-btn');
-    if (_gyroEl) _gyroEl.style.display = 'flex';
+    _syncSteeringUI();
+    // Android — permission dialog नहीं; tilt default से चालू
+    if (typeof DeviceOrientationEvent?.requestPermission !== 'function') {
+        _initDefaultGyroSteering();
+    }
 }
 
 let isFontsReady    = false;
@@ -503,40 +545,23 @@ document.getElementById('music-volume-slider')?.addEventListener('input', (e) =>
     }
 });
 
-// ── Gyroscope button — tilt steering enable / stop toggle (Issue #28/#77) ──
-// Gyro ON होने पर < > touch buttons hide — gyro/touch conflict prevent करें
-const _gyroSteeringBtns = () =>
-    document.querySelectorAll('[data-key="arrowleft"], [data-key="arrowright"]');
-
+// ── Gyroscope button — tilt ↔ touch steering toggle (Issue #28/#77) ──
 document.getElementById('gyro-btn')?.addEventListener('click', async () => {
     AM?.ensureAudio();
-    const btn = document.getElementById('gyro-btn');
 
-    if (gyro.isActive()) {
-        // पहले से active — re-click = STOP (toggle off)
-        gyro.stop();
-        if (btn) {
-            btn.title = t('gyro.title');
-            btn.classList.remove('gyro-active');
-        }
-        // < > steering buttons वापस दिखाएँ
-        _gyroSteeringBtns().forEach(el => el.style.visibility = 'visible');        
+    if (_preferGyroSteering) {
+        // gyro mode — पहला tap: ◀ ▶ touch steering
+        _enableTouchSteering();
         if (isGameStarted) engine._alertKey('gyroStopped', '🌀', 'info');
         return;
     }
 
-    // पहली बार — permission माँगें (iOS) या सीधे start (Android)
-    const granted = await gyro.requestPermission();
+    // touch mode — दूसरा tap: gyro वापस
+    const granted = await _enableGyroSteering();
     if (granted) {
-        if (btn) {
-            btn.title = t('gyro.title');
-            btn.classList.add('gyro-active');
-        }
-        // < > steering buttons hide — gyro/touch conflict prevent
-        _gyroSteeringBtns().forEach(el => el.style.visibility = 'hidden');        
         if (isGameStarted) engine._alertKey('gyroEnabled', '🌀', 'achievement');
-    } else {
-        if (isGameStarted) engine._alertKey('gyroDenied', '🌀', 'warning');
+    } else if (isGameStarted) {
+        engine._alertKey('gyroDenied', '🌀', 'warning');
     }
 });
 
@@ -678,8 +703,8 @@ function applyStartScreenLanguage() {
 
     // ── Gyroscope button title — भाषा के अनुसार update ──
     const gyroBtnEl = document.getElementById('gyro-btn');
-    if (gyroBtnEl) {
-        gyroBtnEl.title = gyro.isActive() ? t('gyro.recalibrate') : t('gyro.title');
+    if (gyroBtnEl && touch.isActive() && gyro.isSupported()) {
+        gyroBtnEl.title = _preferGyroSteering ? t('gyro.switchTouch') : t('gyro.title');
     }
 }
 
@@ -742,6 +767,7 @@ startBtn?.addEventListener('click', () => {
     touch.unblock('start');   // start-screen हटा — controls दिखाएँ
     isGameStarted = true;
     document.getElementById('start-screen')?.remove();
+    _initDefaultGyroSteering(); // iOS — user-gesture पर tilt default चालू
     // ── प्रथम जन्म alert — Issue #73 ──
     engine._alertKey('prathamaJanma', '🌅', 'achievement');
     engine.notifyTimer = 120;
@@ -763,6 +789,7 @@ tutorialBtn?.addEventListener('click', () => {
     try { localStorage.removeItem('moksha_tutorial_seen');} catch (_) {}
     isGameStarted = true;
     document.getElementById('start-screen')?.remove();
+    _initDefaultGyroSteering(); // iOS — user-gesture पर tilt default चालू
     // ── प्रथम जन्म alert — Issue #73 ──
     engine._alertKey('prathamaJanma', '🌅', 'achievement');
     engine.notifyTimer = 120;

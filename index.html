@@ -107,7 +107,6 @@
                 title="संगीत वॉल्यूम" aria-label="Background Music Volume">
             <button id="music-toggle-btn" class="hud-icon-btn" title="पृष्ठभूमि ध्वनि म्यूट/अनम्यूट करें">🔊</button>
             <button id="shaashtra-help-btn" class="hud-icon-btn" title="शास्त्र पढ़ें (खेल की जानकारी)">❓</button>
-            <button id="gyro-btn" class="hud-icon-btn" title="झुकाव-संचालन सक्रिय करें" style="display:none;">🌀</button>
             <div id="hud-credits" class="hud-icon-btn" style="cursor:default;" title="Developed by Weird Codes">🛠️</div>
         </div>
     </div>
@@ -194,10 +193,15 @@
 <!-- ── Touch Controls Overlay (mobile only — viewport-level, scale-independent) ── -->
 <div id="touch-controls">
 
-    <!-- Left cluster: Movement -->
+    <!-- Left cluster: Movement (gyro replaces ◀ ▶ when supported) -->
     <div class="touch-cluster touch-cluster-left">
-        <div class="touch-btn touch-btn-xl" data-key="arrowleft">◀</div>
-        <div class="touch-btn touch-btn-xl" data-key="arrowright">▶</div>
+        <div class="touch-steer-slot">
+            <button id="gyro-btn" type="button" class="touch-btn touch-btn-xl" title="झुकाव-संचालन सक्रिय करें" style="display:none;">🌀</button>
+            <div id="touch-steer-pair" class="touch-steer-pair">
+                <div class="touch-btn touch-btn-xl" data-key="arrowleft">◀</div>
+                <div class="touch-btn touch-btn-xl" data-key="arrowright">▶</div>
+            </div>
+        </div>
     </div>
 
     <!-- Center cluster: Secondary actions -->
