@@ -326,7 +326,7 @@ const STRINGS = {
         'tutorial.move.hint': 'Let the self be uplifted by the self.',
 
         'tutorial.maya.credit': '— Yogavashishtha',
-        'tutorial.maya.meaning': 'This universe is a net of Maya; it deludes the entire world.',
+        'tutorial.maya.meaning': 'This universe is a prison of Maya; it deludes the entire world.',
         'tutorial.maya.task': 'Touch the object falling from above.\nThe golden "ॐ" is the Naama — receive it.',
         'tutorial.maya.hint': 'Recognising Maya — that is the first step.',
 
