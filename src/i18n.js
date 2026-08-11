@@ -124,7 +124,7 @@ const STRINGS = {
 
         'tutorial.move.credit': '— भगवद्गीता ६.५',
         'tutorial.move.meaning': '',
-        'tutorial.move.task': 'अपनी पंखुड़ी (सारथी) को बाएँ-दाएँ हिलाओ।\nकीबोर्ड: ← → | Gamepad: L-Stick',
+        'tutorial.move.task': 'अपनी लगाम (मन) को खींचो और इंद्रियों को नियंत्रित करो।\nकीबोर्ड: ← → | Gamepad: L-Stick',
         'tutorial.move.hint': 'आत्मा का उद्धार स्वयं आत्मा करे।',
 
         'tutorial.maya.credit': '— योगवासिष्ठ',
@@ -322,7 +322,7 @@ const STRINGS = {
 
         'tutorial.move.credit': '— Bhagavad Gita 6.5',
         'tutorial.move.meaning': 'Let one lift oneself by oneself; let one not degrade oneself.',
-        'tutorial.move.task': 'Move your petal (the charioteer) left and right.\nKeyboard: ← → | Gamepad: L-Stick',
+        'tutorial.move.task': 'Pull the reins of your mind and control your senses.\nKeyboard: ← → | Gamepad: L-Stick',
         'tutorial.move.hint': 'Let the self be uplifted by the self.',
 
         'tutorial.maya.credit': '— Yogavashishtha',
