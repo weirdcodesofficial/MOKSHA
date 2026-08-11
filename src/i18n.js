@@ -129,7 +129,7 @@ const STRINGS = {
 
         'tutorial.maya.credit': '— योगवासिष्ठ',
         'tutorial.maya.meaning': '',
-        'tutorial.maya.task': 'ऊपर से गिरती वस्तु को स्पर्श करो।\nसुनहरी "ॐ" — नाम है, इसे ग्रहण करो।',
+        'tutorial.maya.task': 'ऊपर से गिरती माया को समर्पित/संचित करो।\nसुनहरी "ॐ" — नाम है, इसे ग्रहण करो।',
         'tutorial.maya.hint': 'माया पहचानना — पहला कदम है।',
 
         'tutorial.jaapa.credit': '— रामचरितमानस',
