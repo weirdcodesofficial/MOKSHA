@@ -264,12 +264,9 @@ function pollGamepad() {
         keys['arrowleft'] = false; keys['arrowright'] = false;
     } else {
         // Movement
-        // Gyro active होने पर merge: gamepad input ≥ priority; neutral zone में gyro state intact
         // Gyro active होने पर merge: gamepad ≥ priority; neutral zone में gyro state intact
         const gpLeft  = (stickX < -GAMEPAD_DEADZONE) || dpadLeft;
         const gpRight = (stickX > GAMEPAD_DEADZONE)  || dpadRight;
-        keys['arrowleft']  = gpLeft  || (gyro.isActive() && keys['arrowleft']);
-        keys['arrowright'] = gpRight || (gyro.isActive() && keys['arrowright']);
         keys['arrowleft']  = gpLeft  || (gyro.isActive() && keys['arrowleft']);
         keys['arrowright'] = gpRight || (gyro.isActive() && keys['arrowright']);
         // Discrete buttons
@@ -338,19 +335,8 @@ function toggleShaashtra() {
 }
 
 // ====================== CONTINUOUS SHAASHTRA SCROLL ======================
-// ArrowUp/Down को OS key-repeat पर निर्भर न रखकर — held-flag से smooth scroll
-let _shaashtraScrollRafId = null;
-function continuousShaashtraScrollLoop() {
-    if (engine.isShaashtraVisible) {
-        const body = document.getElementById('shaashtra-body');
-        if(body) {
-        if (shaashtraKeyState.up) body.scrollTop -= 6;
-        if (shaashtraKeyState.down) body.scrollTop += 6;
-        }
-    }
-    _shaashtraScrollRafId = requestAnimationFrame(continuousShaashtraScrollLoop);
-}
-_shaashtraScrollRafId = requestAnimationFrame(continuousShaashtraScrollLoop);
+// Fix A (Issue #64): Separate RAF loop हटाया — gameLoop() में integrate किया।
+// shaashtraBody (line 165 cache) → gameLoop → scrollTop update, 0 extra RAF overhead।
 
 // ====================== UTILITY ======================
 function debounce(func, delay) {
@@ -585,14 +571,7 @@ document.getElementById('gyro-btn')?.addEventListener('click', async () => {
 // Renderer utility functions + direct ctx draws — सब यहाँ।
 
 function draw() {
-    
     const st = engine.getState();
-    
-    // swaansaTimer से compute — render.js के formula से 1:1 match
-    const worldSwaansaPulse = (Math.sin((st.swaansaTimer / 360) * Math.PI * 2 - Math.PI / 2) + 1) / 2;
-    AM?.setSwaansaPulse?.(worldSwaansaPulse);
-    AM?.updateDuckDecay?.();
-    AM?.updateAmbientVolumes?.();
 
     Renderer.drawScene({
         // ── Canvas dimensions & Vedic constants ──
@@ -623,6 +602,14 @@ lastTime = performance.now();
 
 function gameLoop(ts) {
     pollGamepad();
+
+    // ── Fix A (Issue #64): शास्त्र-scroll — एक ही RAF loop में ──
+    // Separate continuousShaashtraScrollLoop RAF हटाया — shaashtraBody line 165 पर cached है
+    if (engine.isShaashtraVisible && shaashtraBody) {
+        if (shaashtraKeyState.up)   shaashtraBody.scrollTop -= 6;
+        if (shaashtraKeyState.down) shaashtraBody.scrollTop += 6;
+    }
+
     if (!engine.isPaused && !engine.gameOver && !engine.won && !engine.isShaashtraVisible && !tutorial.hasActiveCard()) {
         const rawDt = Math.min((ts - lastTime) / (1000 / 60), 2);
         const dt = rawDt;
@@ -638,6 +625,15 @@ function gameLoop(ts) {
         touch.syncWithTutorial(tutorial.hasActiveCard());
         engine.update(dt, keys, frameNow);
     }
+
+    // ── Fix B (Issue #64): Audio updates — draw() से यहाँ move ──
+    // draw() pure visual रहे; duck decay pause में भी चलनी चाहिए — इसलिए
+    // update block के बाहर रखा (हर frame run — paused state में भी)
+    const _sp = (Math.sin((engine.swaansaTimer / 360) * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+    AM?.setSwaansaPulse?.(_sp);
+    AM?.updateDuckDecay?.();
+    AM?.updateAmbientVolumes?.();
+
     // tutorial card dismiss होने पर dt spike न आए
     if (!tutorial.hasActiveCard()) lastTime = ts;
     draw();
