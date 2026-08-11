@@ -1258,29 +1258,50 @@ export const Renderer = {
         context.shadowBlur  = 0;
         context.shadowColor = 'transparent';
 
-        // ── 6. Step counter (top-right) ──
+        // ── 5b. Resolved-state overlay — हरी आभा (Issue #92) ──
+        if (card.resolved) {
+            // card पर subtle green wash
+            context.fillStyle = 'rgba(50, 255, 100, 0.07)';
+            context.beginPath();
+            context.roundRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS);
+            context.fill();
+            // gold border को हरे border से ओवरड्रॉ करें
+            context.strokeStyle = 'rgba(50, 255, 100, 0.60)';
+            context.lineWidth   = 1.5;
+            context.shadowBlur  = 8;
+            context.shadowColor = 'rgba(50, 255, 100, 0.40)';
+            context.beginPath();
+            context.roundRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS);
+            context.stroke();
+            context.shadowBlur  = 0;
+            context.shadowColor = 'transparent';
+        }
+
+        // ── 6. Step counter (top-right, left of skip button) ──
         context.font      = "700 10px 'Orbitron', sans-serif";
         context.fillStyle = 'rgba(255, 215, 0, 0.55)';
         context.textAlign = 'right';
         context.textBaseline = 'top';
         context.fillText(
             `${card.stepNumber} / ${card.totalSteps}`,
-            CARD_X + CARD_W - 16,
+            SKIP_X - 8,
             CARD_Y + 14
         );
-        // ── 6b. ✕ छोड़ें — Skip button (top-left of card) ──
-        context.fillStyle   = 'rgba(255, 70, 70, 0.15)';
-        context.strokeStyle = 'rgba(255, 100, 100, 0.60)';
-        context.lineWidth   = 1;
-        context.beginPath();
-        context.roundRect(SKIP_X, SKIP_Y, SKIP_W, SKIP_H, 5);
-        context.fill();
-        context.stroke();
-        context.font         = "700 9px 'Orbitron', sans-serif";
-        context.fillStyle    = 'rgba(255, 130, 130, 0.90)';
-        context.textAlign    = 'center';
-        context.textBaseline = 'middle';
-        context.fillText('✕ छोड़ें', SKIP_X + SKIP_W / 2, SKIP_Y + SKIP_H / 2);
+        // ── 6b. ✕ छोड़ें — resolved delay में skip नहीं (Issue #92) ──
+        if (!card.resolved) {
+            context.fillStyle   = 'rgba(255, 70, 70, 0.15)';
+            context.strokeStyle = 'rgba(255, 100, 100, 0.60)';
+            context.lineWidth   = 1;
+            context.beginPath();
+            context.roundRect(SKIP_X, SKIP_Y, SKIP_W, SKIP_H, 5);
+            context.fill();
+            context.stroke();
+            context.font         = "700 9px 'Orbitron', sans-serif";
+            context.fillStyle    = 'rgba(255, 130, 130, 0.90)';
+            context.textAlign    = 'center';
+            context.textBaseline = 'middle';
+            context.fillText('✕ छोड़ें', SKIP_X + SKIP_W / 2, SKIP_Y + SKIP_H / 2);
+        }
         
 
         // ── 7. ॐ Header icon ──
@@ -1350,33 +1371,58 @@ export const Renderer = {
             y += LH_HINT;
         }        
 
-        // ── 13. Dismiss button (bottom) ──
+        // ── 13. Dismiss button / Resolved progress bar (Issue #92) ──
         const BTN_W  = 160;
         const BTN_X  = (W - BTN_W) / 2;
         const BTN_Y  = CARD_Y + CARD_H - BTN_H - 14;
 
-        // button background
-        context.fillStyle = 'rgba(255, 153, 51, 0.18)';
-        context.shadowBlur  = 10;
-        context.shadowColor = '#ff9933';
-        context.beginPath();
-        context.roundRect(BTN_X, BTN_Y, BTN_W, BTN_H, 8);
-        context.fill();
+        if (card.resolved) {
+            // ── resolved state: ✓ label + countdown progress bar ──
+            context.font         = "700 11px 'Orbitron', sans-serif";
+            context.fillStyle    = 'rgba(50, 255, 100, 0.85)';
+            context.textAlign    = 'center';
+            context.textBaseline = 'middle';
+            context.fillText('✓  आगे बढ़ रहे हैं…', W / 2, BTN_Y + 10);
 
-        // button border
-        context.strokeStyle = 'rgba(255, 153, 51, 0.70)';
-        context.lineWidth   = 1;
-        context.beginPath();
-        context.roundRect(BTN_X, BTN_Y, BTN_W, BTN_H, 8);
-        context.stroke();
-        context.shadowBlur  = 0;
+            // track — खाली हिस्सा
+            const BAR_H = 5;
+            const BAR_Y = BTN_Y + BTN_H - BAR_H - 4;
+            context.fillStyle = 'rgba(255,255,255,0.10)';
+            context.beginPath();
+            context.roundRect(BTN_X, BAR_Y, BTN_W, BAR_H, 3);
+            context.fill();
 
-        // button label
-        context.font         = "700 11px 'Orbitron', sans-serif";
-        context.fillStyle    = '#ff9933';
-        context.textAlign    = 'center';
-        context.textBaseline = 'middle';
-        context.fillText(t('tutorial.dismiss'), W / 2, BTN_Y + BTN_H / 2);
+            // fill — बीता हुआ हिस्सा (हरा)
+            const filled = Math.max(2, BTN_W * card.resolveProgress);
+            context.fillStyle   = '#32ff64';
+            context.shadowBlur  = 8;
+            context.shadowColor = '#32ff64';
+            context.beginPath();
+            context.roundRect(BTN_X, BAR_Y, filled, BAR_H, 3);
+            context.fill();
+            context.shadowBlur  = 0;
+        } else {
+            // ── normal state: dismiss button ──
+            context.fillStyle   = 'rgba(255, 153, 51, 0.18)';
+            context.shadowBlur  = 10;
+            context.shadowColor = '#ff9933';
+            context.beginPath();
+            context.roundRect(BTN_X, BTN_Y, BTN_W, BTN_H, 8);
+            context.fill();
+
+            context.strokeStyle = 'rgba(255, 153, 51, 0.70)';
+            context.lineWidth   = 1;
+            context.beginPath();
+            context.roundRect(BTN_X, BTN_Y, BTN_W, BTN_H, 8);
+            context.stroke();
+            context.shadowBlur  = 0;
+
+            context.font         = "700 11px 'Orbitron', sans-serif";
+            context.fillStyle    = '#ff9933';
+            context.textAlign    = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(t('tutorial.dismiss'), W / 2, BTN_Y + BTN_H / 2);
+        }
 
         context.restore();
     },
