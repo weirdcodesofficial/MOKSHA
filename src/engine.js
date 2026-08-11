@@ -1001,7 +1001,7 @@ export class KarmaEngine {
                     `<div style="${S_M2}">${t('end.moksha.line2')}</div>` +
                     `<span style="${S_M3}">` +
                     `<b>${t('end.moksha.heading')}</b><br>${t('end.moksha.line3')}</span>` +
-                    CREDIT;
+                    `<br><br>` + COUNT_HTML + CREDIT;
             }
             this._cb.playSound?.('vijaya');
         } else {
