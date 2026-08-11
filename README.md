@@ -6,6 +6,8 @@
 An HTML5 browser game rooted in **Sanatan shaashtra** and **Karmic Philosophy**.
 Control your chariot through the cosmic field, master your senses, burn your karma, and attain **Moksha**.
 
+⚠️ **महत्वपूर्ण चेतावनी (Important Notice)** यह गेम खेलने के लिए **कीबोर्ड (Keyboard)** या **गेमपैड (Gamepad)** की आवश्यकता है। कृपया बेहतर अनुभव के लिए इसे अपने **डेस्कटॉप** या **लैपटॉप Chrome ब्राउज़र** पर ही खोलें।
+
 🎮 **[Play on itch.io](https://weirdcodes.itch.io/moksha)** &nbsp;|&nbsp;
 💛 **[Support on PayPal](https://paypal.me/pankajsharma18)**
 
