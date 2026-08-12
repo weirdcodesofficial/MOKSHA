@@ -117,6 +117,9 @@ export class TutorialManager {
 
         /** step 3 के लिए — tunnel latch flag */
         this._tunnelEntered  = false;
+
+        /** step 4 के लिए — पहला प्रारब्ध मिलने की प्रतीक्षा */
+        this._waitingForPraarabdha = false;        
     }
 
     // ── Public API ───────────────────────────────────────────
@@ -193,6 +196,15 @@ export class TutorialManager {
      */
     checkCompletion(state) {
         if (this._done || this._cardVisible) return;
+
+        // ── praarabdha-wait: पहला प्रारब्ध मिलने पर ही card दिखाएँ ──
+        if (this._waitingForPraarabdha) {
+            if (state.praarabdha >= 1) {
+                this._waitingForPraarabdha = false;
+                this._cardVisible = true;
+            }
+            return;
+        }
 
         switch (TUTORIAL_STEPS[this._step].id) {
 
@@ -309,6 +321,14 @@ export class TutorialManager {
         if (this._step >= TUTORIAL_STEPS.length) {
             // सभी steps हो गए
             this.skip();
+            return;
+        }
+
+        // ── praarabdha step — तुरंत card नहीं, पहले प्रारब्ध मिलने की प्रतीक्षा ──
+        // शास्त्र: "प्रारब्धं भुज्यते एव" — जब बोझ पड़े, तभी ज्ञान सार्थक है।
+        if (TUTORIAL_STEPS[this._step].id === 'praarabdha') {
+            this._waitingForPraarabdha = true;
+            this._cardVisible = false;  // card छिपी रहेगी
             return;
         }
 
