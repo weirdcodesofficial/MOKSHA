@@ -621,6 +621,7 @@ function gameLoop(ts) {
             isNaamaJaapa:   engine.isNaamaJaapa,
             playerInTunnel: engine.playerInTunnel,
             praarabdha:     engine.praarabdha,
+            antimaCharanaStarted: engine.samaya < 100 && engine.samaya > 0 && !engine.swaansaSamapta,
         });
         // tutorial card visible होने पर touch controls hide
         touch.syncWithTutorial(tutorial.hasActiveCard());
