@@ -129,7 +129,7 @@ const STRINGS = {
 
         'tutorial.maya.credit': '— योगवासिष्ठ',
         'tutorial.maya.meaning': '',
-        'tutorial.maya.task': 'ऊपर से गिरती माया को समर्पित/संचित करो।\nश्वेतवर्ण(एकाक्षर) "ॐ" — नाम(मंत्र) है, इसे ग्रहण करो।',
+        'tutorial.maya.task': 'ऊपर से गिरती माया को संचित/समर्पित करो।\nश्वेतवर्ण(एकाक्षर) "ॐ" — नाम(मंत्र) है, इसे संचित करो।',
         'tutorial.maya.hint': 'माया पहचानना — पहला कदम है।',
 
         'tutorial.jaapa.credit': '— रामचरितमानस',
@@ -327,7 +327,7 @@ const STRINGS = {
 
         'tutorial.maya.credit': '— Yogavashishtha',
         'tutorial.maya.meaning': 'This universe is a prison of Maya; it deludes the entire world.',
-        'tutorial.maya.task': 'Collect/Dedicate floating Karma Maya.\nThe White Glowing/Single Letter "ॐ" is the Naama — receive it.',
+        'tutorial.maya.task': 'Collect/Dedicate floating Karma Maya.\nThe White Glowing/Single Letter "ॐ" is the Naama — collect it.',
         'tutorial.maya.hint': 'Recognising Maya — that is the first step.',
 
         'tutorial.jaapa.credit': '— Raamacharitmaanasa',
