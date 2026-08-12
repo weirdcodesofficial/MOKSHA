@@ -117,7 +117,10 @@ export class TutorialManager {
 
         /** step 3 के लिए — tunnel latch flag */
         this._tunnelEntered  = false;
-
+        /** step 3 के लिए — antimaCharana शुरू होने की प्रतीक्षा */
+        this._waitingForAntimaCharana = false;
+        /** step 3 के लिए — antimaCharana शुरू होने की प्रतीक्षा (card रोकने हेतु) */
+        this._waitingForAntimaCharana = false;
         /** step 4 के लिए — पहला प्रारब्ध मिलने की प्रतीक्षा */
         this._waitingForPraarabdha = false;        
     }
@@ -196,7 +199,14 @@ export class TutorialManager {
      */
     checkCompletion(state) {
         if (this._done || this._cardVisible) return;
-
+        // ── antima-charana-wait: antimaCharana शुरू हो तो tunnel card दिखाएँ ──
+        if (this._waitingForAntimaCharana) {
+            if (state.antimaCharanaStarted) {
+                this._waitingForAntimaCharana = false;
+                this._cardVisible = true;
+            }
+            return;
+        }
         // ── praarabdha-wait: पहला प्रारब्ध मिलने पर ही card दिखाएँ ──
         if (this._waitingForPraarabdha) {
             if (state.praarabdha >= 1) {
@@ -237,9 +247,9 @@ export class TutorialManager {
             }
 
             case 'tunnel': {
-                // player भक्ति-मार्ग में गया (latch)
+                // card dismiss के बाद — tunnel में है तो complete
                 if (state.playerInTunnel && !this._tunnelEntered) {
-                    this._tunnelEntered = true;
+                this._tunnelEntered = true;
                     this._onStepComplete();
                 }
                 break;
@@ -323,7 +333,14 @@ export class TutorialManager {
             this.skip();
             return;
         }
-
+        // ── tunnel step — antimaCharana शुरू होने तक card मत दिखाओ ──
+        // शास्त्र: "यदा ते मोहकलिलं बुद्धिर्व्यतितरिष्यति" — पात्रता पहले, दीक्षा बाद।
+        if (TUTORIAL_STEPS[this._step].id === 'tunnel') {
+            this._waitingForAntimaCharana = true;
+            this._cardVisible = false;
+            return;
+        }
+        
         // ── praarabdha step — तुरंत card नहीं, पहले प्रारब्ध मिलने की प्रतीक्षा ──
         // शास्त्र: "प्रारब्धं भुज्यते एव" — जब बोझ पड़े, तभी ज्ञान सार्थक है।
         if (TUTORIAL_STEPS[this._step].id === 'praarabdha') {
