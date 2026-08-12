@@ -327,7 +327,7 @@ const STRINGS = {
 
         'tutorial.maya.credit': '— Yogavashishtha',
         'tutorial.maya.meaning': 'This universe is a prison of Maya; it deludes the entire world.',
-        'tutorial.maya.task': 'Collect/Dedicate floating Karma Maya.\nThe White Glowing/Single Letter "ॐ" is the Naama — receive it.',
+        'tutorial.maya.task': 'Collect/Dedicate floating Karma Maya.\nThe White Glowing/Single Letter "ॐ" is the Naama — collect it.',
         'tutorial.maya.hint': 'Recognising Maya — that is the first step.',
 
         'tutorial.jaapa.credit': '— Raamacharitmaanasa',
