@@ -620,6 +620,7 @@ function gameLoop(ts) {
             activeNaam:     engine.activeNaam,
             isNaamaJaapa:   engine.isNaamaJaapa,
             playerInTunnel: engine.playerInTunnel,
+            praarabdha:     engine.praarabdha,
         });
         // tutorial card visible होने पर touch controls hide
         touch.syncWithTutorial(tutorial.hasActiveCard());
