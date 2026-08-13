@@ -53,7 +53,10 @@ body {
 
 canvas {
     display: block;
+    transform: translate3d(0, 0, 0);
     will-change: transform;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
     image-rendering: auto;
     position: absolute;
     top: 0;

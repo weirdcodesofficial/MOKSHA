@@ -33,6 +33,7 @@ const AM = Audio;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', {
     alpha: false,            // compositing cost बचाएँ
+    desynchronized: true,       // GPU path
     willReadFrequently: false // getImageData() नहीं — GPU path
 });
 
