@@ -125,6 +125,7 @@ export class KarmaEngine {
         this.praarabdhaTimer        = 0;   // भोग-countdown (frames); पुनर्जन्म पर persist, R-reset पर शून्य
         this.praarabdhaGatiModifier = 1.0; // पूर्व-जन्म के punya×paap का संचित गति-भार
         this._currentGatiModifier  = 1.0; // इस जन्म का live ashuvha×shuvha modifier (rebirth पर snapshot) persist, R-reset पर शून्य
+        this._bhogGatiSnapshot       = 1.0; // प्रारब्ध भोगने की गति (rebirth से पहले snapshot) persist, R-reset पर शून्य
         this._praarabdhaTimerPulseAccum = 0; // orbit pulse accumulator
         this.samarpita        = 0;   // समर्पित (lifetime)
         this.punaraJanmaCount = 0;   // पुनर्जन्म गिनती
@@ -724,7 +725,12 @@ export class KarmaEngine {
             const praarabdhaSamayaMul = this.praarabdha > 0
                 ? Math.min(3.0, Math.pow(1.15, this.praarabdha))
                 : 1.0;
-            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaSamayaMul * dt;            this.swaansaTimer += dt;
+                       // praarabdhaModifier: पूर्व-जन्म का संचित गति-भार — punarjanma के बाद karma=0 होने पर भी
+            // game speed praarabdhaGatiModifier से slow रहेगी (reset नहीं होगी)
+            // praarabdha होने पर samaya उतना ही slow — जितना punarjanma से पहले punya+paap slow था
+            const praarabdhaBhogGati = this.praarabdha > 0 ? this._bhogGatiSnapshot : 1.0;
+            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaBhogGati * praarabdhaSamayaMul * dt;
+            this.swaansaTimer += dt;
             if (this.swaansaTimer >= 360) {
                 this.swaansaTimer -= 360;
                 if (this.swaansa > 0) this.swaansa--;
@@ -852,8 +858,8 @@ export class KarmaEngine {
 
             // ── praarabdha unit घटाने का logic ──
             const prevPraarabdha = this.praarabdha;
-            // Bhog penalty: praarabdha endure करते समय samaya थोड़ा तेज़ घटे
-            this.praarabdhaTimer = Math.max(0, this.praarabdhaTimer - dt);
+            const bhogDt = dt * (this.activeNaam >= 10 ? 2 : 1);
+            this.praarabdhaTimer = Math.max(0, this.praarabdhaTimer - bhogDt);
             const newPraarabdha  = this.praarabdhaTimer > 0
                 ? Math.ceil(this.praarabdhaTimer / PRARABDHA_BHOG_FRAMES) : 0;
 
@@ -1029,7 +1035,7 @@ export class KarmaEngine {
     reset() {
         // ── Karma reset ──
         this.praarabdha = 0; this.praarabdhaTimer = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
-        this.praarabdhaGatiModifier = 1.0; this._currentGatiModifier = 1.0;        this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;
+        this._bhogGatiSnapshot = 1.0; this._currentGatiModifier = 1.0; this.praarabdhaGatiModifier *= this._currentGatiModifier; this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;
         this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
         // ── Alert queue reset ──
         this.alertQueue = []; this._nextAlertId = 0;

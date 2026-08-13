@@ -112,6 +112,9 @@ export const KarmaMixin = {
             this._alertKey('errPraarabdhaMax', '⚠️', 'warning', { n: MAX_PRARABDHA });
         }
 
+         // snapshot केवल तभी update हो जब gati और slow हो — rebirth पर karma=0 से 1.0 में reset नहीं होगा
+        // gati 100% पर वापस: सिर्फ R-reset (engine.js reset() में _bhogGatiSnapshot = 1.0)
+        this._bhogGatiSnapshot = Math.min(this._bhogGatiSnapshot, this._currentGatiModifier);
         // पूर्व-जन्म का gati-भार praarabdha में store करें — multiply (हर जन्म का बोझ जुड़े)
         this.praarabdhaGatiModifier *= this._currentGatiModifier;
         // 0 तक न जाने दें — minimum gati 1% बनाए रखें
