@@ -50,7 +50,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | Steer Chariot | `A` / `D`, `←` / `→` | DPAD L/R | इंद्रिय-नियंत्रण |
 | Naam-Jaap (Chant) | `SPACE` | RT (7) | 1 Naam burns Punya; 5 = Paap; 10 = Prarabdha |
 | Vairagya (Detach) | `S`, `↓` | X (2) | Prevent good-karma bondage |
-| Naam Samarpana | `W`, `↑` | RB (5) | Only in final phase (samaya < 100) |
+| Samarpana (Surrender) | `W`, `↑` | RB (5) | Only in final phase (samaya < 100) |
 | Pralaya (Sacrifice) | `Q` | LB (4) | Voluntary chariot dissolution |
 | Pure Rebirth | `R` | LT (6) | Zero karma → new life |
 | shaashtra (Knowledge) | `ESC` | BACK (8) | Open wisdom scroll |
