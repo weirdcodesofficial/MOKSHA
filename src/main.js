@@ -636,8 +636,8 @@ function gameLoop(ts) {
     AM?.updateDuckDecay?.();
     AM?.updateAmbientVolumes?.();
 
-    // tutorial card dismiss होने पर dt spike न आए
-    if (!tutorial.hasActiveCard()) lastTime = ts;
+    // lastTime हमेशा update — pause/tutorial/shaashtra किसी में भी spike न आए
+    lastTime = ts;
     draw();
     _rafId = requestAnimationFrame(gameLoop);
 }
