@@ -734,8 +734,14 @@ export class KarmaEngine {
             if (this._UI?.swaansaVal?.innerText !== swaansaDisplay && this._UI?.swaansaVal)
                 this._UI.swaansaVal.innerText = swaansaDisplay;
 
-            const currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul * 100).toFixed(0);            this._updateStatWithPulse(this._UI?.gatee, 'gatee', currentWarpVal, '⚡', '%');
-
+            const currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul * 100).toFixed(0);
+            this._updateStatWithPulse(this._UI?.gatee, 'gatee', currentWarpVal, '⚡', '%');
+            // प्रारब्ध > 0 — gatee HUD purple glow
+            if (this._UI?.gatee) {
+                const hasPrarabdha = this.praarabdha > 0;
+                this._UI.gatee.style.color      = hasPrarabdha ? '#a78bfa' : '';
+                this._UI.gatee.style.textShadow = hasPrarabdha ? '0 0 8px #a78bfa' : '';
+            }
             if (this.samaya <= 0) {
                 this.samaya = 0; this.swaansa = 0; this.swaansaSamapta = true;
                 this._alertKey('brahmandaKshitija', '🕉️', 'info');
