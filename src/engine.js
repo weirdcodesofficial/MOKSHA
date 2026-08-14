@@ -123,9 +123,8 @@ export class KarmaEngine {
         this.activeNaam       = 0;   // ॐ नाम (उपयोग-योग्य)
         this.praarabdha             = 0;   // प्रारब्ध (संचित — सिर्फ़ 10-नाम से भस्म)
         this.praarabdhaTimer        = 0;   // भोग-countdown (frames); पुनर्जन्म पर persist, R-reset पर शून्य
-        this.praarabdhaGatiModifier = 1.0; // पूर्व-जन्म के punya×paap का संचित गति-भार
         this._currentGatiModifier  = 1.0; // इस जन्म का live ashuvha×shuvha modifier (rebirth पर snapshot) persist, R-reset पर शून्य
-        this._bhogGatiSnapshot       = 1.0; // प्रारब्ध भोगने की गति (rebirth से पहले snapshot) persist, R-reset पर शून्य
+        this.praarabdhaPenaltyMul = 1.0; // // संचित — punarjanma पर update, R पर reset
         this._praarabdhaTimerPulseAccum = 0; // orbit pulse accumulator
         this.samarpita        = 0;   // समर्पित (lifetime)
         this.punaraJanmaCount = 0;   // पुनर्जन्म गिनती
@@ -716,20 +715,11 @@ export class KarmaEngine {
         // इस frame का combined modifier — rebirth पर snapshot हेतु store
         this._currentGatiModifier  = ashuvhaTimeModifier * shuvhaTimeModifier;
         // प्रारब्ध-modifier = पूर्व-जन्मों के punya×paap का संचित भार
-        const praarabdhaModifier    = this.praarabdha > 0 ? this.praarabdhaGatiModifier : 1.0;
+        // प्रारब्ध-दण्ड: हर unit पर 100% गति बढ़े — linear, simple
+        const praarabdhaPenaltiMul  = 1 + this.praarabdha;        
 
         if (!this.swaansaSamapta) {
-            // ── Bug 6 fix: प्रारब्ध का ×1.15 samaya penalty (शास्त्र-संगत) ──
-            // praarabdha=0 → 1.0×; praarabdha=1 → 1.15×; praarabdha=5 → ≈2.01×
-            // cap: MAX 3.0× (praarabdha≈9 से ऊपर) — game over न हो instantly
-            const praarabdhaSamayaMul = this.praarabdha > 0
-                ? Math.min(3.0, Math.pow(1.15, this.praarabdha))
-                : 1.0;
-                       // praarabdhaModifier: पूर्व-जन्म का संचित गति-भार — punarjanma के बाद karma=0 होने पर भी
-            // game speed praarabdhaGatiModifier से slow रहेगी (reset नहीं होगी)
-            // praarabdha होने पर samaya उतना ही slow — जितना punarjanma से पहले punya+paap slow था
-            const praarabdhaBhogGati = this.praarabdha > 0 ? this._bhogGatiSnapshot : 1.0;
-            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaBhogGati * praarabdhaSamayaMul * dt;
+            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul * dt;
             this.swaansaTimer += dt;
             if (this.swaansaTimer >= 360) {
                 this.swaansaTimer -= 360;
@@ -744,7 +734,7 @@ export class KarmaEngine {
             if (this._UI?.swaansaVal?.innerText !== swaansaDisplay && this._UI?.swaansaVal)
                 this._UI.swaansaVal.innerText = swaansaDisplay;
 
-            const currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaModifier * 100).toFixed(0);            this._updateStatWithPulse(this._UI?.gatee, 'gatee', currentWarpVal, '⚡', '%');
+            const currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul * 100).toFixed(0);            this._updateStatWithPulse(this._UI?.gatee, 'gatee', currentWarpVal, '⚡', '%');
 
             if (this.samaya <= 0) {
                 this.samaya = 0; this.swaansa = 0; this.swaansaSamapta = true;
@@ -775,13 +765,13 @@ export class KarmaEngine {
         // ── 18. Stars & sparkles movement ─────────────────────
         this.stars.forEach(star => {
             if (!this.swaansaSamapta) {
-                star.y += star.speed * (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaModifier + 0.1) * dt; 
+                star.y += star.speed * (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul + 0.1) * dt; 
                 if (star.y > this.HEIGHT) { star.y = this.HUD_TOP_Y; star.x = Math.random() * this.WIDTH; }
             }
         });
         this.tunnelSparkles.forEach(sparkle => {
             if (!this.swaansaSamapta) {
-                sparkle.y -= sparkle.speed * (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaModifier + 0.2) * dt;                sparkle.alpha += sparkle.fadeSpeed * dt;
+                sparkle.y -= sparkle.speed * (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul + 0.2) * dt;                sparkle.alpha += sparkle.fadeSpeed * dt;
                 if (sparkle.alpha > 0.9 || sparkle.alpha < 0.2) sparkle.fadeSpeed = -sparkle.fadeSpeed;
                 if (sparkle.y < 0) {
                     sparkle.y     = this.HEIGHT;
@@ -817,7 +807,7 @@ export class KarmaEngine {
         }
 
         // ── 21. Maya movement & player collision ───────────────
-        const mayaSpeed = Math.max(1.2, 4 * ashuvhaTimeModifier * shuvhaTimeModifier);
+        const mayaSpeed = Math.max(1.2, 4 * ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul);
         for (let i = 0; i < this.mayaPool.length; i++) {
             let m = this.mayaPool[i]; if (!m.active) continue;
             m.y += mayaSpeed * dt;
@@ -1035,7 +1025,7 @@ export class KarmaEngine {
     reset() {
         // ── Karma reset ──
         this.praarabdha = 0; this.praarabdhaTimer = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
-        this._bhogGatiSnapshot = 1.0; this._currentGatiModifier = 1.0; this.praarabdhaGatiModifier *= this._currentGatiModifier; this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;
+         this.praarabdhaPenaltiMul = 1.0; this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;
         this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
         // ── Alert queue reset ──
         this.alertQueue = []; this._nextAlertId = 0;
