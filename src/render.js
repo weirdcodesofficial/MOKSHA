@@ -923,6 +923,20 @@ export const Renderer = {
             ctx.fillText("⚡", ghx, ghy);
             ctx.restore();
         }
+        // ── प्रारब्ध गति-दण्ड — purple glow ring ──
+        if (praarabdha > 0) {
+            const pulse = 0.5 + Math.sin(frameNow / 120) * 0.5;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, gatiRadius, 0, Math.PI * 2);
+            ctx.lineWidth   = 2;
+            ctx.strokeStyle = "#a78bfa";
+            ctx.shadowBlur  = 20 + pulse * 15;
+            ctx.shadowColor = "#a78bfa";
+            ctx.globalAlpha = 0.4 + pulse * 0.3;
+            ctx.stroke();
+            ctx.restore();
+        }        
         ctx.restore();
 
         let samayRatio = Math.max(0, samaya / SAMAYA_PRAARAMBHIKA);
