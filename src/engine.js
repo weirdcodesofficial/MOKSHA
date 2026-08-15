@@ -125,7 +125,9 @@ export class KarmaEngine {
         this.praarabdhaTimer        = 0;   // भोग-countdown (frames); पुनर्जन्म पर persist, R-reset पर शून्य
         this._currentGateeModifier  = 1.0; // इस जन्म का live ashuvha×shuvha modifier (rebirth पर snapshot) persist, R-reset पर शून्य
         this.praarabdhaPenaltyMul    = 1.0; // संचित — punarjanma पर update, R पर reset
-        this._praarabdhaSpeedMul     = 1.0; // पूर्व-जन्म गति carry-over — punarjanma पर ×= current; R पर 1.0        this._praarabdhaTimerPulseAccum = 0; // orbit pulse accumulator
+        this._praarabdhaSpeedMul     = 1.0; // पूर्व-जन्म गति carry-over — punarjanma पर ×= current; R पर 1.0
+        this._praarabdhaSpeedStack   = []; // हर janma का individual multiplier — bhog-undo (FIFO) के लिए
+        this._praarabdhaTimerPulseAccum = 0; // orbit pulse accumulator
         this.samarpita        = 0;   // समर्पित (lifetime)
         this.punaraJanmaCount = 0;   // पुनर्जन्म गिनती
         this.isKarmaImmune    = false; // poornaSamarpana के बाद अस्थायी कर्म-रक्षा
@@ -885,6 +887,18 @@ export class KarmaEngine {
 
             if (newPraarabdha < prevPraarabdha) {
                 this.praarabdha = newPraarabdha;
+
+                // ── samayaGatee undo — FIFO (पुराना प्रारब्ध पहले भुगते) ──
+                // "पूर्व-कृत कर्म पूर्व-भुज्यते" — प्रति-unit carry-over हटाएँ
+                const units = prevPraarabdha - newPraarabdha;
+                for (let i = 0; i < units; i++) {
+                    const removed = this._praarabdhaSpeedStack.shift();
+                    if (removed && removed > 0) {
+                        // Math.max(1.0) — floating point error से कभी 1.0 से नीचे नहीं जाएगा
+                        this._praarabdhaSpeedMul = Math.max(1.0, this._praarabdhaSpeedMul / removed);
+                    }
+                }
+
                 if (this.praarabdha > 0) {
                     // ── unit घटा — explosion + alert (alert flooding नहीं, unit-change पर ही) ──
                     this._createExplosion(
@@ -1055,7 +1069,7 @@ export class KarmaEngine {
     reset() {
         // ── Karma reset ──
         this.praarabdha = 0; this.praarabdhaTimer = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
-         this.praarabdhaPenaltiMul = 1.0; this._praarabdhaSpeedMul = 1.0; this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;        this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
+         this.praarabdhaPenaltiMul = 1.0; this._praarabdhaSpeedMul = 1.0; this._praarabdhaSpeedStack = []; this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;        this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
         // ── Alert queue reset ──
         this.alertQueue = []; this._nextAlertId = 0;
         if(this.outerOrbits[2]) this.outerOrbits[2].glowTimer = 0;
