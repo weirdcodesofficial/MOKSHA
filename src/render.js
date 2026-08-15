@@ -887,9 +887,10 @@ export const Renderer = {
         ctx.globalAlpha = 0.75; ctx.stroke();
         ctx.restore();    
 
-        let ashuvhaMod = Math.pow(0.7, ashuvhaKarma);
-        let shuvhaMod = Math.pow(0.8, shuvhaKarma);
-        let gatiRatio = ashuvhaMod * shuvhaMod; 
+        let ashuvhaMod  = Math.pow(0.7, ashuvhaKarma);
+        let shuvhaMod   = Math.pow(0.8, shuvhaKarma);
+        // praarabdha भी शरीर-गति घटाता है — engine.js _sMod के साथ match करें
+        let gatiRatio   = ashuvhaMod * shuvhaMod * Math.pow(0.7, praarabdha);
 
         ctx.save();
         ctx.lineWidth = 1; 
