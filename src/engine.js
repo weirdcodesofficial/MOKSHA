@@ -124,8 +124,8 @@ export class KarmaEngine {
         this.praarabdha             = 0;   // प्रारब्ध (संचित — सिर्फ़ 10-नाम से भस्म)
         this.praarabdhaTimer        = 0;   // भोग-countdown (frames); पुनर्जन्म पर persist, R-reset पर शून्य
         this._currentGateeModifier  = 1.0; // इस जन्म का live ashuvha×shuvha modifier (rebirth पर snapshot) persist, R-reset पर शून्य
-        this.praarabdhaPenaltyMul = 1.0; // // संचित — punarjanma पर update, R पर reset
-        this._praarabdhaTimerPulseAccum = 0; // orbit pulse accumulator
+        this.praarabdhaPenaltyMul    = 1.0; // संचित — punarjanma पर update, R पर reset
+        this._praarabdhaSpeedMul     = 1.0; // पूर्व-जन्म गति carry-over — punarjanma पर ×= current; R पर 1.0        this._praarabdhaTimerPulseAccum = 0; // orbit pulse accumulator
         this.samarpita        = 0;   // समर्पित (lifetime)
         this.punaraJanmaCount = 0;   // पुनर्जन्म गिनती
         this.isKarmaImmune    = false; // poornaSamarpana के बाद अस्थायी कर्म-रक्षा
@@ -728,8 +728,9 @@ export class KarmaEngine {
         const ashuvhaTimeModifier  = Math.pow(0.7, this.ashuvhaKarma);
         const shuvhaTimeModifier   = Math.pow(0.8, this.shuvhaKarma);
         // पुण्य/पाप अब samaya तेज़ करते हैं — gameplay speed भी इसी से
-        const karmaSpeedMul = Math.pow(1 / 0.7, this.ashuvhaKarma) * Math.pow(1 / 0.8, this.shuvhaKarma);
-
+        // _praarabdhaSpeedMul: पूर्व-जन्मों का संचित गति-भार — punarjanma पर ×= होता है (karma.js)
+        const karmaSpeedMul = Math.pow(1 / 0.7, this.ashuvhaKarma) * Math.pow(1 / 0.8, this.shuvhaKarma)
+                            * this._praarabdhaSpeedMul;
         this._currentGateeModifier  = karmaSpeedMul;
         // प्रारब्ध-modifier = पूर्व-जन्मों के punya×paap का संचित भार
         // प्रारब्ध-दण्ड: हर unit पर 100% गति बढ़े — linear, simple
@@ -737,8 +738,9 @@ export class KarmaEngine {
 
         if (!this.swaansaSamapta) {
             // पुण्य/पाप अब samaya तेज़ करते हैं — कर्म-भार = समय-क्षरण
-            const karmaSpeedMul = Math.pow(1 / 0.7, this.ashuvhaKarma) * Math.pow(1 / 0.8, this.shuvhaKarma);
-            this.samaya -= 0.8 * karmaSpeedMul * dt;
+            // _praarabdhaSpeedMul: पूर्व-जन्मों का संचित गति-भार — punarjanma पर ×= होता है (karma.js)
+        const karmaSpeedMul = Math.pow(1 / 0.7, this.ashuvhaKarma) * Math.pow(1 / 0.8, this.shuvhaKarma)
+                            * this._praarabdhaSpeedMul;            this.samaya -= 0.8 * karmaSpeedMul * dt;
             this.swaansaTimer += dt;
             if (this.swaansaTimer >= 360) {
                 this.swaansaTimer -= 360;
@@ -1053,8 +1055,7 @@ export class KarmaEngine {
     reset() {
         // ── Karma reset ──
         this.praarabdha = 0; this.praarabdhaTimer = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
-         this.praarabdhaPenaltiMul = 1.0; this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;
-        this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
+         this.praarabdhaPenaltiMul = 1.0; this._praarabdhaSpeedMul = 1.0; this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;        this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
         // ── Alert queue reset ──
         this.alertQueue = []; this._nextAlertId = 0;
         if(this.outerOrbits[2]) this.outerOrbits[2].glowTimer = 0;
