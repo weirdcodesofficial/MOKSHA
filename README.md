@@ -38,9 +38,11 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 |---|---|---|
 | **पुण्य** (Good Karma) | `shuvhaKarma` | Slows chariot; auto-binds if not released in time |
 | **पाप** (Bad Karma) | `ashuvhaKarma` | Slows + strikes chariot (vision distortion) |
-| **प्रारब्ध** (Past Life Karma) | `prarabdha` | +1 per rebirth only (regardless of sanchita karma amount); endured over time — speeds samaya decay ×1.15; 10 Naam accelerates bhog 2×; max 15 || **समर्पित** (Surrendered) | `samarpita` | ≥50 triggers चेतना-जागृति (Awakening) |
-| **चेतना-जागृति** (Awakening) | `chetanaaJaagrita` | **True gate for Moksha** — also grants `isKarmaImmune` (गीता 4.37) || **कृपा** (Grace) | `kripa` | Earned through surrender; frees karma-bondage |
-| **शंख** (Conch) | `shankha` | Dispels chakravaata (तूफ़ान) of Maya when Naam is unavailable then Shanka (यंत्र-मार्ग) |
+| **प्रारब्ध** (Past Life Karma) | `prarabdha` | +1 per rebirth only (regardless of sanchita karma amount); endured over time — speeds samaya decay ×1.15; 10 Naam accelerates bhog 2×; max 15 |
+| **समर्पित** (Surrendered) | `samarpita` | ≥50 triggers चेतना-जागृति (Awakening) |
+| **चेतना-जागृति** (Awakening) | `chetanaaJaagrita` | **True gate for Moksha** — also grants `isKarmaImmune` (गीता 4.37) |
+| **कृपा** (Grace) | `kripa` | Earned through surrender; frees karma-bondage |
+| **शंख** (Conch) | `shankha` | Dispels chakravaata (तूफ़ान) of Maya when Naam is unavailable (यंत्र-मार्ग) |
 | **ज्योति** (Lamp) | `jyoti` | Restores vision in the darkness of bad karma |
 
 ## 🎮 Controls
@@ -64,18 +66,21 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 ## ✨ Key Features
 
 - 🕉️ **Vedic Karma Engine** — Real-time Punya/Paap/Prarabdha/Samarpita system
-- 🌸 **Lotus Petal Ring** — 10 animated petals visualise remaining swaansa (Swaansa)
-- 🌀 **Chakravaata (Maya Tufaan)** — Can only be dispelled by Naam-Jaapa or Shankha if Naam-Jaap Unavailable
+- 🌸 **Lotus Petal Ring** — 10 animated petals visualise remaining swaansa
+- 🌀 **Chakravaata (Maya Tufaan)** — Can only be dispelled by Naam-Jaapa or Shankha if Naam-Jaap unavailable
 - 🎵 **Layered Ambient Audio** — 4 continuous loops (bgMusic, Shathendriya, SushuptiSwaansa, JaagritaSwaansa) with smooth duck/fade
 - 🔮 **Sci-Fi Yantra Visuals** — CRT scanlines, gold scan-sweep, Yantra polygons, cyberGrid
 - 🏆 **Three End States** — Moksha (liberation), Pralaya (dissolution), Punarjanma (rebirth)
 - 🎮 **Full Gamepad Support** — Xbox/generic controller with deadzone handling
+- 📱 **Mobile Touch Controls** — On-screen virtual buttons overlay; multi-touch safe; blocker-stack visibility system
+- 🔄 **Gyroscope Steering** — Device tilt → chariot steering (gamma axis); iOS 13+ permission dialog; calibration support
+- 🎓 **Guru-Diksha Tutorial** — 5-step गुरु-दीक्षा system; slow-mode cards; forced maya spawn; praarabdha-wait gate
 - ⚡ **60fps Performance** — Pool-based architecture (no GC pressure), sprite caching, emoji sprite cache, gradient buckets
 - 📜 **In-Game shaashtra** — Full philosophical treatise accessible via ESC
 - 🔔 **Canvas Alert Queue** — Contextual slide-in alert cards (top-right), category-colored, auto-dismiss; de-duplicated (no per-second flood)
-- ⚖️ **Prarabdha Bhog System** — Endure past karma over time; unit-break explosion; MAX 15 cap; samaya penalty ×1.15
-- 🧘 **Karma Immunity** — चेतना-जागृति grants karma immunity (गीता 4.37 — ज्ञानाग्निः सर्वकर्माणि भस्मसात्)
-- 🧩 **ES6 Modular Architecture** — KarmaEngine split into 4 mixins: KarmaMixin, PhysicsMixin, StateMixin + Renderer
+- ⚖️ **Prarabdha Bhog System** — Endure past karma over time; unit-break explosion; MAX 15 cap; samaya penalty ×1.15; `_praarabdhaSpeedMul` carry-forward across janma
+- 🧘 **Chetanaa Immunity** — चेतना-जागृति grants karma immunity (गीता 4.37 — ज्ञानाग्निः सर्वकर्माणि भस्मसात्)
+- 🧩 **ES6 Modular Architecture** — KarmaEngine split into 4 mixins: KarmaMixin, PhysicsMixin, StateMixin + Renderer + Touch + Tutorial
 
 ---
 
@@ -140,7 +145,7 @@ gameReadinessMode = (audioLoadFailures.length === 0) ? 'high' : 'low'
 | Rendering | HTML5 Canvas 2D |
 | Logic | Vanilla JS (ES6 Modules) — no framework, no build tool |
 | Audio | Web Audio API (layered ambient + SFX duck system) |
-| Input | Keyboard + Gamepad API |
+| Input | Keyboard + Gamepad API + Touch API + DeviceOrientation API |
 | Visuals | Pure Canvas — no sprites, no external assets except audio |
 | Style | External `style.css` (extracted from `index.html`) |
 
@@ -150,19 +155,21 @@ gameReadinessMode = (audioLoadFailures.length === 0) ? 'high' : 'low'
 
 ```
 MOKSHA/
-├── index.html        — HTML shell + start screen
+├── index.html        — HTML shell + start screen + touch-controls overlay
 ├── style.css         — All UI styles, extracted from index.html
 ├── audio/            — 28 .mp3 ambient & SFX files
 └── src/
     ├── audio.js      — AudioManager: 28-mp3 preload, ambient layers, duck system
     ├── engine.js     — KarmaEngine: slim orchestrator, core loop, pools, state transitions
-    ├── i18n.js       — भाषा-प्रबंधक: 134 keys (hi/en), persistence, late-binding resolveAlert
-    ├── shaashtra.js    — शास्त्र-ग्रंथ: 3 pages, संरचित blocks, श्लोक-कोश (भाषा-निरपेक्ष)    
-    ├── karma.js      — KarmaMixin: Vedic logic, maya spawn, kripa, keyboard actions
+    ├── i18n.js       — भाषा-प्रबंधक: hi/en keys, persistence, resolveAlert, tLines
+    ├── shaashtra.js  — शास्त्र-ग्रंथ: 3 pages, संरचित blocks, श्लोक-कोश (भाषा-निरपेक्ष)
+    ├── karma.js      — KarmaMixin: Vedic logic, maya spawn, kripa, forceSpawnMaya
     ├── physics.js    — PhysicsMixin: glow-rings, particles, floating text, pool helpers
     ├── state.js      — StateMixin: HUD updates, alert queue, triggerAlert, animations
-    ├── render.js     — Renderer: Canvas draw functions, alert cards, sprite caches
-    └── main.js       — Orchestrator: wires all modules, gameLoop, input, gamepad
+    ├── render.js     — Renderer: Canvas draw functions, alert cards, tutorial card, sprite caches
+    ├── touch.js      — TouchControls: on-screen buttons, blocker-stack; GyroscopeControls: tilt steering
+    ├── tutorial.js   — TutorialManager: 5-step गुरु-दीक्षा, slow-mode, praarabdha-wait gate
+    └── main.js       — Orchestrator: wires all modules, gameLoop, input, gamepad, gyro, tutorial
 ```
 
 ---
@@ -170,7 +177,8 @@ MOKSHA/
 # 📖 मोक्ष — प्रोजेक्ट संदर्भ-दस्तावेज़ (Developer Reference)
 
 > **उद्देश्य:** यह दस्तावेज़ मोक्ष codebase के लिए एक स्थायी संदर्भ (reference) है।
-> **अंतिम अपडेट आधार:** v0.0.8 — Prarabdha mechanic refinements + Alert system fixes + chetanaaJaagrita → isKarmaImmune (~5390 lines across 7 src files + style.css)> **भाषा/स्टैक:** HTML5 Canvas, Vanilla JS ES6 Modules (no build tooling, no TypeScript, no framework), Web Audio API, Gamepad API
+> **अंतिम अपडेट आधार:** v0.0.9 — Touch controls + Gyroscope steering + Guru-Diksha tutorial + StateMixin split (~8312 lines across 11 src files + style.css)
+> **भाषा/स्टैक:** HTML5 Canvas, Vanilla JS ES6 Modules (no build tooling, no TypeScript, no framework), Web Audio API, Gamepad API, Touch API, DeviceOrientation API
 
 ---
 
@@ -180,7 +188,10 @@ MOKSHA/
 |---|---|---|
 | **पुण्य** (शुभ कर्म) | `shuvhaKarma`, `pendingGoodKarma` | गति को मंद करता है; मोहक प्रलोभन — समय रहते त्याग न करने पर स्वतः बंध |
 | **पाप** (अशुभ कर्म) | `ashuvhaKarma` | गति मंद + रथ पर आघात (कंपन/दृष्टि-भ्रम) |
-| **प्रारब्ध** | `prarabdha` | प्रति पुनर्जन्म केवल +1 (संचित कर्म कितना भी हो); MAX_PRARABDHA=15 cap; भोग से घटता है (×1.15 samaya penalty); 10 नाम से 2× गति || **समर्पित** | `samarpita` | जब >= CHETANA_JAGRITI_THRESHOLD (50), चेतना-जागृति ट्रिगर || **चेतना-जागृति** | `chetanaaJaagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` ट्रिगर; जागृति पर `isKarmaImmune = true` (गीता 4.37) || **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म, 10=प्रारब्ध भस्म |
+| **प्रारब्ध** | `prarabdha` | प्रति पुनर्जन्म केवल +1 (संचित कर्म कितना भी हो); MAX_PRARABDHA=15 cap; भोग से घटता है (×1.15 samaya penalty); 10 नाम से 2× गति |
+| **समर्पित** | `samarpita` | जब >= CHETANA_JAGRITI_THRESHOLD (50), चेतना-जागृति ट्रिगर |
+| **चेतना-जागृति** | `chetanaaJaagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` ट्रिगर; जागृति पर `isKarmaImmune = true` (गीता 4.37) |
+| **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म, 10=प्रारब्ध भस्म |
 | **कृपा** | `kripa` | बंधन हो → kripa-- व कर्म समर्पित में; बंधन न हो → kripa++ |
 | **शंख** | `shankha` | Y/gamepad — chakravaata-शमन हेतु |
 | **ज्योति** | `jyoti` | B/gamepad — पाप-अंधकार में दृष्टि हेतु |
@@ -195,7 +206,7 @@ MOKSHA/
 ### 1.2 मोक्ष-शर्त
 ```js
 if (shuvhaKarma === 0 && ashuvhaKarma === 0 && !pendingGoodKarma
-    && prarabdha === 0 && chetanaaJaagrita && purnaSamarpana) { /* मोक्ष */ }
+    && prarabdha === 0 && chetanaaJaagrita && poornaSamarpana) { /* मोक्ष */ }
 ```
 ⚠️ सदैव `chetanaaJaagrita` boolean प्रयोग करें, `samarpita >= 50` नहीं।
 
@@ -238,6 +249,9 @@ engine.prarabdha, engine.samarpita, engine.punaraJanmaCount — संचित/
 engine.kripa, engine.shankha, engine.jyoti                  — दुर्लभ resource काउंटर
 engine.chetanaaJaagrita (boolean)                            — मोक्ष-गेट
 engine.isKarmaImmune                                        — अस्थायी सुरक्षा
+engine.poornaSamarpana                                      — अंतिम-चरण में समस्त नाम समर्पित
+engine._praarabdhaSpeedMul                                  — पूर्व-जन्मों का संचित गति-भार (carry-forward)
+engine._praarabdhaSpeedStack                                — FIFO stack — प्रति-जन्म multiplier undo हेतु
 ```
 
 ### 2.2 समय/श्वास
@@ -284,13 +298,17 @@ export const RESOURCE_PICKUP_TABLE = {
 
 ### 2.6 नामित कांस्टेंट (engine.js से export)
 ```js
+export const SAMAYA_PRAARAMBHIKA       = 2880;
 export const CHETANA_JAGRITI_THRESHOLD = 50;
 export const NAAMA_JAAP_GROWTH_SPEED   = 22;
 export const NAAMA_JAAP_MAX_RADIUS     = 1000;
 export const HORSE_PULL_RANGE          = 160;
 export const KRIPA_NAAM_MILESTONE      = 20;
 export const KRIPA_SAMARPITA_MILESTONE = 30;
-export const SAMAYA_PRAARAMBHIKA       = 2880;
+export const PRARABDHA_BHOG_FRAMES     = 600;   // प्रति-भोग-unit frame count
+export const MAX_PRARABDHA             = 15;    // प्रारब्ध की अधिकतम सीमा
+export const CHAKRAVAATA_PLAYER_PULL_RANGE = 160;  // px — player खिंचाव range
+export const CHAKRAVAATA_PLAYER_PULL_FORCE = 0.8;  // pull force magnitude
 ```
 
 ### 2.7 गति/समय-वलय व कर्म-कक्षा (outerOrbits)
@@ -298,7 +316,7 @@ export const SAMAYA_PRAARAMBHIKA       = 2880;
 **वलय रेडियस:**
 ```js
 let gateeRadius  = (swaansaingSmoothSize / 2) + 5;   // शरीर से 5px बाहर
-let samayRadius = gateeRadius + 12;                   // गति-वलय से 12px बाहर
+let samayRadius  = gateeRadius + 12;                  // गति-वलय से 12px बाहर
 ```
 - **रंग:** neon-gold `#ffc83c` — यंत्र-वर्ण-सुसंगति
 - **head indicators:** ⚡ (गति), ⏳ (समय)
@@ -328,7 +346,7 @@ PANKHUDI_COUNT    = 10;
 pankhudiRadius    = samayRadius + 3;
 pankhudiLength    = 22;
 pankhudiRotation  = frameNow / 4500;   // ~28s प्रति-चक्कर
-swaansaBoost       = Math.sin((swaansaTimer / 360) * Math.PI);
+swaansaBoost      = Math.sin((swaansaTimer / 360) * Math.PI);
 ```
 **तीन अवस्थाएँ** — pre-rendered offscreen sprites (render.js में cached):
 - `cachedPankhudiConsumed`: खर्च — dim/पतली
@@ -340,7 +358,7 @@ swaansaBoost       = Math.sin((swaansaTimer / 360) * Math.PI);
 let innerOrbit = [
     chetanaaJaagrita ? "👁️" : "😴",
     ashuvhaKarma >= 3 ? "⚫" : "☀️",
-    purnaSamarpana ? "🙌" : "🤲"
+    poornaSamarpana ? "🙌" : "🤲"
     // + count>0 होने पर: ♻️ 🌿 🥀 📜 ॐ ✋ 🐚 🪔 🙏
 ];
 // render.js: getEmojiSprite() cache से draw — per-frame text draw नहीं
@@ -357,28 +375,48 @@ buildSciFiGridSprite(WIDTH, HEIGHT)    // radar-grid एक बार pre-render
 drawRingTicks(cx, cy, radius, count, color)           // compass tick-marks
 drawYantraPolygon(cx, cy, radius, sides, rotation, …) // यंत्र-बहुभुज
 getMayaSprite(type, bScale)     // shuvha/ashuvha sprite cache
-getEmojiSprite(emoji, fontSize) // orbit/innerOrbit emoji cache (नई)
+getEmojiSprite(emoji, fontSize) // orbit/innerOrbit emoji cache
 ```
 
 ---
 
 ## 3. इनपुट मानचित्र
 
-| क्रिया | Keyboard | Gamepad | शास्त्रीय अर्थ |
-|---|---|---|---|
-| रथ-संचालन | A/D, ←/→ | DPAD L/R (14/15) | इंद्रिय-नियंत्रण |
-| नाम-जाप | SPACE | RT (7) | 1 नाम व्यय → फैलती आभा |
-| वैराग्य | S, ↓ | X (2) | पुण्य-बंधन रोकें |
-| नाम समर्पण | W, ↑ | RB (5) | सिर्फ अंतिम चरण (samaya<100) |
-| प्रलय | Q | LB (4) | स्वैच्छिक रथ-त्याग |
-| पवित्र पुनर्जन्म | R | LT (6) | कर्म शून्य, नया जीवन |
-| शास्त्र | ESC | BACK (8) | ज्ञान-द्वार |
-| स्तम्भन | F | START (9) | विराम |
-| शंख | Y | Y (0) | chakravaata-शमन वलय |
-| ज्योति | B | B (1) | पाप-अंधकार में दृष्टि |
-| शास्त्र-नेविगेशन | ↑↓ (held) | DPAD U/D (12/13) | scroll; DPAD = PageUp/Down |
+| क्रिया | Keyboard | Gamepad | Touch | शास्त्रीय अर्थ |
+|---|---|---|---|---|
+| रथ-संचालन | A/D, ←/→ | DPAD L/R (14/15) | ←/→ बटन | इंद्रिय-नियंत्रण |
+| नाम-जाप | SPACE | RT (7) | ॐ बटन | 1 नाम व्यय → फैलती आभा |
+| वैराग्य | S, ↓ | X (2) | 🌿 बटन | पुण्य-बंधन रोकें |
+| नाम समर्पण | W, ↑ | RB (5) | 🙏 बटन | सिर्फ अंतिम चरण (samaya<100) |
+| प्रलय | Q | LB (4) | 💀 बटन | स्वैच्छिक रथ-त्याग |
+| पवित्र पुनर्जन्म | R | LT (6) | ♻️ बटन | कर्म शून्य, नया जीवन |
+| शास्त्र | ESC | BACK (8) | — | ज्ञान-द्वार |
+| स्तम्भन | F | START (9) | — | विराम |
+| शंख | Y | Y (0) | 🐚 बटन | chakravaata-शमन वलय |
+| ज्योति | B | B (1) | 🪔 बटन | पाप-अंधकार में दृष्टि |
+| शास्त्र-नेविगेशन | ↑↓ (held) | DPAD U/D (12/13) | — | scroll; DPAD = PageUp/Down |
 
-> ⚠️ `handleshaashtraGamepadNav()` अब `pollGamepadOnStartScreen()` से भी कॉल होता है।
+> ⚠️ `handleShaashtraGamepadNav()` अब `pollGamepadOnStartScreen()` से भी कॉल होता है।
+
+### 3.1 Gyroscope Steering (touch.js — GyroscopeControls)
+```
+gamma axis: portrait mode left/right झुकाव (-90° to +90°)
+deadzone: ±10° — neutral zone में रथ सीधा रहेगा
+iOS 13+: DeviceOrientationEvent.requestPermission() — user-gesture ज़रूरी
+Android: automatic — कोई dialog नहीं
+calibrate(): अगला event baseline (zero) बनेगा
+```
+- gyro और keyboard/touch साथ-साथ काम करते हैं — key-ownership safe
+- `_setLeft`/`_setRight` flags: सिर्फ gyro-set keys clear होंगी; touch keys safe
+
+### 3.2 TouchControls Blocker Stack (touch.js)
+```js
+touch.block('start');     // start-screen: controls hidden
+touch.block('tutorial');  // tutorial card visible: hidden
+touch.block('shaashtra'); // shaashtra open: hidden
+touch.unblock('start');   // game started: blocker हटा
+// सभी blockers हटें → controls दिखें
+```
 
 ---
 
@@ -386,10 +424,10 @@ getEmojiSprite(emoji, fontSize) // orbit/innerOrbit emoji cache (नई)
 
 ### 4.1 लेयर्ड एम्बिएंट (4 निरंतर लूप)
 ```
-bgMusic         → BG_MUSIC_MP3_LAYER_VOLUME=0.01, स्थिर
-shathendriya    → RUNNING_HORSES_VOLUME=0.16, स्थिर (file: ./audio/shathendriya.mp3)
+bgMusic          → BG_MUSIC_MP3_LAYER_VOLUME=0.01, स्थिर
+shathendriya     → RUNNING_HORSES_VOLUME=0.16, स्थिर (file: ./audio/shathendriya.mp3)
 sushuptiSwaansa  → SUSHUPTI_SWAANSA_VOLUME=1, श्वास-सिंक — खेल-आरंभ से chetanaaJaagrita तक
-jaagritaSwaansa   → JAAGRITA_SWAANSA_VOLUME=0.22, श्वास-सिंक — chetanaaJaagrita के बाद
+jaagritaSwaansa  → JAAGRITA_SWAANSA_VOLUME=0.22, श्वास-सिंक — chetanaaJaagrita के बाद
 ```
 `sushuptiSwaansa` व `jaagritaSwaansa` कभी एक साथ नहीं।
 
@@ -397,16 +435,16 @@ jaagritaSwaansa   → JAAGRITA_SWAANSA_VOLUME=0.22, श्वास-सिंक
 
 ### 4.2 Duck Reduction per Layer
 ```
-BG_MUSIC_DUCK_REDUCTION        = 0.75
-JAAGRITA_SWAANSA_DUCK_REDUCTION  = 0.55
+BG_MUSIC_DUCK_REDUCTION         = 0.75
+JAAGRITA_SWAANSA_DUCK_REDUCTION = 0.55
 SUSHUPTI_SWAANSA_DUCK_REDUCTION = 0.20  // पहले 0.55 — बहुत दब रही थी
-RUNNING_HORSES_DUCK_REDUCTION  = 0.15
+RUNNING_HORSES_DUCK_REDUCTION   = 0.15
 ```
 
 ### 4.3 गेटिंग
 ```js
 // AudioManager internal — game state getter से poll
-isGameStarted && !gameOver && !won && !isPaused && !isshaashtraVisible
+isGameStarted && !gameOver && !won && !isPaused && !isShaashtraVisible
 // setTargetAtTime() से smooth fade — कोई click/pop नहीं
 ```
 
@@ -422,7 +460,7 @@ Eager load (22):  naamaSamarpita, samarpita, punaraJanma, shathendriya,
                   sushuptiSwaansa, timer, prarabdhaBandhana, paapaBandhana,
                   punyaBandhana, bandhanaMukta, naamaDhwani, jaapaDhwani,
                   aakarshana, tyaaga, kripaDhwani, shankhaDhwani, jyotiDhwani,
-                  shankhaPrapta, jyotiPrapta, purnaSamarpana, drishti, andhakaara
+                  shankhaPrapta, jyotiPrapta, poornaSamarpana, drishti, andhakaara
 
 Deferred load (6): bgMusic, chetanaJaagrita, pralaya, jaagritaSwaansa,
                    moksha, antimaCharana
@@ -431,7 +469,7 @@ Deferred load (6): bgMusic, chetanaJaagrita, pralaya, jaagritaSwaansa,
 ### 4.6 AudioManager dependency injection (main.js में)
 ```js
 Audio.setGameStateGetter(() => ({ isGameStarted, gameOver, won,
-                                   isPaused, isshaashtraVisible, chetanaaJaagrita }));
+                                   isPaused, isShaashtraVisible, chetanaaJaagrita }));
 Audio.setVibrateCallback(vibrateGamepad);
 Audio.setReadinessGetters({ getFontsReady: () => isFontsReady,
                              getScaleGameDone: () => isScaleGameDone });
@@ -440,17 +478,26 @@ Audio.init();   // initAudioPreload() की जगह
 
 ---
 
-## 5. ES6 Module Architecture (नई — refactor)
+## 5. ES6 Module Architecture
 
 ### 5.1 Module Graph
 ```
 index.html
   └── src/main.js  (type="module")
-        ├── import { Renderer }                from './render.js'
-        ├── import { KarmaEngine, SAMAYA_... } from './engine.js'
-        │     ├── import { PhysicsMixin }      from './physics.js'
-        │     └── import { KarmaMixin }        from './karma.js'
-        └── import Audio (default)             from './audio.js'
+        ├── import { initLang, setLang, getLang, t, tLines } from './i18n.js'
+        ├── import { Renderer }                              from './render.js'
+        ├── import { KarmaEngine, SAMAYA_PRAARAMBHIKA }      from './engine.js'
+        │     ├── import { KarmaMixin }    from './karma.js'
+        │     │     └── import { ... }    from './engine.js'  (constants — safe circular)
+        │     ├── import { PhysicsMixin } from './physics.js'
+        │     ├── import { StateMixin }   from './state.js'
+        │     │     └── import { CHETANA_JAGRITI_THRESHOLD } from './engine.js'
+        │     └── import { t }            from './i18n.js'
+        ├── import Audio (default)                           from './audio.js'
+        ├── import { TutorialManager }                       from './tutorial.js'
+        │     └── import { t }            from './i18n.js'
+        ├── import { renderShaashtraPage }                   from './shaashtra.js'
+        └── import { TouchControls, GyroscopeControls }      from './touch.js'
 ```
 
 ### 5.2 KarmaEngine — public interface
@@ -465,20 +512,62 @@ engine.init(600, 680, TUNNEL_X, 180);
 // gameLoop में:
 engine.update(dt, keys, frameNow);
 
-// draw() में: engine.* properties सीधे पढ़ें (public)
+// draw() में: engine.getState() से snapshot लें
 ```
 
 ### 5.3 Renderer — public interface
 ```js
-Renderer.setContext(ctx);
-// state = engine.* properties
-Renderer.drawBackground(state);
-Renderer.drawPlayer(state);
-Renderer.drawMaya(state);
-// ... etc.
+Renderer.init(ctx, WIDTH, HEIGHT);
+// state = engine.getState()
+Renderer.drawScene(state);
+Renderer.drawTutorialCard(ctx, tutorial.getCurrentCard());
 ```
 
-### 5.4 AudioManager — singleton (default export)
+### 5.4 TutorialManager — public interface
+```js
+const tutorial = new TutorialManager(
+    (...args) => engine._forceSpawnMaya?.(...args),
+    WIDTH, HEIGHT
+);
+tutorial.start(engine.player.x);
+
+// gameLoop में (हर frame — update block के अंदर):
+tutorial.checkCompletion({ player, activeNaam, isNaamaJaapa,
+                           playerInTunnel, praarabdha, antimaCharanaStarted });
+touch.syncWithTutorial(tutorial.hasActiveCard());
+
+// draw() में:
+if (tutorial.hasActiveCard()) Renderer.drawTutorialCard(ctx, tutorial.getCurrentCard());
+
+// ENTER / click:
+tutorial.dismiss();
+
+// ESC:
+if (!tutorial.isDone()) { tutorial.skip(); return; }
+```
+
+### 5.5 TouchControls + GyroscopeControls — public interface
+```js
+const touch = new TouchControls(keys);    // touch device पर active; desktop पर no-op
+const gyro  = new GyroscopeControls(keys);
+
+// Start-screen पर unblock:
+touch.unblock('start');
+
+// Gyro enable (user-gesture के अंदर):
+const granted = await gyro.requestPermission();
+if (!granted) _enableTouchSteering();
+
+// Blur पर:
+touch.clearAll();
+gyro.clearState();
+
+// Shaashtra open/close:
+touch.block('shaashtra');    // open
+touch.unblock('shaashtra');  // close
+```
+
+### 5.6 AudioManager — singleton (default export)
 ```js
 import Audio from './audio.js';
 const AM = Audio;
@@ -494,31 +583,59 @@ AM.updateAmbientVolumes();
 ## 6. परफ़ॉर्मेंस पैटर्न
 
 1. **Pool pattern** (§2.3) — 4 pools, push/splice कभी नहीं
-2. **Sprite caches** — `mayaSpriteCache` (shuvha/ashuvha), `emojiSpriteCache` (सभी orbits/innerOrbit, नई), `cachedPankhudiConsumed/Active/Inactive` (3 states, नई), `sciFiGridSprite`, `cachedBuddhiSprite`, `cachedAtmanSprite`
+2. **Sprite caches** — `mayaSpriteCache` (shuvha/ashuvha), `emojiSpriteCache` (सभी orbits/innerOrbit), `cachedPankhudiConsumed/Active/Inactive` (3 states), `sciFiGridSprite`, `cachedBuddhiSprite`, `cachedAtmanSprite`
 3. **Bucket-cached gradients** — `cachedSwaansaGrad` / `cachedTunnelGrad`
 4. **DOM throttle** — `lastPunyaAlertSecond` जैसे guards
 5. **`_updateStatWithPulse()`** — बदलाव पर ही UI update (`_oldStats` compare)
 6. **HUD animation** — `_uiScales` / `_uiGlows` per-key lerp, dirty-check से DOM write
+7. **Single RAF loop** — dual-RAF removed (Issue #64); shaashtra scroll + audio updates same `gameLoop()` में
+8. **Visibility API** — tab hidden पर `cancelAnimationFrame()` → battery/GPU बचत; restore पर `lastTime` reset → dt spike रोकें
 
 ---
 
-## 7. Change Log Summary
+## 7. गुरु-दीक्षा प्रणाली (Tutorial Steps)
+
+`src/tutorial.js — TutorialManager` — 5 चरणों में नए खिलाड़ी को Vedic mechanics सिखाती है।
+
+| Step | id | शास्त्रीय श्लोक | Completion Trigger |
+|---|---|---|---|
+| 0 | `move` | उद्धरेदात्मनात्मानं नात्मानमवसादयेत्। | ≥40px horizontal movement |
+| 1 | `maya` | मायाजालमिदं विश्वं मोहयत्यखिलं जगत्। | `activeNaam >= 1` (naama collect) |
+| 2 | `jaapa` | नाम जपत मंगल दिसि दसहूँ। | `isNaamaJaapa === true` (latch) |
+| 3 | `tunnel` | भक्त्या मामभिजानाति यावान्यश्चास्मि तत्त्वतः। | `playerInTunnel === true` (antimaCharana के बाद) |
+| 4 | `praarabdha` | भोगेन क्षीयते पापं, तपसा क्षीयते मलः। | dismiss = complete (प्रारब्ध मिलने के बाद card दिखे) |
+
+- **Slow-mode:** card visible होने पर `dt × 0.3` — खिलाड़ी पढ़ सके
+- **localStorage key:** `'moksha_tutorial_seen'` — एक बार complete → फिर skip
+- **`_forceSpawnMaya()`:** step 1 और 2 में forced naama spawn (canvas center पर)
+- **`_waitingForAntimaCharana`:** step 3 की card तुरंत नहीं — `antimaCharana` शुरू होने पर
+- **`_waitingForPraarabdha`:** step 4 की card तुरंत नहीं — पहला `prarabdha >= 1` होने पर
+
+---
+
+## 8. Change Log Summary
 
 | क्षेत्र | परिवर्तन |
 |---|---|
 | **🆕 ES6 Modular Refactor** | `index.html` (3835 lines) → `audio.js` + `engine.js` + `render.js` + `main.js` + `style.css` |
 | **🆕 engine.js split (v0.0.6)** | `engine.js` (1449→1044 lines) → `KarmaMixin` (karma.js) + `PhysicsMixin` (physics.js); `Object.assign` mixin pattern |
+| **🆕 StateMixin split (v0.0.9)** | HUD/alert methods → `state.js`; `engine.js` imports `StateMixin`; `Object.assign` में add |
+| **🆕 touch.js (v0.0.9)** | `TouchControls` (on-screen buttons, blocker-stack) + `GyroscopeControls` (gamma-axis tilt steering, iOS permission) |
+| **🆕 tutorial.js (v0.0.9)** | `TutorialManager` — 5-step गुरु-दीक्षा; slow-mode; forceSpawn; antimaCharana-wait; praarabdha-wait |
 | **🆕 KarmaEngine class** | सभी Vedic state + logic → `src/engine.js` ES6 class; `setCallbacks()` DI pattern |
 | **🆕 AudioManager class** | सभी Web Audio logic → `src/audio.js`; `setGameStateGetter()` DI pattern |
-| **🆕 Renderer module** | सभी draw functions → `src/render.js` |
+| **🆕 Renderer module** | सभी draw functions → `src/render.js`; `drawTutorialCard()` जोड़ा |
 | **🆕 style.css** | सभी CSS → बाहरी फ़ाइल |
 | **🆕 emojiSpriteCache** | orbit/innerOrbit emoji → offscreen canvas cache; per-frame text draw बंद |
-| **🆕 cachedPankhudi*** | `cachedPankhudiConsumed`, `cachedPankhudiActive`, `cachedPankhudiInactive` — 3 cached states; colors manually tuned |
+| **🆕 cachedPankhudi*** | `cachedPankhudiConsumed`, `cachedPankhudiActive`, `cachedPankhudiInactive` — 3 cached states |
 | **🆕 cachedBuddhiSprite / cachedAtmanSprite** | नए player-body sprite caches |
+| **🆕 _praarabdhaSpeedMul** | पूर्व-जन्म गति carry-over — punarjanma पर ×=; `_praarabdhaSpeedStack` FIFO undo |
+| **🆕 Single RAF loop** | dual-RAF removed (Issue #64); `lastTime` unconditional; Visibility API: tab-hide rAF cancel |
 | ग्लो-रिंग | 6 variables → `glowRings` object + helpers |
 | माया-रेंडर | duplicate draw → `drawPickupGlowIcon()` |
 | resource-संग्रहण | duplicate → `collectResource()` + `RESOURCE_PICKUP_TABLE` |
 | मोक्ष-गेट | samarpita>=50 → `chetanaaJaagrita` boolean |
+| **poornaSamarpana** | `purnaSamarpana` → `poornaSamarpana` (variable rename — code में consistent) |
 | **shuvhaKarma** | `activeGoodKarma` → `shuvhaKarma` |
 | **ashuvhaKarma** | `activeBadKarma` → `ashuvhaKarma` |
 | **outerOrbits 10→9** | श्वास-orbit हटी → कमल-पंखुड़ी से दृश्यित |
@@ -527,19 +644,19 @@ AM.updateAmbientVolumes();
 | **sci-fi विज़ुअल** | scan-sweep, CRT scanlines, drawRingTicks, drawYantraPolygon, cyberGrid |
 | **वलय रंग** | violet/cyan → neon-gold #ffc83c |
 | **grantKripa()** | बंधन हो → kripa--, karma→samarpita; बंधन न हो → kripa++ |
-| **chakravaata** | player को खींचता है; naam-ring भस्म करती है (नाम-मार्ग); शंख यंत्र-मार्ग; direct collision → ashuvhaKarma++ |शंख यंत्र-मार्ग |
+| **chakravaata** | player को खींचता है; naam-ring भस्म करती है (नाम-मार्ग); शंख यंत्र-मार्ग; direct collision → ashuvhaKarma++ |
 | **bgMusicVolume** | fix: सभी layers पर multiplier |
 | **SUSHUPTI duck** | 0.55→0.20 |
 | **Audio eager/deferred** | 22 eager + 6 deferred |
 | **mp3 count** | 24 → 28 |
 | **Developer credit** | PS → Weired Codes |
-| **line count** | 3835 (single-file) → ~4614 (4 src files) |
+| **line count** | 3835 (single-file) → ~8312 (11 src files + style.css) |
 
 ---
 
-## 8. कार्यप्रणाली व सहयोग-नियम (स्थायी)
+## 9. कार्यप्रणाली व सहयोग-नियम (स्थायी)
 
-1. **डिफ़ॉल्ट: केवल diff** — explicit `old_str`/`new_str` — पूर्ण फ़ाइल तभी जब Dhruv माँगें।
+1. **डिफ़ॉल्ट: केवल diff** — explicit `old_str`/`new_str` — पूर्ण फ़ाइल तभी जब माँगा जाए।
 2. **पुष्टि-पहले-कार्रवाई** — scope पुष्टि → फिर diff।
 3. **भाषा** — देवनागरी हिंदी, चाहे प्रश्न किसी भी भाषा में।
 4. **कोड-शैली** — मॉडुलर, well-commented, truncate नहीं।
@@ -548,62 +665,110 @@ AM.updateAmbientVolumes();
 
 ---
 
-## 9. खुले प्रश्न
+## 10. खुले प्रश्न
 
 1. **`jaapaNaama = "राधा"`** — नाम-जाप पर floating text, शास्त्र-संगत, अपरिवर्तित।
 
 ---
 
-## 10. फ़ाइल त्वरित-नेविगेशन
+## 11. फ़ाइल त्वरित-नेविगेशन
 
-### src/engine.js (~1044 lines) — Slim Orchestrator
+### src/engine.js (~1220 lines) — Slim Orchestrator
 | पंक्ति | फ़ंक्शन/सेक्शन |
 |---|---|
-| ~1 | Imports: KarmaMixin, PhysicsMixin, StateMixin || ~25 | Exported constants (SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, etc.) |
-| ~65 | `KarmaEngine` class constructor — सभी state properties |
-| ~220 | `setCallbacks()`, `setUI()` |
-| ~240 | `init()` — pool + stars initialization |
-| ~280 | `update(dt, keys, frameNow)` — मुख्य game logic tick |
-| ~730 | `toggleshaashtra()` |
-| ~760 | `showEndScreen(reason)` |
-| ~830 | `reset()` — punahaPrarambha |
-| ~930 | `getState()` — renderer snapshot |
-| ~970 | `_updateAlert()`, `_updateStatWithPulse()` |
-| ~990 | `_updateUIStats()`, `_updateHUDAnimations()` |
-| ~1040 | `setContainerBorderColor()` |
-| ~1044 | `Object.assign(KarmaEngine.prototype, PhysicsMixin, KarmaMixin)` |
+| ~1 | Imports: KarmaMixin, PhysicsMixin, StateMixin, t |
+| ~49 | Exported constants (SAMAYA_PRAARAMBHIKA, MAX_PRARABDHA, CHAKRAVAATA_PLAYER_PULL_RANGE, etc.) |
+| ~106 | `KarmaEngine` class constructor — सभी state properties |
+| ~290 | `setCallbacks()`, `setUI()` |
+| ~318 | `init()` — pool + stars initialization |
+| ~378 | `update(dt, keys, frameNow)` — मुख्य game logic tick |
+| ~968 | `toggleShaashtra()` |
+| ~1000 | `showEndScreen(reason)` |
+| ~1072 | `reset()` — punahaPrarambha |
+| ~1154 | `getState()` — renderer snapshot |
+| ~1220 | `Object.assign(KarmaEngine.prototype, PhysicsMixin, KarmaMixin, StateMixin)` |
 
-### src/karma.js (~449 lines) — KarmaMixin
+### src/karma.js (~542 lines) — KarmaMixin
 | पंक्ति | फ़ंक्शन/सेक्शन |
 |---|---|
-| ~1 | `import { SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, RESOURCE_PICKUP_TABLE }` from engine.js |
-| ~36 | `export const KarmaMixin` |
-| ~41 | `_syncOrbitCounts()` |
-| ~59 | `_checkMokhsha()` — मोक्ष-शर्त + पुनर्जन्म |
-| ~137 | `_spawnMaya()` — type determination + pool slot |
-| ~177 | `_handlePlayerMayaCollision()` — Vedic collision logic |
-| ~247 | `_grantKripa()` — §1.4 |
-| ~297 | `_collectResource()` — शंख/ज्योति DRY |
-| ~314 | `actionNaamaJaapa()` |
-| ~333 | `actionShankha()`, `actionJyoti()` |
-| ~367 | `actionNaamaSamarpan()` |
-| ~397 | `actionVairaagya()` |
-| ~417 | `actionPralaya()`, `actionPause()`, `actionResume()` |
+| ~1 | `import { SAMAYA_PRAARAMBHIKA, MAYA_SIZE_TABLE, RESOURCE_PICKUP_TABLE, ... }` from engine.js |
+| ~37 | `export const KarmaMixin` |
+| ~42 | `_syncOrbitCounts()` |
+| ~60 | `_checkMokhsha()` — मोक्ष-शर्त + पुनर्जन्म |
+| ~179 | `_spawnMaya()` — type determination + pool slot |
+| ~220 | `_forceSpawnMaya(type, x, y)` — tutorial forced spawn |
+| ~242 | `_handlePlayerMayaCollision()` — Vedic collision logic |
+| ~332 | `_grantKripa()` — §1.4 |
+| ~381 | `_collectResource()` — शंख/ज्योति DRY |
+| ~400 | `actionNaamaJaapa()` |
+| ~427 | `actionShankha()`, `actionJyoti()` |
+| ~461 | `actionNaamaSamarpan()` |
+| ~490 | `actionVairaagya()` |
+| ~510 | `actionPralaya()`, `actionPause()`, `actionResume()` |
 
-### src/physics.js (~160 lines) — PhysicsMixin
+### src/physics.js (~203 lines) — PhysicsMixin
 | पंक्ति | फ़ंक्शन/सेक्शन |
 |---|---|
 | ~1 | `export const PhysicsMixin` |
-| ~10 | `_isPlayerInsideTunnel()` |
-| ~20 | `_updateGlowRing(ring, dt, onTick)` — DRY §2.4 |
-| ~35 | `_resetAllGlowRings()` |
-| ~45 | `_createExplosion(x, y, color)` |
-| ~65 | `_createGainedGlow(x, y, color)` |
-| ~80 | `_addFloatingText(text, color, opts)` — pool §2.3 |
-| ~115 | `_triggerGlow(color)` |
-| ~120 | `_triggerBlast(color)` |
+| ~30 | `_isPlayerInsideTunnel()` |
+| ~40 | `_updateGlowRing(ring, dt, onTick)` — DRY §2.4 |
+| ~55 | `_resetAllGlowRings()` |
+| ~65 | `_createExplosion(x, y, color)` |
+| ~90 | `_createGainedGlow(x, y, color)` |
+| ~110 | `_addFloatingText(text, color, opts)` — pool §2.3; overlap prevention; Y-stagger |
+| ~185 | `_triggerGlow(color)` |
+| ~195 | `_triggerBlast(color)` |
 
-### src/audio.js (~1277 lines)
+### src/state.js (~202 lines) — StateMixin
+| पंक्ति | फ़ंक्शन/सेक्शन |
+|---|---|
+| ~1 | `import { CHETANA_JAGRITI_THRESHOLD }` from engine.js |
+| ~10 | `export const StateMixin` |
+| ~15 | `triggerAlert({ icon, title, subtitle, titleKey, subtitleKey, params, category })` |
+| ~50 | `_alertKey(name, icon, category, params, subtitleName)` — i18n-key alert shorthand |
+| ~60 | `_updateAlert(text, color)` — legacy color→category wrapper |
+| ~85 | `_updateStatWithPulse(el, key, newVal, icon, suffix)` — dirty-check + pulse |
+| ~100 | `_updateUIStats()` — सभी HUD stats एक साथ |
+| ~150 | `_updateHUDAnimations(dt)` — scale/glow lerp |
+| ~195 | `setContainerBorderColor(color)` — dirty-check |
+
+### src/touch.js (~344 lines)
+| पंक्ति | फ़ंक्शन/सेक्शन |
+|---|---|
+| ~1 | `export class TouchControls` |
+| ~35 | `constructor(keys)` — touch device detect; blocker set init |
+| ~60 | `_isTouchDevice()` |
+| ~70 | `_bind()` — data-key buttons पर touchstart/touchend/touchcancel |
+| ~115 | `block(reason)`, `unblock(reason)` — blocker-stack API |
+| ~130 | `syncWithTutorial(cardVisible)` — backward-compatible wrapper |
+| ~140 | `_applyVisibility()` — blocker.size === 0 → flex |
+| ~155 | `clearAll()` — blur पर stuck keys clear |
+| ~170 | `isActive()` |
+| ~185 | `export class GyroscopeControls` |
+| ~210 | `constructor(keys)` — deadzone, calibration flags |
+| ~230 | `isSupported()`, `requestPermission()` — iOS permission dialog |
+| ~260 | `calibrate()`, `stop()`, `clearState()`, `isActive()` |
+| ~300 | `_start()` — deviceorientation listener attach |
+| ~315 | `_onOrientation(e)` — gamma → calibration → deadzone → keys inject |
+
+### src/tutorial.js (~355 lines) — TutorialManager
+| पंक्ति | फ़ंक्शन/सेक्शन |
+|---|---|
+| ~1 | `import { t }` from i18n.js |
+| ~15 | `TUTORIAL_STORAGE_KEY = 'moksha_tutorial_seen'` |
+| ~20 | `TUTORIAL_STEPS[]` — 5 step definitions (id, shloka, forceSpawn, dismissToComplete) |
+| ~55 | `export class TutorialManager` |
+| ~65 | `constructor(forceSpawnFn, canvasWidth, canvasHeight)` |
+| ~110 | `start(playerX)` — localStorage check; first card show |
+| ~130 | `dismiss()` — card hide; forceSpawn trigger; dismissToComplete check |
+| ~155 | `skip()` — localStorage write; tutorial done |
+| ~165 | `checkCompletion(state)` — per-step action check; antima/praarabdha wait |
+| ~220 | `isSlowMode()`, `hasActiveCard()`, `isDone()` |
+| ~240 | `getCurrentCard()` — i18n card data for Renderer |
+| ~255 | `resize(w, h)` |
+| ~265 | `_onStepComplete()` — step++; antima-wait / praarabdha-wait gate |
+
+### src/audio.js (~1279 lines)
 | पंक्ति | फ़ंक्शन/सेक्शन |
 |---|---|
 | ~53 | Constants (volumes, duck reductions) |
@@ -623,41 +788,74 @@ AM.updateAmbientVolumes();
 | ~1050 | `isActiveGameplay()` |
 | ~1100 | `setGameStateGetter()`, `setVibrateCallback()`, `setReadinessGetters()` |
 
-### src/render.js (~764 lines)
+### src/render.js (~1452 lines)
 | पंक्ति | फ़ंक्शन/सेक्शन |
 |---|---|
-| ~1 | Sprite cache declarations (6 caches) |
-| ~23 | `buildSciFiGridSprite()` |
-| ~54 | `getMayaSprite()` |
-| ~90 | `getEmojiSprite()` — नया emoji offscreen cache |
-| ~107 | `drawRingTicks()` |
-| ~120 | `drawYantraPolygon()` |
-| ~140 | `drawGlowRing()` |
-| ~170 | `drawPickupGlowIcon()` |
-| ~200 | `drawFloatingTexts()` |
-| ~250 | `drawMayaPool()` |
-| ~320 | `drawPlayer()` (`cachedBuddhiSprite`, `cachedAtmanSprite`) |
-| ~450 | `drawPankhudiRing()` (`cachedPankhudi*` sprites) |
-| ~550 | `drawInnerOrbit()` |
-| ~620 | `drawOuterOrbits()` |
-| ~700 | `drawNaamaJaapa()` |
+| ~1 | `CanvasRenderingContext2D.prototype.roundRect` polyfill |
+| ~21 | Sprite cache declarations (`mayaSpriteCache`, `emojiSpriteCache`) |
+| ~38 | `buildSciFiGridSprite()` |
+| ~69 | `getMayaSprite()` |
+| ~108 | `getEmojiSprite()` — emoji offscreen cache |
+| ~125 | `drawRingTicks()` |
+| ~139 | `drawGlowRing()` |
+| ~152 | `drawPickupGlowIcon()` |
+| ~168 | `drawCenteredRow()` |
+| ~176 | `drawKarmaChain()` |
+| ~195 | `drawYantraPolygon()` |
+| ~220 | `drawAlerts(alertQueue, WIDTH)` — slide-in alert cards |
+| ~331 | `drawProximateAlerts(alertQueue, player, smoothSize, WIDTH)` |
+| ~413 | `export const Renderer` |
+| ~414 | `Renderer.init(context, WIDTH, HEIGHT)` |
+| ~419 | `Renderer.drawScene(state)` — सम्पूर्ण frame render |
+| ~1172 | `Renderer.wrapText(ctx, text, maxWidth)` |
+| ~1194 | `Renderer.drawTutorialCard(context, card)` — गुरु-दीक्षा card |
 
-### src/main.js (~524 lines)
+### src/main.js (~854 lines)
 | पंक्ति | फ़ंक्शन/सेक्शन |
 |---|---|
-| ~1 | imports + Canvas setup |
-| ~44 | UI DOM references |
-| ~100 | Event listeners (keyboard, gamepad, buttons, wheel) |
-| ~200 | Gamepad module (pollGamepad, vibrateGamepad) |
-| ~300 | `toggleshaashtra()`, `updateshaashtraPage()` |
-| ~360 | `draw()` — engine state + Renderer calls |
-| ~430 | `gameLoop()` — RAF loop |
-| ~470 | `scaleGame()`, `debounce()` |
-| ~490 | Start-screen gamepad poller |
+| ~1 | imports (i18n, Renderer, KarmaEngine, Audio, TutorialManager, shaashtra, TouchControls, GyroscopeControls) |
+| ~39 | Canvas + game constants (WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH) |
+| ~48 | UI DOM references |
+| ~77 | `window._engine` debug hook |
+| ~94 | `tutorial` init; `touch` init; `gyro` init |
+| ~108 | Gyro ↔ touch steering toggle logic |
+| ~115 | `_syncSteeringUI()`, `_enableTouchSteering()`, `_enableGyroSteering()`, `_initDefaultGyroSteering()` |
+| ~169 | Gamepad constants + `GAMEPAD_BUTTON` map |
+| ~182 | `dispatchKey()`, `vibrateGamepad()` |
+| ~201 | `handleDiscreteButton()`, `handleShaashtraDirection()`, `handleShaashtraGamepadNav()` |
+| ~241 | `pollGamepad()` — main gamepad poll (tutorial dismiss + gyro merge) |
+| ~288 | `updateShaashtraPage()` |
+| ~317 | `toggleShaashtra()` — touch block/unblock |
+| ~343 | `debounce()`, `scaleGame()` |
+| ~574 | `draw()` — engine state + Renderer.drawScene() + tutorial card |
+| ~604 | `gameLoop(ts)` — single RAF loop; tutorial check; audio; lastTime unconditional |
+| ~650 | Visibility API — tab-hide rAF cancel + restore |
+| ~668 | `applyStartScreenLanguage()` |
+| ~746 | `pollGamepadOnStartScreen()` |
+
+### src/i18n.js (~464 lines)
+| पंक्ति | फ़ंक्शन/सेक्शन |
+|---|---|
+| ~1 | `LANG_STORAGE_KEY`, `SUPPORTED_LANGS`, `DEFAULT_LANG` |
+| ~5 | Translation object (hi/en — सभी keys) |
+| ~399 | `_readStoredLang()`, `_writeStoredLang()`, `_normalizeLang()` |
+| ~419 | `initLang()` — startup lang init |
+| ~424 | `getLang()`, `setLang(lang)` |
+| ~440 | `onLangChange(fn)` — callback register |
+| ~446 | `t(key, params)` — translate with interpolation |
+| ~455 | `tLines(key, params)` — multiline translation |
+| ~459 | `resolveAlert(a)` — titleKey/subtitleKey → live-resolved text |
+
+### src/shaashtra.js (~268 lines)
+| पंक्ति | फ़ंक्शन/सेक्शन |
+|---|---|
+| ~1 | शास्त्र page data (3 pages, structured blocks) |
+| ~50 | श्लोक-कोश (भाषा-निरपेक्ष) |
+| ~200 | `renderShaashtraPage(ctx, pageIndex, state)` |
 
 ---
 
-## 11. System Requirements & High/Low Mode
+## 12. System Requirements & High/Low Mode
 
 ### ⚠️ High/Low Mode trigger — हार्डवेयर-जाँच नहीं
 ```js
@@ -704,11 +902,11 @@ debugging, optimization, और refactoring सहायता के लिए 
 सभी रचनात्मक और शास्त्रीय निर्णय Weired Codes द्वारा लिए गए हैं।
 
 
-⚠️ **महत्वपूर्ण चेतावनी (Important Notice)**  
+⚠️ **महत्वपूर्ण चेतावनी (Important Notice)**
 यह गेम खेलने के लिए **कीबोर्ड (Keyboard)** या **गेमपैड (Gamepad)** की आवश्यकता है। कृपया बेहतर अनुभव के लिए इसे अपने **डेस्कटॉप या लैपटॉप ब्राउज़र** पर ही खोलें।
 
-💛 **सपोर्ट करें (Support the Project)**  
-यदि आप इस आध्यात्मिक और तकनीकी प्रयास को पसंद करते हैं और सीधे सहायता करना चाहते हैं, तो आप **PayPal** के माध्यम से योगदान दे सकते हैं।  
+💛 **सपोर्ट करें (Support the Project)**
+यदि आप इस आध्यात्मिक और तकनीकी प्रयास को पसंद करते हैं और सीधे सहायता करना चाहते हैं, तो आप **PayPal** के माध्यम से योगदान दे सकते हैं।
 *(नोट: भुगतान PS के नाम से process होगा।)*
 
 ---
