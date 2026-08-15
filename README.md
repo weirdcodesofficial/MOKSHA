@@ -315,7 +315,7 @@ export const CHAKRAVAATA_PLAYER_PULL_FORCE = 0.8;  // pull force magnitude
 
 **वलय रेडियस:**
 ```js
-let gateeRadius  = (swaansaingSmoothSize / 2) + 5;   // शरीर से 5px बाहर
+let gateeRadius  = (swaansaringSmoothSize / 2) + 5;   // शरीर से 5px बाहर
 let samayRadius  = gateeRadius + 12;                  // गति-वलय से 12px बाहर
 ```
 - **रंग:** neon-gold `#ffc83c` — यंत्र-वर्ण-सुसंगति

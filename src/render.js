@@ -534,7 +534,7 @@ export const Renderer = {
             drawKarmaChain(chainCx, chainCy, c.color, c.strength, c.isHeavy, frameNow);
         });
 
-        let swaansaingSmoothSize = smoothSize * sharirPulseScale; let sharirGlow = 8 + worldSwaansaPulse * 28; let sharirAlpha = 0.4 + worldSwaansaPulse * 0.6;
+        let swaansaringSmoothSize = smoothSize * sharirPulseScale; let sharirGlow = 8 + worldSwaansaPulse * 28; let sharirAlpha = 0.4 + worldSwaansaPulse * 0.6;
         
         if (naamaGlowTimer > 0 || bodyGlowTimer > 0) {
             ctx.save();
@@ -542,19 +542,19 @@ export const Renderer = {
                 let a = naamaGlowTimer / 40;
                 ctx.shadowBlur = 18; ctx.shadowColor = "rgba(255, 255, 255, " + a + ")";
                 ctx.fillStyle = "rgba(255, 255, 255, " + a + ")";
-                ctx.beginPath(); ctx.arc(cx, cy, (swaansaingSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx, cy, (swaansaringSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
             }
             if (bodyGlowTimer > 0) {
                 ctx.globalAlpha = bodyGlowTimer / 40;
                 ctx.shadowBlur = 18; ctx.shadowColor = bodyGlowColor; ctx.fillStyle = bodyGlowColor;
-                ctx.beginPath(); ctx.arc(cx, cy, (swaansaingSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx, cy, (swaansaringSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
             }
             ctx.restore();
         }
 
-        ctx.save(); ctx.shadowBlur = sharirGlow; ctx.shadowColor = `rgba(255,255,255,${sharirAlpha})`; ctx.strokeStyle = `rgba(255,255,255,${sharirAlpha})`; ctx.lineWidth = (0.5 + worldSwaansaPulse * 1.2) * (smoothSize / 60); ctx.beginPath(); ctx.arc(cx, cy, swaansaingSmoothSize / 2, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.shadowBlur = sharirGlow; ctx.shadowColor = `rgba(255,255,255,${sharirAlpha})`; ctx.strokeStyle = `rgba(255,255,255,${sharirAlpha})`; ctx.lineWidth = (0.5 + worldSwaansaPulse * 1.2) * (smoothSize / 60); ctx.beginPath(); ctx.arc(cx, cy, swaansaringSmoothSize / 2, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
         
-        let sRadius = (swaansaingSmoothSize / 2) - 7; 
+        let sRadius = (swaansaringSmoothSize / 2) - 7; 
         let sCy = cy; 
         
         let buddhiSRadiusKey = Math.round(sRadius);
@@ -617,7 +617,7 @@ export const Renderer = {
         for (let i = 0; i < horseCount; i++) { 
             let hx, hy; 
             if (i === pulledHorseIndex) { hx = pulledHorseX; hy = pulledHorseY; } 
-            else { hx = startX + i * horseSpacing; hy = cy - swaansaingSmoothSize / 2 - 45 + (isPaused || gameOver ? 0 : Math.sin((frameNow / 70) + i) * 3); } 
+            else { hx = startX + i * horseSpacing; hy = cy - swaansaringSmoothSize / 2 - 45 + (isPaused || gameOver ? 0 : Math.sin((frameNow / 70) + i) * 3); } 
             finalHorsePositions[i].x = hx; finalHorsePositions[i].y = hy; 
             ctx.beginPath(); ctx.arc(hx, hy, 2.2, 0, Math.PI * 2); ctx.fill(); 
         }
@@ -869,7 +869,7 @@ export const Renderer = {
             ctx.restore();
         }
 
-        let gateeRadius = (swaansaingSmoothSize / 2) + 5;   
+        let gateeRadius = (swaansaringSmoothSize / 2) + 5;   
         let samayRadius = gateeRadius + 12;                 
         
         // ── shareeragatee circle (inner) — cyan #67e8f9 ──────────────────────────
