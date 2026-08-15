@@ -617,7 +617,7 @@ AM.updateAmbientVolumes();
 
 | क्षेत्र | परिवर्तन |
 |---|---|
-| **🆕 ES6 Modular Refactor** | `index.html` (3835 lines) → `audio.js` + `engine.js` + `render.js` + `main.js` + `style.css` |
+| **🆕 ES6 Modular Refactor (0.0.4)** | `index.html` (3835 lines) → `audio.js` + `engine.js` + `render.js` + `main.js` + `style.css` |
 | **🆕 engine.js split (v0.0.6)** | `engine.js` (1449→1044 lines) → `KarmaMixin` (karma.js) + `PhysicsMixin` (physics.js); `Object.assign` mixin pattern |
 | **🆕 StateMixin split (v0.0.9)** | HUD/alert methods → `state.js`; `engine.js` imports `StateMixin`; `Object.assign` में add |
 | **🆕 touch.js (v0.0.9)** | `TouchControls` (on-screen buttons, blocker-stack) + `GyroscopeControls` (gamma-axis tilt steering, iOS permission) |
@@ -928,6 +928,5 @@ debugging, optimization, और refactoring सहायता के लिए 
 | 📘 Facebook | [weirdcodesofficial](https://www.facebook.com/weirdcodesofficial/) |
 | 📸 Instagram | [@weirdcodes.dev](https://www.instagram.com/weirdcodes.dev/) |
 | 🧵 Threads | [@weirdcodes.dev](https://www.threads.com/@weirdcodes.dev) |
-| 💛 PayPal | [paypal.me/pankajsharma18](https://paypal.me/pankajsharma18) |
 
 ---
