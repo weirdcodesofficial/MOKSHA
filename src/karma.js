@@ -117,6 +117,10 @@ export const KarmaMixin = {
         if (prevPraarabdha === 0) {
             this.praarabdhaPenaltiMul = Math.max(0.01, this._currentGatiModifier);
         }
+        // मृत्यु के समय की speed snapshot — प्रारब्ध अगले जन्म में यही carry करेगा
+        this._praarabdhaSpeedMul = Math.pow(1 / 0.7, this.ashuvhaKarma)
+                                 * Math.pow(1 / 0.8, this.shuvhaKarma)
+                                 * this._praarabdhaSpeedMul;
         this.ashuvhaKarma = 0; this.shuvhaKarma = 0;        this.punaraJanmaCount++;
         this._triggerBlast("#f87171");
         this.samaya          = SAMAYA_PRAARAMBHIKA;
