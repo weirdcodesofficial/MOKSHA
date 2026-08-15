@@ -115,7 +115,7 @@ export const KarmaMixin = {
         // मृत्यु की गति = प्रारब्ध-बंधन — हर जन्म और धीमा (min लो)
         // पहली बार प्रारब्ध मिल रहा हो तभी snapshot — बाद में override नहीं
         if (prevPraarabdha === 0) {
-            this.praarabdhaPenaltiMul = Math.max(0.01, this._currentGatiModifier);
+            this.praarabdhaPenaltiMul = Math.max(0.01, this._currentGateeModifier);
         }
         // मृत्यु के समय की speed snapshot — प्रारब्ध अगले जन्म में यही carry करेगा
         // actualAdded > 0 तभी push — cap hit पर undo entry नहीं बनेगी

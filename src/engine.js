@@ -845,9 +845,12 @@ export class KarmaEngine {
             m.y += mayaSpeed * dt;
             if (m.y > this.HEIGHT) { m.active = false; continue; }
 
-            const hitX = m.x < this.player.x + this.player.width  && m.x + m.width  > this.player.x;
-            const hitY = m.y < this.player.y + this.player.height && m.y + m.height > this.player.y;
-            if (hitX && hitY) {
+            // shareeraGatee circle collision — gatiRadius = smoothSize/2 + 5 (render.js से match)
+            const _sCircleR = this.smoothSize / 2 + 5;
+            const _mCx = m.x + m.width / 2;
+            const _mCy = m.y + m.height / 2;
+            const _mR  = m.width / 2;
+            if (Math.hypot(_mCx - cx, _mCy - cy) <= _sCircleR + _mR) {
                 if (m.isPulling) this._mayaConsumedWhilePulling = true;
                 if (this.isKarmaImmune && m.type !== 'naama' && m.type !== 'kripa') {
                     this._createExplosion(m.x + m.width/2, m.y + m.height/2, "#ffffff");
