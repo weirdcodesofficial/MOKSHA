@@ -297,8 +297,8 @@ export const SAMAYA_PRAARAMBHIKA       = 2880;
 
 **वलय रेडियस:**
 ```js
-let gatiRadius  = (swaansaingSmoothSize / 2) + 5;   // शरीर से 5px बाहर
-let samayRadius = gatiRadius + 12;                   // गति-वलय से 12px बाहर
+let gateeRadius  = (swaansaingSmoothSize / 2) + 5;   // शरीर से 5px बाहर
+let samayRadius = gateeRadius + 12;                   // गति-वलय से 12px बाहर
 ```
 - **रंग:** neon-gold `#ffc83c` — यंत्र-वर्ण-सुसंगति
 - **head indicators:** ⚡ (गति), ⏳ (समय)

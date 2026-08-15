@@ -79,7 +79,7 @@ const PAGE_1 = {
         title: '🌀 Cosmology 🌀',
         blocks: [
             { type: 'para', text: 'Your journey through time and space is guided by a divine chariot. The chariot is the symbol of the path a soul travels toward Moksha, crossing the karmic winds of Samsara.' },
-            { type: 'para', text: 'Every act you perform — Punya or Paapa — bears fruit as a distortion of time (gati). Both Punya and Paapa slow the chariot; both are bondage. Paapa strikes the chariot directly (tremor and clouded vision), while Punya leads the mind astray through alluring temptation.' },
+            { type: 'para', text: 'Every act you perform — Punya or Paapa — bears fruit as a distortion of time (gatee). Both Punya and Paapa slow the chariot; both are bondage. Paapa strikes the chariot directly (tremor and clouded vision), while Punya leads the mind astray through alluring temptation.' },
             { type: 'term', label: '🌬️ Swaansa (breath)', text: 'The symbol of remaining lifespan — the count of breaths left in this cycle of life.' },
             { type: 'term', label: '⚖️ Cosmic horizon — the moment of decision', text: 'When Samaya reaches zero, that is the moment of decision. If at that instant the soul is wholly free of karma, Chetana is awakened (Samarpita ≥ 50), and full Naama-Samarpana (⬆️ / W) has been offered — only then is Moksha attained. Otherwise, Punarjanma follows.' },
             { type: 'term', label: '👁️ Chetana-Jaagriti — karmic immunity', text: 'When Chetana awakens, the karmic effect of Maya falls to zero. Karma no longer binds an awakened soul.' },

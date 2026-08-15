@@ -869,75 +869,83 @@ export const Renderer = {
             ctx.restore();
         }
 
-        let gatiRadius = (swaansaingSmoothSize / 2) + 5;   
-        let samayRadius = gatiRadius + 12;                 
+        let gateeRadius = (swaansaingSmoothSize / 2) + 5;   
+        let samayRadius = gateeRadius + 12;                 
         
-        ctx.save();
-        // बाहरी वलय आधार — cosmic indigo (यंत्र-संगत)
-        ctx.beginPath();
-        ctx.arc(cx, cy, gatiRadius, 0, Math.PI * 2);
-        ctx.lineWidth = 4; ctx.strokeStyle = "rgba(88, 28, 220, 0.15)";
-        ctx.shadowBlur = 28; ctx.shadowColor = "rgba(100, 40, 255, 0.70)";
-        ctx.globalAlpha = 0.55; ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.arc(cx, cy, samayRadius, 0, Math.PI * 2);
-        ctx.lineWidth = 7; ctx.strokeStyle = "rgba(100, 40, 255, 0.18)";
-        ctx.shadowBlur = 45; ctx.shadowColor = "rgba(120, 60, 255, 0.90)";
-        ctx.globalAlpha = 0.75; ctx.stroke();
-        ctx.restore();    
+        // ── shareeragatee circle (inner) — cyan #67e8f9 ──────────────────────────
+        // _sMod से match: praarabdha भी शरीर-गति घटाता है (engine.js §9)
+        const _sMod    = Math.pow(0.7, ashuvhaKarma) * Math.pow(0.8, shuvhaKarma) * Math.pow(0.7, praarabdha);
+        const gateeRatio = Math.max(0, Math.min(1, _sMod));  // 0–1 clamp
 
-        let ashuvhaMod  = Math.pow(0.7, ashuvhaKarma);
-        let shuvhaMod   = Math.pow(0.8, shuvhaKarma);
-        // praarabdha भी शरीर-गति घटाता है — engine.js _sMod के साथ match करें
-        let gatiRatio   = ashuvhaMod * shuvhaMod * Math.pow(0.7, praarabdha);
+        // speed state — samayaGatee जैसा threshold logic
+        const gateeCritical  = gateeRatio < 0.3;               // ≤30% → critical orange-red
+        const gateeNeonRGB   = gateeCritical ? "255, 80, 40"  : "103, 232, 249"; // cyan normally
+        const gateeShadowClr = gateeCritical ? "#ff5028"      : "#67e8f9";
+        const gateeHeadIcon  = gateeRatio < 0.5 ? "🐌" : "🚶";
 
         ctx.save();
-        ctx.lineWidth = 1; 
         ctx.lineCap = "round";
+
+        // ── shareeragatee: dim track ring (full circle base) ──
         ctx.beginPath();
-        ctx.arc(cx, cy, gatiRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255, 200, 60, 0.22)"; 
+        ctx.arc(cx, cy, gateeRadius, 0, Math.PI * 2);
+        ctx.lineWidth   = 5;
+        ctx.strokeStyle = `rgba(${gateeNeonRGB}, 0.18)`;
+        ctx.shadowBlur  = 12; ctx.shadowColor = gateeShadowClr;
+        ctx.globalAlpha = 0.6;
         ctx.stroke();
 
+        // ── shareeragatee: filled arc (glow layer) ──
         ctx.beginPath();
-        ctx.arc(cx, cy, gatiRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * gatiRatio));
-        ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255, 200, 60, 0.5)"; 
-        ctx.shadowBlur = 18; ctx.shadowColor = "#ffc83c";
+        ctx.arc(cx, cy, gateeRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * gateeRatio));
+        ctx.lineWidth   = gateeCritical ? 6 : 5;
+        ctx.strokeStyle = `rgba(${gateeNeonRGB}, 0.55)`;
+        ctx.shadowBlur  = gateeCritical ? 28 : 18; ctx.shadowColor = gateeShadowClr;
         ctx.globalAlpha = 0.7 + Math.sin(frameNow / 200) * 0.2;
         ctx.stroke();
 
+        // ── shareeragatee: white core arc ──
         ctx.beginPath();
-        ctx.arc(cx, cy, gatiRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * gatiRatio));
-        ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255, 245, 210, 1)"; 
-        ctx.shadowBlur = 10; ctx.shadowColor = "#ffffff";
+        ctx.arc(cx, cy, gateeRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * gateeRatio));
+        ctx.lineWidth   = 2.5;
+        ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+        ctx.shadowBlur  = gateeCritical ? 16 : 10; ctx.shadowColor = gateeShadowClr;
         ctx.globalAlpha = 0.9 + Math.sin(frameNow / 200) * 0.1;
         ctx.stroke();
-        
-        if (gatiRatio > 0) {
-            let gatiHeadAngle = -Math.PI / 2 + (Math.PI * 2 * gatiRatio);
-            let ghx = cx + Math.cos(gatiHeadAngle) * gatiRadius;
-            let ghy = cy + Math.sin(gatiHeadAngle) * gatiRadius;
+
+        // ── shareeragatee: head indicator ──
+        if (gateeRatio > 0.01) {
+            const gateeHeadAngle = -Math.PI / 2 + (Math.PI * 2 * gateeRatio);
+            const ghx = cx + Math.cos(gateeHeadAngle) * gateeRadius;
+            const ghy = cy + Math.sin(gateeHeadAngle) * gateeRadius;
             ctx.save();
-            ctx.shadowBlur = 14; ctx.shadowColor = "#ffc83c"; 
+            ctx.shadowBlur = gateeCritical ? 20 : 14; ctx.shadowColor = gateeShadowClr;
             ctx.font = "10px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText("⚡", ghx, ghy);
+            ctx.fillText(gateeHeadIcon, ghx, ghy);
             ctx.restore();
         }
-        // ── प्रारब्ध गति-दण्ड — purple glow ring ──
+
+        // ── प्रारब्ध गति-दण्ड — purple pulse ring on gateeRadius ──
         if (praarabdha > 0) {
             const pulse = 0.5 + Math.sin(frameNow / 120) * 0.5;
-            ctx.save();
             ctx.beginPath();
-            ctx.arc(cx, cy, gatiRadius, 0, Math.PI * 2);
+            ctx.arc(cx, cy, gateeRadius, 0, Math.PI * 2);
             ctx.lineWidth   = 2;
             ctx.strokeStyle = "#a78bfa";
-            ctx.shadowBlur  = 20 + pulse * 15;
-            ctx.shadowColor = "#a78bfa";
+            ctx.shadowBlur  = 20 + pulse * 15; ctx.shadowColor = "#a78bfa";
             ctx.globalAlpha = 0.4 + pulse * 0.3;
             ctx.stroke();
-            ctx.restore();
-        }        
+        }
+        ctx.restore();
+
+        // ── samayaGatee circle (outer) — gold #ffc83c ────────────────────────────
+        // background track — cosmic indigo
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, samayRadius, 0, Math.PI * 2);
+        ctx.lineWidth   = 7; ctx.strokeStyle = "rgba(100, 40, 255, 0.18)";
+        ctx.shadowBlur  = 45; ctx.shadowColor = "rgba(120, 60, 255, 0.90)";
+        ctx.globalAlpha = 0.75; ctx.stroke();
         ctx.restore();
 
         let samayRatio = Math.max(0, samaya / SAMAYA_PRAARAMBHIKA);
@@ -1058,7 +1066,7 @@ export const Renderer = {
             ctx.restore();
         }
 
-        let outerRadius = gatiRadius + ((samayRadius - gatiRadius) / 2);
+        let outerRadius = gateeRadius + ((samayRadius - gateeRadius) / 2);
         let emojiRenderTime = frameNow / 1800;
 
         let innerOrbit = [
