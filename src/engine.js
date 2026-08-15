@@ -123,7 +123,7 @@ export class KarmaEngine {
         this.activeNaam       = 0;   // ॐ नाम (उपयोग-योग्य)
         this.praarabdha             = 0;   // प्रारब्ध (संचित — सिर्फ़ 10-नाम से भस्म)
         this.praarabdhaTimer        = 0;   // भोग-countdown (frames); पुनर्जन्म पर persist, R-reset पर शून्य
-        this._currentGatiModifier  = 1.0; // इस जन्म का live ashuvha×shuvha modifier (rebirth पर snapshot) persist, R-reset पर शून्य
+        this._currentGateeModifier  = 1.0; // इस जन्म का live ashuvha×shuvha modifier (rebirth पर snapshot) persist, R-reset पर शून्य
         this.praarabdhaPenaltyMul = 1.0; // // संचित — punarjanma पर update, R पर reset
         this._praarabdhaTimerPulseAccum = 0; // orbit pulse accumulator
         this.samarpita        = 0;   // समर्पित (lifetime)
@@ -251,14 +251,14 @@ export class KarmaEngine {
         
         // ── HUD animation state ──────────────────────────────
         this._oldStats = { naama:-1, punya:-1, paap:-1, praarabdha:-1, samarpita:-1,
-                           punaraJanma:-1, gatee:"-1", kripa:-1, chetana:"",
-                           shankha:-1, drishti:"", poornaSamarpana:"", jyoti:-1 };
+                           punaraJanma:-1, samayaGatee:"-1", kripa:-1, chetana:"",
+                           shankha:-1, drishti:"", poornaSamarpana:"", jyoti:-1, shareeraGatee:"-1" };
         this._uiScales = { naama:1, punya:1, paap:1, praarabdha:1, samarpita:1,
-                           punaraJanma:1, gatee:1, kripa:1, chetana:1,
-                           shankha:1, drishti:1, poornaSamarpana:1, jyoti:1 };
+                           punaraJanma:1, samayaGatee:1, kripa:1, chetana:1,
+                           shankha:1, drishti:1, poornaSamarpana:1, jyoti:1, shareeraGatee:1 };
         this._uiGlows  = { naama:0, punya:0, paap:0, praarabdha:0, samarpita:0,
-                           punaraJanma:0, gatee:0, kripa:0, chetana:0,
-                           shankha:0, drishti:0, poornaSamarpana:0, jyoti:0 };
+                           punaraJanma:0, samayaGatee:0, kripa:0, chetana:0,
+                           shankha:0, drishti:0, poornaSamarpana:0, jyoti:0, shareeraGatee:0 };
 
         // ── Alert Queue System (Issue #10) ───────────────────
         /** Canvas alert queue — max 4 active cards */
@@ -294,7 +294,7 @@ export class KarmaEngine {
      * @param {Object} UI — { naama, punya, paap, praarabdha, samarpita,
      *                         punaraJanma, kripa, shankha, jyoti, drishti,
      *                         poornaSamarpana, chetana, samayaVal, swaansaVal,
-     *                         gatee, alertBox, overlay, overlayTitle,
+     *                         samayaGatee, alertBox, overlay, overlayTitle,
      *                         overlaySubtitle, viraamaOverlay, shaashtraOverlay,
      *                         container }
      */
@@ -527,12 +527,27 @@ export class KarmaEngine {
         }
 
         // ── 8. Player movement ───────────────────────────────
-        const currentSpeed = this.player.baseSpeed * dt;
+        // शरीर-गति modifier — पुण्य/पाप/प्रारब्ध तीनों movement धीमा करते हैं
+        const _sMod = Math.pow(0.7, this.ashuvhaKarma) * Math.pow(0.8, this.shuvhaKarma) * Math.pow(0.7, this.praarabdha);
+        const currentSpeed = this.player.baseSpeed * _sMod * dt;
         if (keys['arrowleft']  || keys['a']) this.player.x -= currentSpeed;
         if (keys['arrowright'] || keys['d']) this.player.x += currentSpeed;
         this.player.x = Math.max(
             0, Math.min(this.WIDTH - this.player.width, this.player.x)
         );
+
+        // ── शरीर गति indicator — frame-to-frame X delta से direction detect ──
+        {
+            const movingLeft  = keys['arrowleft']  || keys['a'];
+            const movingRight = keys['arrowright'] || keys['d'];
+            // samayaGatee जैसा pattern — पुण्य/पाप दोनों शरीर-गति घटाते हैं
+            const _sMod = Math.pow(0.7, this.ashuvhaKarma) * Math.pow(0.8, this.shuvhaKarma) * Math.pow(0.7, this.praarabdha);
+            const shareeraGateeVal = Math.round(_sMod * 100);
+            const shareeraMovingSlow = shareeraGateeVal < 100;
+            const shareeraMovingFast = shareeraGateeVal > 100;
+            const newShareeraGatee = shareeraMovingSlow ? '🐌' : shareeraMovingFast ? '🏃' : '🚶';
+            this._updateStatWithPulse(this._UI?.shareeraGatee, 'shareeraGatee', shareeraGateeVal, newShareeraGatee, '%');            
+        }
 
         this.playerInTunnel = this._isPlayerInsideTunnel();
 
@@ -712,14 +727,18 @@ export class KarmaEngine {
         // ── 15. Time / Samaya ─────────────────────────────────
         const ashuvhaTimeModifier  = Math.pow(0.7, this.ashuvhaKarma);
         const shuvhaTimeModifier   = Math.pow(0.8, this.shuvhaKarma);
-        // इस frame का combined modifier — rebirth पर snapshot हेतु store
-        this._currentGatiModifier  = ashuvhaTimeModifier * shuvhaTimeModifier;
+        // पुण्य/पाप अब samaya तेज़ करते हैं — gameplay speed भी इसी से
+        const karmaSpeedMul = Math.pow(1 / 0.7, this.ashuvhaKarma) * Math.pow(1 / 0.8, this.shuvhaKarma);
+
+        this._currentGateeModifier  = karmaSpeedMul;
         // प्रारब्ध-modifier = पूर्व-जन्मों के punya×paap का संचित भार
         // प्रारब्ध-दण्ड: हर unit पर 100% गति बढ़े — linear, simple
         const praarabdhaPenaltiMul  = 1 + this.praarabdha;        
 
         if (!this.swaansaSamapta) {
-            this.samaya -= 0.8 * ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul * dt;
+            // पुण्य/पाप अब samaya तेज़ करते हैं — कर्म-भार = समय-क्षरण
+            const karmaSpeedMul = Math.pow(1 / 0.7, this.ashuvhaKarma) * Math.pow(1 / 0.8, this.shuvhaKarma);
+            this.samaya -= 0.8 * karmaSpeedMul * dt;
             this.swaansaTimer += dt;
             if (this.swaansaTimer >= 360) {
                 this.swaansaTimer -= 360;
@@ -734,13 +753,16 @@ export class KarmaEngine {
             if (this._UI?.swaansaVal?.innerText !== swaansaDisplay && this._UI?.swaansaVal)
                 this._UI.swaansaVal.innerText = swaansaDisplay;
 
-            const currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul * 100).toFixed(0);
-            this._updateStatWithPulse(this._UI?.gatee, 'gatee', currentWarpVal, '⚡', '%');
-            // प्रारब्ध > 0 — gatee HUD purple glow
-            if (this._UI?.gatee) {
+            const samayaGateeVal = (karmaSpeedMul * 100).toFixed(0);
+            const samayaMovingSlow = samayaGateeVal < 100;
+            const samayaMovingFast = samayaGateeVal > 100;
+            const newSamayaGatee = samayaMovingSlow ? '🧊' : samayaMovingFast ? '⚡' : '⌛';
+            this._updateStatWithPulse(this._UI?.samayaGatee, 'samayaGatee', samayaGateeVal, newSamayaGatee, '%');
+            // प्रारब्ध > 0 — samayaGatee HUD purple glow
+            if (this._UI?.samayaGatee) {
                 const hasPrarabdha = this.praarabdha > 0;
-                this._UI.gatee.style.color      = hasPrarabdha ? '#a78bfa' : '';
-                this._UI.gatee.style.textShadow = hasPrarabdha ? '0 0 8px #a78bfa' : '';
+                this._UI.samayaGatee.style.color      = hasPrarabdha ? '#a78bfa' : '';
+                this._UI.samayaGatee.style.textShadow = hasPrarabdha ? '0 0 8px #a78bfa' : '';
             }
             if (this.samaya <= 0) {
                 this.samaya = 0; this.swaansa = 0; this.swaansaSamapta = true;
@@ -771,13 +793,13 @@ export class KarmaEngine {
         // ── 18. Stars & sparkles movement ─────────────────────
         this.stars.forEach(star => {
             if (!this.swaansaSamapta) {
-                star.y += star.speed * (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul + 0.1) * dt; 
+                star.y += star.speed * (karmaSpeedMul + 0.1) * dt; 
                 if (star.y > this.HEIGHT) { star.y = this.HUD_TOP_Y; star.x = Math.random() * this.WIDTH; }
             }
         });
         this.tunnelSparkles.forEach(sparkle => {
             if (!this.swaansaSamapta) {
-                sparkle.y -= sparkle.speed * (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul + 0.2) * dt;                sparkle.alpha += sparkle.fadeSpeed * dt;
+                sparkle.alpha += sparkle.fadeSpeed * dt;
                 if (sparkle.alpha > 0.9 || sparkle.alpha < 0.2) sparkle.fadeSpeed = -sparkle.fadeSpeed;
                 if (sparkle.y < 0) {
                     sparkle.y     = this.HEIGHT;
@@ -813,7 +835,7 @@ export class KarmaEngine {
         }
 
         // ── 21. Maya movement & player collision ───────────────
-        const mayaSpeed = Math.max(1.2, 4 * ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul);
+        const mayaSpeed = Math.max(1.2, 4 * karmaSpeedMul);
         for (let i = 0; i < this.mayaPool.length; i++) {
             let m = this.mayaPool[i]; if (!m.active) continue;
             m.y += mayaSpeed * dt;
@@ -1089,7 +1111,7 @@ export class KarmaEngine {
         // ── HUD cache invalidate ──
         this._oldStats = { poornaSamarpana:"", naama:-1, punya:-1, paap:-1,
                            praarabdha:-1, samarpita:-1, punaraJanma:-1,
-                           gatee:"-1", kripa:-1, chetana:"", shankha:-1, drishti:"", jyoti:-1 };
+                           samayaGatee:"-1", kripa:-1, chetana:"", shankha:-1, drishti:"", jyoti:-1 };
 
         // ── UI reset ──
         if (this._UI?.overlay)        this._UI.overlay.style.display        = 'none';
