@@ -118,9 +118,13 @@ export const KarmaMixin = {
             this.praarabdhaPenaltiMul = Math.max(0.01, this._currentGatiModifier);
         }
         // मृत्यु के समय की speed snapshot — प्रारब्ध अगले जन्म में यही carry करेगा
-        this._praarabdhaSpeedMul = Math.pow(1 / 0.7, this.ashuvhaKarma)
-                                 * Math.pow(1 / 0.8, this.shuvhaKarma)
-                                 * this._praarabdhaSpeedMul;
+        // actualAdded > 0 तभी push — cap hit पर undo entry नहीं बनेगी
+        if (actualAdded > 0) {
+            const _thisJanmaMul = Math.pow(1 / 0.7, this.ashuvhaKarma)
+                                * Math.pow(1 / 0.8, this.shuvhaKarma);
+            this._praarabdhaSpeedStack.push(_thisJanmaMul); // bhog-पूर्ण पर undo हेतु (engine.js)
+            this._praarabdhaSpeedMul *= _thisJanmaMul;
+        }
         this.ashuvhaKarma = 0; this.shuvhaKarma = 0;        this.punaraJanmaCount++;
         this._triggerBlast("#f87171");
         this.samaya          = SAMAYA_PRAARAMBHIKA;
