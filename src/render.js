@@ -584,8 +584,39 @@ export const Renderer = {
         ctx.restore();
 
         let triRadius = sRadius; 
-        drawYantraPolygon(cx, sCy, triRadius, 3, -Math.PI / 2, "rgba(255, 200, 60, 0.85)", 2.2, "rgba(255, 180, 40, 0.9)", 14); 
-        drawYantraPolygon(cx, sCy, triRadius, 3, Math.PI / 2, "rgba(255, 200, 60, 0.85)", 2.2, "rgba(255, 180, 40, 0.9)", 14);  
+        // ── यंत्र-त्रिभुज श्वास-गति — कर्म-बंधन के अनुसार ──
+        // शास्त्र: निष्कर्म आत्मा ऊर्ध्वगामी (मोक्ष), बद्ध आत्मा अधोगामी (संसार)
+        // निष्कर्म (punya=0, paap=0, praarabdha=0) → ऊर्ध्वमुखी 🔺 gold pulse
+        // कोई भी बंधन > 0                          → अधोमुखी  🔻 reddish pulse
+        {
+            const isKarmaMukta = (shuvhaKarma === 0 && ashuvhaKarma === 0 && praarabdha === 0);
+
+            // pulse parameters — worldSwaansaPulse (0→1) से lineWidth और shadowBlur animate
+            const activeLineW = 2.2 + worldSwaansaPulse * 1.8;   // 2.2 → 4.0
+            const activeBlur  = 14  + worldSwaansaPulse * 18;    // 14  → 32
+
+            if (isKarmaMukta) {
+                // 🔺 ऊर्ध्वमुखी — सक्रिय: मोक्ष-gold श्वास-गति
+                drawYantraPolygon(cx, sCy, triRadius, 3, -Math.PI / 2,
+                    `rgba(255, 215, 0, ${(0.7 + worldSwaansaPulse * 0.3).toFixed(3)})`,
+                    activeLineW, "rgba(255, 200, 60, 0.95)", activeBlur);
+                // 🔻 अधोमुखी — निष्क्रिय: dim static
+                ctx.save(); ctx.globalAlpha = 0.18;
+                drawYantraPolygon(cx, sCy, triRadius, 3,  Math.PI / 2,
+                    "rgba(255, 200, 60, 0.5)", 1.2, "transparent", 0);
+                ctx.restore();
+            } else {
+                // 🔺 ऊर्ध्वमुखी — निष्क्रिय: dim static
+                ctx.save(); ctx.globalAlpha = 0.18;
+                drawYantraPolygon(cx, sCy, triRadius, 3, -Math.PI / 2,
+                    "rgba(255, 200, 60, 0.5)", 1.2, "transparent", 0);
+                ctx.restore();
+                // 🔻 अधोमुखी — सक्रिय: संसार-अग्नि reddish श्वास-गति
+                drawYantraPolygon(cx, sCy, triRadius, 3,  Math.PI / 2,
+                    `rgba(255, 80, 40, ${(0.7 + worldSwaansaPulse * 0.3).toFixed(3)})`,
+                    activeLineW, "rgba(255, 60, 20, 0.95)", activeBlur);
+            }
+        }  
 
         let atmanY = cy; 
         let glowR = 12 * scale;
