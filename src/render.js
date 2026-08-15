@@ -588,7 +588,7 @@ export const Renderer = {
         drawYantraPolygon(cx, sCy, triRadius, 3, Math.PI / 2, "rgba(255, 200, 60, 0.85)", 2.2, "rgba(255, 180, 40, 0.9)", 14);  
 
         let atmanY = cy; 
-        let glowR = 6 * scale;
+        let glowR = 12 * scale;
         let atmanGlowKey = Math.round(glowR * 10);
         if (atmanGlowKey !== cachedAtmanGlowKey || !cachedAtmanSprite) {
             cachedAtmanGlowKey = atmanGlowKey;
@@ -607,9 +607,16 @@ export const Renderer = {
             cachedAtmanSprite = { canvas: aOff, sz: aSz };
         }
         ctx.save();
+        // आत्मन् sprite — swaansa-pulse से shadowBlur dynamic
+        const atmanGlow = 20 + worldSwaansaPulse * 45; // peak पर ~65
+        const atmanOpacity = 0.55 + worldSwaansaPulse * 0.45;
+        ctx.shadowBlur = atmanGlow;
+        ctx.shadowColor =  `rgba(220, 200, 255, ${atmanOpacity})`; // divine violet — चित्-शक्ति
         ctx.drawImage(cachedAtmanSprite.canvas, cx - cachedAtmanSprite.sz / 2, atmanY - cachedAtmanSprite.sz / 2);
-        ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = 8;
-        ctx.beginPath(); ctx.arc(cx, atmanY, 0.7, 0, Math.PI * 2); ctx.fill(); 
+        // केंद्र बिंदु — radius और glow दोनों pulse होंगे
+        const atmanDotR = 0.7 + worldSwaansaPulse * 0.5;
+        ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = atmanGlow * 1.4;
+        ctx.beginPath(); ctx.arc(cx, atmanY, atmanDotR, 0, Math.PI * 2); ctx.fill(); 
         ctx.restore();
 
         ctx.save(); ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = 3;
