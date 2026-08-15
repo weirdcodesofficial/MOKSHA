@@ -251,14 +251,14 @@ export class KarmaEngine {
         
         // ── HUD animation state ──────────────────────────────
         this._oldStats = { naama:-1, punya:-1, paap:-1, praarabdha:-1, samarpita:-1,
-                           punaraJanma:-1, gatee:"-1", kripa:-1, chetana:"",
-                           shankha:-1, drishti:"", poornaSamarpana:"", jyoti:-1 };
+                           punaraJanma:-1, samayaGatee:"-1", kripa:-1, chetana:"",
+                           shankha:-1, drishti:"", poornaSamarpana:"", jyoti:-1, shareeraGatee:"-1" };
         this._uiScales = { naama:1, punya:1, paap:1, praarabdha:1, samarpita:1,
-                           punaraJanma:1, gatee:1, kripa:1, chetana:1,
-                           shankha:1, drishti:1, poornaSamarpana:1, jyoti:1 };
+                           punaraJanma:1, samayaGatee:1, kripa:1, chetana:1,
+                           shankha:1, drishti:1, poornaSamarpana:1, jyoti:1, shareeraGatee:1 };
         this._uiGlows  = { naama:0, punya:0, paap:0, praarabdha:0, samarpita:0,
-                           punaraJanma:0, gatee:0, kripa:0, chetana:0,
-                           shankha:0, drishti:0, poornaSamarpana:0, jyoti:0 };
+                           punaraJanma:0, samayaGatee:0, kripa:0, chetana:0,
+                           shankha:0, drishti:0, poornaSamarpana:0, jyoti:0, shareeraGatee:0 };
 
         // ── Alert Queue System (Issue #10) ───────────────────
         /** Canvas alert queue — max 4 active cards */
@@ -294,7 +294,7 @@ export class KarmaEngine {
      * @param {Object} UI — { naama, punya, paap, praarabdha, samarpita,
      *                         punaraJanma, kripa, shankha, jyoti, drishti,
      *                         poornaSamarpana, chetana, samayaVal, swaansaVal,
-     *                         gatee, alertBox, overlay, overlayTitle,
+     *                         samayaGatee, alertBox, overlay, overlayTitle,
      *                         overlaySubtitle, viraamaOverlay, shaashtraOverlay,
      *                         container }
      */
@@ -534,6 +534,14 @@ export class KarmaEngine {
             0, Math.min(this.WIDTH - this.player.width, this.player.x)
         );
 
+        // ── शरीर गति indicator — frame-to-frame X delta से direction detect ──
+        {
+            const movingLeft  = keys['arrowleft']  || keys['a'];
+            const movingRight = keys['arrowright'] || keys['d'];
+            const newSamayaGati = movingLeft ? '◀◀ ◀' : movingRight ? '▶▶ ▶' : '●';
+            this._updateStatWithPulse(this._UI?.shareeraGatee, 'shareeraGatee', newSamayaGati, '☸️');
+        }
+
         this.playerInTunnel = this._isPlayerInsideTunnel();
 
         // ── 9. Body metrics (collision & draw) ───────────────
@@ -735,12 +743,12 @@ export class KarmaEngine {
                 this._UI.swaansaVal.innerText = swaansaDisplay;
 
             const currentWarpVal = (ashuvhaTimeModifier * shuvhaTimeModifier * praarabdhaPenaltiMul * 100).toFixed(0);
-            this._updateStatWithPulse(this._UI?.gatee, 'gatee', currentWarpVal, '⚡', '%');
-            // प्रारब्ध > 0 — gatee HUD purple glow
-            if (this._UI?.gatee) {
+            this._updateStatWithPulse(this._UI?.samayaGatee, 'samayaGatee', currentWarpVal, '⚡', '%');
+            // प्रारब्ध > 0 — samayaGatee HUD purple glow
+            if (this._UI?.samayaGatee) {
                 const hasPrarabdha = this.praarabdha > 0;
-                this._UI.gatee.style.color      = hasPrarabdha ? '#a78bfa' : '';
-                this._UI.gatee.style.textShadow = hasPrarabdha ? '0 0 8px #a78bfa' : '';
+                this._UI.samayaGatee.style.color      = hasPrarabdha ? '#a78bfa' : '';
+                this._UI.samayaGatee.style.textShadow = hasPrarabdha ? '0 0 8px #a78bfa' : '';
             }
             if (this.samaya <= 0) {
                 this.samaya = 0; this.swaansa = 0; this.swaansaSamapta = true;
@@ -1089,7 +1097,7 @@ export class KarmaEngine {
         // ── HUD cache invalidate ──
         this._oldStats = { poornaSamarpana:"", naama:-1, punya:-1, paap:-1,
                            praarabdha:-1, samarpita:-1, punaraJanma:-1,
-                           gatee:"-1", kripa:-1, chetana:"", shankha:-1, drishti:"", jyoti:-1 };
+                           samayaGatee:"-1", kripa:-1, chetana:"", shankha:-1, drishti:"", jyoti:-1 };
 
         // ── UI reset ──
         if (this._UI?.overlay)        this._UI.overlay.style.display        = 'none';

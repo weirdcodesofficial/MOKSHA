@@ -162,8 +162,8 @@ export const StateMixin = {
     _updateHUDAnimations(dt) {
         const uiKeys = [
             'poornaSamarpana', 'naama', 'punya', 'paap', 'praarabdha',
-            'samarpita', 'punaraJanma', 'gatee', 'chetana',
-            'shankha', 'drishti', 'jyoti', 'kripa',
+            'samarpita', 'punaraJanma', 'shareeraGatee', 'chetana',
+            'shankha', 'drishti', 'jyoti', 'kripa', 'samayaGatee'
         ];
         for (const key of uiKeys) {
             if (Math.abs(this._uiScales[key] - 1.0) > 0.001) {
