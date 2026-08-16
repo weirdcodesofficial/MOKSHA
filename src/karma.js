@@ -171,6 +171,35 @@ export const KarmaMixin = {
         this._cb.playSound?.('punaha');
     },
 
+// ====================== xPos HELPER ======================
+
+    /**
+     * Maya spawn X position — tunnel-bias के साथ।
+     * tunnelProb = 1.0 → हमेशा tunnel में (नाम हेतु)
+     * tunnelProb = 0.15 → 15% tunnel में, 85% बाहर (बाईं/दाईं पट्टी)
+     *
+     * @param {number} tunnelProb — 0.0 to 1.0
+     * @returns {number} xPos (pixels)
+     */
+    _spawnXPos(tunnelProb = 0) {
+        if (Math.random() < tunnelProb) {
+            // tunnel zone — नाम का क्षेत्र
+            return this.TUNNEL_X + Math.random() * (this.TUNNEL_WIDTH - 20);
+        }
+        // बाहर — बाईं या दाईं पट्टी (tunnel को exclude करें)
+        const leftMax  = this.TUNNEL_X - 10;
+        const rightMin = this.TUNNEL_X + this.TUNNEL_WIDTH + 10;
+        const leftW    = Math.max(0, leftMax - 40);
+        const rightW   = Math.max(0, (this.WIDTH - 40) - rightMin);
+        const total    = leftW + rightW;
+        // fallback — बहुत संकरा canvas
+        if (total <= 0) return Math.random() * (this.WIDTH - 110) + 40;
+        if (Math.random() < leftW / total) {
+            return 40 + Math.random() * leftW;
+        }
+        return rightMin + Math.random() * rightW;
+    },
+
     // ====================== माया SPAWN ======================
 
     /**
@@ -187,13 +216,13 @@ export const KarmaMixin = {
         const punyaProb       = 0.425 + freedFromPaapa * 0.4;
         const naamaThreshold  = shuvhaThreshold + punyaProb;
 
-        if      (rand > 0.985)           { type = "kripa";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > 0.97)            { type = "chakravaata"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > 0.945)           { type = "shankha"; xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > 0.92)            { type = "jyoti";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else if (rand > naamaThreshold)  { type = "naama";   xPos = this.TUNNEL_X + Math.random() * (this.TUNNEL_WIDTH - 20); }
-        else if (rand > shuvhaThreshold) { type = "shuvha";  xPos = Math.random() * (this.WIDTH - 110) + 40; }
-        else                             { type = "ashuvha";   xPos = Math.random() * (this.WIDTH - 110) + 40; }
+        if      (rand > 0.985)           { type = "kripa";       xPos = this._spawnXPos(0.15); }
+        else if (rand > 0.97)            { type = "chakravaata"; xPos = this._spawnXPos(0.15); }
+        else if (rand > 0.945)           { type = "shankha";     xPos = this._spawnXPos(0.15); }
+        else if (rand > 0.92)            { type = "jyoti";       xPos = this._spawnXPos(0.15); }
+        else if (rand > naamaThreshold)  { type = "naama";       xPos = this._spawnXPos(1.0);  }
+        else if (rand > shuvhaThreshold) { type = "shuvha";      xPos = this._spawnXPos(0.15); }
+        else                             { type = "ashuvha";     xPos = this._spawnXPos(0.15); }
 
         for (let i = 0; i < this.mayaPool.length; i++) {
             if (!this.mayaPool[i].active) {

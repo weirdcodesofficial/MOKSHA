@@ -81,6 +81,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 - ⚖️ **Prarabdha Bhog System** — Endure past karma over time; unit-break explosion; MAX 15 cap; samaya penalty ×1.15; `_praarabdhaSpeedMul` carry-forward across janma
 - 🧘 **Chetanaa Immunity** — चेतना-जागृति grants karma immunity (गीता 4.37 — ज्ञानाग्निः सर्वकर्माणि भस्मसात्)
 - 🧩 **ES6 Modular Architecture** — KarmaEngine split into 4 mixins: KarmaMixin, PhysicsMixin, StateMixin + Renderer + Touch + Tutorial
+- 🌀 **Bhakti-Marga Spawn Bias** — Naama always spawns inside the tunnel (tunnelProb=1.0); other Maya objects spawn 85% outside and 15% inside — obstacles remain but Naama stays dominant in the path
 
 ---
 
@@ -651,6 +652,7 @@ AM.updateAmbientVolumes();
 | **mp3 count** | 24 → 28 |
 | **Developer credit** | PS → Weired Codes |
 | **line count** | 3835 (single-file) → ~8312 (11 src files + style.css) |
+| **Bhakti-Marga spawn bias** | `_spawnXPos(tunnelProb)` helper जोड़ा — naama `tunnelProb=1.0` (हमेशा tunnel), बाकी Maya `tunnelProb=0.15` (85% बाहर, 15% tunnel) |
 
 ---
 
@@ -696,7 +698,8 @@ AM.updateAmbientVolumes();
 | ~42 | `_syncOrbitCounts()` |
 | ~60 | `_checkMokhsha()` — मोक्ष-शर्त + पुनर्जन्म |
 | ~179 | `_spawnMaya()` — type determination + pool slot |
-| ~220 | `_forceSpawnMaya(type, x, y)` — tutorial forced spawn |
+| ~215 | `_spawnXPos(tunnelProb)` — tunnel-biased xPos helper (1.0=naama/always tunnel, 0.15=others/mostly outside) |
+| ~228 | `_forceSpawnMaya(type, x, y)` — tutorial forced spawn |
 | ~242 | `_handlePlayerMayaCollision()` — Vedic collision logic |
 | ~332 | `_grantKripa()` — §1.4 |
 | ~381 | `_collectResource()` — शंख/ज्योति DRY |
