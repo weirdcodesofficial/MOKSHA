@@ -696,12 +696,12 @@ button.hud-icon-btn:hover {
     display: none;               /* JS से touch device detect होने पर flex बनेगा */
     will-change: opacity;
     width: 100%;
-    padding: 12px 10px;
-    padding-bottom: 12px;
+    padding: 10px 6px;
+    padding-bottom: 10px;
     margin-bottom: 34px;         /* fixed footer की height — overlap नहीं होगा */
     background: transparent;
     box-sizing: border-box;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: flex-end;         /* vertically centered — taller buttons को room दें */
     flex: 1;                     /* available vertical space use करें */
     z-index: 10;
@@ -722,9 +722,9 @@ button.hud-icon-btn:hover {
 
 /* Left steering slot — fixed width/height so gyro ↔ ◀▶ swap doesn't shift layout */
 .touch-cluster-left {
-    width: 136px;               /* 64 + 8 + 64 — steer pair width */
-    min-height: 126px;          /* right cluster (72 + 6 + 48) से match */
-    justify-content: flex-start;
+    flex: 1;
+    min-height: 110px;
+    justify-content: center;
 }
 
 .touch-steer-slot {
@@ -750,19 +750,18 @@ button.hud-icon-btn:hover {
     flex-direction: row;
     align-items: flex-end;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     flex-wrap: wrap;
-    max-width: 120px;
-    min-height: 126px;
+    min-height: 110px;
 }
 
 .touch-cluster-right {
+    flex: 1;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
     justify-content: flex-end;
-    gap: 6px;
-    width: 102px;               /* secondary row (48 + 6 + 48) */
-    min-height: 126px;
+    gap: 5px;
+    min-height: 110px;
 }
 
 .touch-secondary-row {
@@ -798,24 +797,24 @@ button.hud-icon-btn:hover {
 
 /* ── Size variants — clamp() से viewport-responsive ── */
 .touch-btn-xl {
-    width:  clamp(68px, 18vw, 96px);
-    font-size: clamp(24px, 5vw, 32px);
+    width:  clamp(54px, 14vw, 72px);
+    font-size: clamp(20px, 4vw, 26px);
 }
 
 .touch-btn-md {
-    width:  clamp(52px, 13vw, 72px);
-    font-size: clamp(22px, 4.5vw, 28px);
+    width:  clamp(44px, 11vw, 58px);
+    font-size: clamp(18px, 3.5vw, 22px);
 }
 
 .touch-btn-sm {
-    width:  clamp(46px, 12vw, 64px);
-    font-size: clamp(18px, 4vw, 24px);
+    width:  clamp(38px, 10vw, 50px);
+    font-size: clamp(15px, 3.2vw, 19px);
 }
 
 /* ── Primary action button — ॐ (नाम-जाप) ── */
 .touch-btn-primary {
-    width:  clamp(82px, 22vw, 110px);
-    font-size: clamp(30px, 6.5vw, 40px);
+    width:  clamp(66px, 17vw, 84px);
+    font-size: clamp(26px, 5.5vw, 34px);
     font-family: 'Noto Sans Devanagari', sans-serif;
     background: rgba(255, 215, 0, 0.13);
     border: 2px solid rgba(255, 215, 0, 0.55);
