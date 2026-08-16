@@ -151,7 +151,7 @@ const STRINGS = {
         // ⚠️ केवल पाठ — CSS/styles code में रहते हैं, यहाँ कभी नहीं।
 
         // प्रलय (स्वैच्छिक रथ-त्याग)
-        'end.pralaya.title': '🛑 प्रलय 🛑',
+        'end.pralaya.title': '🌊 प्रलय 🌊',
         'end.pralaya.lead': 'यात्रा रद्द:',
         'end.pralaya.line1': 'सारथी ने रथ को बीच में ही छोड़ दिया।',
         'end.pralaya.stats': 'चित्त की अवस्था: पुण्य: {punya} | पाप: {paap}',
@@ -159,7 +159,7 @@ const STRINGS = {
         'end.pralaya.line3': 'अतः, घोड़े आत्मा को संसार में एक नए शरीर की ओर खींच ले जाते हैं।',
 
         // मोक्ष
-        'end.moksha.title': '💥 मोक्ष 💥',
+        'end.moksha.title': '🕉️ मोक्ष 🕉️',
         'end.moksha.line1': 'आपको पुनः जन्म लेने की आवश्यकता नहीं है। यह संसार एक माया जाल है, जिससे आपने अंततः मुक्ति पा ली है।',
         'end.moksha.line2': 'आपने जन्म-मरण के इस खेल पर विजय प्राप्त कर ली है।',
         'end.moksha.heading': 'गुणों और कर्मों से परे',
@@ -199,7 +199,7 @@ const STRINGS = {
         'alert.gyroCalibrate.subtitle': 'वर्तमान झुकाव तटस्थ माना गया।',
         'alert.gyroStopped.title':    'झुकाव-संचालन बंद',
         'alert.gyroStopped.subtitle': 'झुकाव-संचालन निष्क्रिय किया गया।',        
-    },
+    }, 
     en: {
         'start.title': 'MOKSHA',
         'start.description': 'Break free from the cycle of life and death.\nAre you ready?',
@@ -346,14 +346,14 @@ const STRINGS = {
         'tutorial.praarabdha.hint': 'Moksha comes through Punya, Naama, and Samarpana.',        
 
         // ── End screens ──
-        'end.pralaya.title': '🛑 WOKE UP 🛑',
+        'end.pralaya.title': '🌊 WOKE UP 🌊',
         'end.pralaya.lead': 'Journey abandoned:',
         'end.pralaya.line1': 'The charioteer let go of the chariot midway.',
         'end.pralaya.stats': 'State of mind — Punya: {punya} | Papa: {paap}',
         'end.pralaya.line2': 'The soul stays caught in an unmanifest, darkened place.',
         'end.pralaya.line3': 'And so the horses drag the soul toward a new body in the world.',
 
-        'end.moksha.title': '💥 MOKSHA 💥',
+        'end.moksha.title': '🕉️ MOKSHA 🕉️',
         'end.moksha.line1': 'You need not be born again. This world is a net of Maya, and from it you have at last found release.',
         'end.moksha.line2': 'You have won this game of birth and death.',
         'end.moksha.heading': 'Beyond the gunas and beyond karma',
