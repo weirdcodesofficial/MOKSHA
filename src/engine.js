@@ -120,7 +120,7 @@ export class KarmaEngine {
         // ── Vedic Karma State ────────────────────────────────
         this.shuvhaKarma      = 0;   // पुण्य (सक्रिय)
         this.ashuvhaKarma     = 0;   // पाप (सक्रिय)
-        this.activeNaam       = 0;   // ॐ नाम (उपयोग-योग्य)
+        this.sanchitaNaama       = 0;   // ॐ नाम (उपयोग-योग्य)
         this.praarabdha             = 0;   // प्रारब्ध (संचित — सिर्फ़ 10-नाम से भस्म)
         this.praarabdhaTimer        = 0;   // भोग-countdown (frames); पुनर्जन्म पर persist, R-reset पर शून्य
         this._currentGateeModifier  = 1.0; // इस जन्म का live ashuvha×shuvha modifier (rebirth पर snapshot) persist, R-reset पर शून्य
@@ -141,7 +141,7 @@ export class KarmaEngine {
         this.jaapaNaama      = "राधा"; // नाम-जाप पर floating text
         this.isNaamaJaapa    = false;  // क्या अभी नाम-जाप-वलय सक्रिय है?
         this.naamaGhera      = 0;     // नाम-जाप-वलय की वर्तमान त्रिज्या
-        this.naamaJaapaPower = 0;     // SPACE दबाने पर उपलब्ध activeNaam
+        this.naamaJaapaPower = 0;     // SPACE दबाने पर उपलब्ध sanchitaNaama
 
         // ── Time / Swaansa ────────────────────────────────────
         this.samaya          = SAMAYA_PRAARAMBHIKA;
@@ -413,9 +413,9 @@ export class KarmaEngine {
         this._prevPraarabdhaForSound = this.praarabdha;
 
         // ── 5. कृपा-माइलस्टोन edge-detection ────────────────
-        if (this.activeNaam > this._prevActiveNaamForKripa)
-            this._naamaSinceLastKripa += (this.activeNaam - this._prevActiveNaamForKripa);
-        this._prevActiveNaamForKripa = this.activeNaam;
+        if (this.sanchitaNaama > this._prevActiveNaamForKripa)
+            this._naamaSinceLastKripa += (this.sanchitaNaama - this._prevActiveNaamForKripa);
+        this._prevActiveNaamForKripa = this.sanchitaNaama;
 
         while (this._naamaSinceLastKripa >= KRIPA_NAAM_MILESTONE) {
             this._naamaSinceLastKripa -= KRIPA_NAAM_MILESTONE;
@@ -472,9 +472,9 @@ export class KarmaEngine {
         if (this.samaya < 100 && this.samaya > 0 && !this.swaansaSamapta
                 && !this._prevSamaya100Guided) {
             this._prevSamaya100Guided = true;
-            if (this.activeNaam > 0 && this.playerInTunnel) {
+            if (this.sanchitaNaama > 0 && this.playerInTunnel) {
                 this._alertKey('samaya100Tunnel', '🌿', 'achievement');
-            } else if (this.activeNaam > 0) {
+            } else if (this.sanchitaNaama > 0) {
                 this._alertKey('samaya100Path', '🌿', 'guidance');;
             } else {
                 this._alertKey('samaya100NoNaam', '⚠️', 'warning');
@@ -647,7 +647,7 @@ export class KarmaEngine {
                     if (m.isPulling) this._mayaConsumedWhilePulling = true;
 
                     if (m.type === 'naama') {
-                        this.activeNaam++;
+                        this.sanchitaNaama++;
                         this._addFloatingText("ॐ", "#ffffff", { x:mCx, y:mCy });
                         this._createGainedGlow(mCx, mCy, "#ffffff");
                         this.naamaGlowTimer = 40; this._triggerGlow("#ffffff");
@@ -676,7 +676,7 @@ export class KarmaEngine {
 
             // वलय पूर्ण — नाम-शक्ति जाँचें
             // ⚠️ शास्त्र-संगत (Issue #11): प्रारब्ध नाम-जाप से नष्ट नहीं होता।
-            // activeNaam >= 10 होने पर praarabdhaTimer 2× गति से घटता है (§22.5)।
+            // sanchitaNaama >= 10 होने पर praarabdhaTimer 2× गति से घटता है (§22.5)।
             if (this.naamaGhera > NAAMA_JAAP_MAX_RADIUS) {
                 this.isNaamaJaapa = false; this.naamaGhera = 0;
                 this._alertKey('naamaJapa', '🌿', 'achievement');
@@ -883,7 +883,7 @@ export class KarmaEngine {
 
             // ── praarabdha unit घटाने का logic ──
             const prevPraarabdha = this.praarabdha;
-            const bhogDt = dt * (this.activeNaam >= 10 ? 2 : 1);
+            const bhogDt = dt * (this.sanchitaNaama >= 10 ? 2 : 1);
             this.praarabdhaTimer = Math.max(0, this.praarabdhaTimer - bhogDt);
             const newPraarabdha  = this.praarabdhaTimer > 0
                 ? Math.ceil(this.praarabdhaTimer / PRARABDHA_BHOG_FRAMES) : 0;
@@ -1072,7 +1072,7 @@ export class KarmaEngine {
     reset() {
         // ── Karma reset ──
         this.praarabdha = 0; this.praarabdhaTimer = 0; this.shuvhaKarma = 0; this.ashuvhaKarma = 0;
-         this.praarabdhaPenaltiMul = 1.0; this._praarabdhaSpeedMul = 1.0; this._praarabdhaSpeedStack = []; this.activeNaam = 0; this.samarpita = 0; this.punaraJanmaCount = 0;        this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
+         this.praarabdhaPenaltiMul = 1.0; this._praarabdhaSpeedMul = 1.0; this._praarabdhaSpeedStack = []; this.sanchitaNaama = 0; this.samarpita = 0; this.punaraJanmaCount = 0;        this.isKarmaImmune = false; this.kripa = 0; this.shankha = 0; this.jyoti = 0;
         // ── Alert queue reset ──
         this.alertQueue = []; this._nextAlertId = 0;
         if(this.outerOrbits[2]) this.outerOrbits[2].glowTimer = 0;
@@ -1157,7 +1157,7 @@ export class KarmaEngine {
             // Karma
             shuvhaKarma:         this.shuvhaKarma,
             ashuvhaKarma:        this.ashuvhaKarma,
-            activeNaam:          this.activeNaam,
+            sanchitaNaama:          this.sanchitaNaama,
             praarabdha:           this.praarabdha,
             praarabdhaTimer:      this.praarabdhaTimer,
             samarpita:           this.samarpita,

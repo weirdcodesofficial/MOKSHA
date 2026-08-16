@@ -422,7 +422,7 @@ export const Renderer = {
             WIDTH, HEIGHT, TUNNEL_X, TUNNEL_WIDTH, SAMAYA_PRAARAMBHIKA,
             frameNow, shakeTimer, samaya, swaansaSamapta, stars, tunnelSparkles,
             particlePool, glowEffectPool, player, smoothSize, glowRings,
-            shuvhaKarma, ashuvhaKarma, praarabdha, activeNaam, kripa, shankha, jyoti,
+            shuvhaKarma, ashuvhaKarma, praarabdha, sanchitaNaama, kripa, shankha, jyoti,
             samarpita, punaraJanmaCount, chetanaaJaagrita, poornaSamarpana, chainSlots,
             finalHorsePositions, pulledHorseIndex, pulledHorseX, pulledHorseY,
             isPaused, gameOver, mayaPool, pendingGoodKarma, punyaTimer,
@@ -1116,7 +1116,7 @@ export const Renderer = {
         if (shuvhaKarma > 0) innerOrbit.push("🌿");
         if (ashuvhaKarma > 0) innerOrbit.push("🥀");
         if (praarabdha > 0) innerOrbit.push("📜");
-        if (activeNaam > 0) innerOrbit.push("ॐ");
+        if (sanchitaNaama > 0) innerOrbit.push("ॐ");
         if (kripa > 0) innerOrbit.push("✋");
         if (shankha > 0) innerOrbit.push("🐚");
         if (jyoti > 0) innerOrbit.push("🪔");

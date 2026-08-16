@@ -113,7 +113,7 @@ export const StateMixin = {
     /** सभी HUD stats एक साथ update करें */
     _updateUIStats() {
         if (!this._UI) return;
-        this._updateStatWithPulse(this._UI.naama, 'naama', this.activeNaam, 'ॐ');
+        this._updateStatWithPulse(this._UI.naama, 'naama', this.sanchitaNaama, 'ॐ');
 
         // 🌿 shuvhaKarma — pendingGoodKarma active होने पर live timer दिखे
         if (this._UI?.punya) {

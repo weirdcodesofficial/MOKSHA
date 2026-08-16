@@ -195,7 +195,7 @@ export class TutorialManager {
     /**
      * हर frame gameLoop में call करो (card visible न हो तो action check)।
      * @param {Object} state — engine.getRenderState() snapshot
-     *   ज़रूरी fields: player.x, activeNaam, isNaamaJaapa, playerInTunnel
+     *   ज़रूरी fields: player.x, sanchitaNaama, isNaamaJaapa, playerInTunnel
      */
     checkCompletion(state) {
         if (this._done || this._cardVisible) return;
@@ -230,8 +230,8 @@ export class TutorialManager {
             }
 
             case 'maya': {
-                // naama collect हुआ → activeNaam ≥ 1
-                if (state.activeNaam >= 1) {
+                // naama collect हुआ → sanchitaNaama ≥ 1
+                if (state.sanchitaNaama >= 1) {
                     this._onStepComplete();
                 }
                 break;

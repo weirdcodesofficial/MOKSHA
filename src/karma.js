@@ -43,7 +43,7 @@ export const KarmaMixin = {
         this.outerOrbits[0].count = this.shuvhaKarma;
         this.outerOrbits[1].count = this.ashuvhaKarma;
         this.outerOrbits[2].count = this.praarabdha;
-        this.outerOrbits[3].count = this.activeNaam;
+        this.outerOrbits[3].count = this.sanchitaNaama;
         this.outerOrbits[4].count = this.kripa;
         this.outerOrbits[5].count = this.shankha;
         this.outerOrbits[6].count = this.jyoti;
@@ -79,7 +79,7 @@ export const KarmaMixin = {
         // ── पुनर्जन्म (अपवित्र/पवित्र) ──
         const isApavitra = (this.shuvhaKarma > 0 || this.ashuvhaKarma > 0);
         const earnsKripaOnRebirth = (
-            this.activeNaam >= 20 || this.samarpita >= 30 || this.chetanaaJaagrita
+            this.sanchitaNaama >= 20 || this.samarpita >= 30 || this.chetanaaJaagrita
         );
         // ── Bug 5 fix: pendingGoodKarma clear करने से पहले capture करें ──
         // पहले false किया → hasSanchitaKarma में already false → praarabdha +1 miss
@@ -162,7 +162,7 @@ export const KarmaMixin = {
                 "#ffe9a8"
             );
             this._addFloatingText("✋", "#ffe9a8", { alpha:1.3, vy:-1.6, isBigName:true });
-            if (this.activeNaam  >= 20) this._addFloatingText("ॐ", "#ffffff", { alpha:1.5, vy:-2.2, isBigName:true });
+            if (this.sanchitaNaama  >= 20) this._addFloatingText("ॐ", "#ffffff", { alpha:1.5, vy:-2.2, isBigName:true });
             if (this.samarpita   >= 30) this._addFloatingText("🙏", "#fb923c", { alpha:1.5, vy:-2.2, isBigName:true });
             this._alertKey('kripaAtirikta', '✋', 'guidance');
             this._triggerGlow("#ffe9a8");
@@ -270,7 +270,7 @@ export const KarmaMixin = {
      */
     _handlePlayerMayaCollision(m, cx) {
         if (m.type === "naama") {
-            this.activeNaam++;
+            this.sanchitaNaama++;
             this._addFloatingText("ॐ", "#ffffff");
             this.naamaGlowTimer = 40;
             this._triggerGlow("#ffffff");
@@ -279,8 +279,8 @@ export const KarmaMixin = {
 
             if (this.playerInTunnel) {
                 // शास्त्र-संगत क्रम: पुण्य → पाप → प्रारब्ध
-                if (this.shuvhaKarma > 0 && this.activeNaam >= 1) {
-                    this.activeNaam--; this.shuvhaKarma--; this.samarpita++;
+                if (this.shuvhaKarma > 0 && this.sanchitaNaama >= 1) {
+                    this.sanchitaNaama--; this.shuvhaKarma--; this.samarpita++;
                     this._addFloatingText("🌿🌸", "#32ff32");
                     this._triggerGlow("#32ff32");
                     this._cb.playSound?.('samarpita');
@@ -289,8 +289,8 @@ export const KarmaMixin = {
                         ? this._alertKey('bandhanaPunyaMukta', '🌿', 'achievement')
                         : this._alertKey('bandhanaPunyaShesha', '🌿', 'guidance',
                                          { n: this.shuvhaKarma });
-                } else if (this.ashuvhaKarma > 0 && this.activeNaam >= 5) {
-                    this.activeNaam -= 5; this.ashuvhaKarma--; this.samarpita++;
+                } else if (this.ashuvhaKarma > 0 && this.sanchitaNaama >= 5) {
+                    this.sanchitaNaama -= 5; this.ashuvhaKarma--; this.samarpita++;
                     this._addFloatingText("🥀🔥", "#ff3232");
                     this._triggerGlow("#ff3232");
                     this._cb.playSound?.('samarpita');
@@ -319,8 +319,8 @@ export const KarmaMixin = {
             this._alertKey('vikshepa', '🌪️', 'warning');
             return; // m.active = false नहीं — chakravaata यथावत
         } else if (m.type === "shuvha") {
-            if (this.activeNaam >= 1) {
-                this.activeNaam--; this.samarpita++;
+            if (this.sanchitaNaama >= 1) {
+                this.sanchitaNaama--; this.samarpita++;
                 this._createExplosion(m.x + m.width / 2, m.y + m.height / 2, "#ffffff");
                 this._addFloatingText("🙏", "#fb923c", { x: m.x + m.width / 2, y: m.y });
                 this._cb.playSound?.('samarpita');
@@ -332,8 +332,8 @@ export const KarmaMixin = {
             this._pendingGoodKarmaCount++;
             this._cb.playSound?.('shuvha');
         } else if (m.type === "ashuvha") {
-            if (this.activeNaam >= 5) {
-                this.activeNaam -= 5; this.samarpita++;
+            if (this.sanchitaNaama >= 5) {
+                this.sanchitaNaama -= 5; this.samarpita++;
                 this._createExplosion(m.x + m.width / 2, m.y + m.height / 2, "#ffffff");
                 this._addFloatingText("🙏", "#fb923c", { x: m.x + m.width / 2, y: m.y });
                 this._cb.playSound?.('samarpita');
@@ -428,9 +428,9 @@ export const KarmaMixin = {
      */
     actionNaamaJaapa() {
         if (this.gameOver || this.isPaused) return;
-        if (this.activeNaam >= 1 && !this.isNaamaJaapa) {
-            this.naamaJaapaPower = this.activeNaam;
-            this.activeNaam--;
+        if (this.sanchitaNaama >= 1 && !this.isNaamaJaapa) {
+            this.naamaJaapaPower = this.sanchitaNaama;
+            this.sanchitaNaama--;
             this.isNaamaJaapa = true;
             this.naamaGhera   = this.smoothSize / 2;
             this._cb.playSound?.('jaapa');
@@ -444,7 +444,7 @@ export const KarmaMixin = {
                     isBigName: true,
                 });
             }
-        } else if (this.activeNaam === 0 && !this.isNaamaJaapa) {
+        } else if (this.sanchitaNaama === 0 && !this.isNaamaJaapa) {
             this._alertKey('errNaamaAbsent', '❌', 'warning');
             this._cb.playSound?.('ashuvha');
         }
@@ -493,7 +493,7 @@ export const KarmaMixin = {
             this._alertKey('errSamarpanaPhase', '❌', 'warning');
             this._cb.playSound?.('ashuvha'); return;
         }
-        if (this.activeNaam === 0) {
+        if (this.sanchitaNaama === 0) {
             this._alertKey('errSamarpanaNoNaam', '❌', 'warning');
             this._cb.playSound?.('ashuvha'); return;
         }
@@ -501,9 +501,9 @@ export const KarmaMixin = {
             this._alertKey('errSamarpanaTunnel', '❌', 'warning');
             this._cb.playSound?.('ashuvha'); return;
         }
-        let gained = (this.activeNaam * 3) + (this.shankha + this.jyoti);
+        let gained = (this.sanchitaNaama * 3) + (this.shankha + this.jyoti);
         this.samarpita      += gained;
-        this.activeNaam      = 0;
+        this.sanchitaNaama      = 0;
         this.shankha         = 0;
         this.jyoti           = 0;
         this.poornaSamarpana  = true;

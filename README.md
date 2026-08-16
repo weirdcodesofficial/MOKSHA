@@ -192,7 +192,7 @@ MOKSHA/
 | **प्रारब्ध** | `prarabdha` | प्रति पुनर्जन्म केवल +1 (संचित कर्म कितना भी हो); MAX_PRARABDHA=15 cap; भोग से घटता है (×1.15 samaya penalty); 10 नाम से 2× गति |
 | **समर्पित** | `samarpita` | जब >= CHETANA_JAGRITI_THRESHOLD (50), चेतना-जागृति ट्रिगर |
 | **चेतना-जागृति** | `chetanaaJaagrita` (boolean) | **मोक्ष की प्रामाणिक शर्त** — `samarpita >= 50` ट्रिगर; जागृति पर `isKarmaImmune = true` (गीता 4.37) |
-| **नाम** | `activeNaam` | 1 नाम=पुण्य भस्म, 5=पाप भस्म|
+| **नाम** | `sanchitaNaama` | 1 नाम=पुण्य भस्म, 5=पाप भस्म|
 | **कृपा** | `kripa` | बंधन हो → kripa-- व कर्म समर्पित में; बंधन न हो → kripa++ |
 | **शंख** | `shankha` | Y/gamepad — chakravaata-शमन हेतु |
 | **ज्योति** | `jyoti` | B/gamepad — पाप-अंधकार में दृष्टि हेतु |
@@ -214,7 +214,7 @@ if (shuvhaKarma === 0 && ashuvhaKarma === 0 && !pendingGoodKarma
 ### 1.3 पुनर्जन्म — पवित्र बनाम अपवित्र
 ```js
 let isApavitra = (shuvhaKarma > 0 || ashuvhaKarma > 0 || prarabdha > 0);
-let earnsKripaOnRebirth = (activeNaam >= 20 || samarpita >= 30 || chetanaaJaagrita);
+let earnsKripaOnRebirth = (sanchitaNaama >= 20 || samarpita >= 30 || chetanaaJaagrita);
 ```
 सिर्फ कर्म-बंधन शेष रहने पर "अपवित्र" — समर्पित/नाम की कमी "अपवित्र" नहीं।
 
@@ -245,7 +245,7 @@ grantKripa(x, y, reason = null) {
 ### 2.1 कर्म/मोक्ष-संबंधी स्टेट
 `KarmaEngine` class की properties (सभी `engine.*` से access करें):
 ```
-engine.shuvhaKarma, engine.ashuvhaKarma, engine.activeNaam  — वर्तमान सक्रिय मात्रा
+engine.shuvhaKarma, engine.ashuvhaKarma, engine.sanchitaNaama  — वर्तमान सक्रिय मात्रा
 engine.prarabdha, engine.samarpita, engine.punaraJanmaCount — संचित/आजीवन काउंटर
 engine.kripa, engine.shankha, engine.jyoti                  — दुर्लभ resource काउंटर
 engine.chetanaaJaagrita (boolean)                            — मोक्ष-गेट
@@ -329,7 +329,7 @@ engine.outerOrbits = [
     { count:shuvhaKarma,      emoji:"🌿", color:"#32ff32", speed:0.8  },  // 0 पुण्य
     { count:ashuvhaKarma,     emoji:"🥀", color:"#ff3232", speed:-0.9 },  // 1 पाप
     { count:prarabdha,        emoji:"📜", color:"#a78bfa", speed:0.6  },  // 2 प्रारब्ध
-    { count:activeNaam,       emoji:"ॐ",  color:"#ffffff", speed:1.0, glowTimer:0 }, // 3 नाम
+    { count:sanchitaNaama,       emoji:"ॐ",  color:"#ffffff", speed:1.0, glowTimer:0 }, // 3 नाम
     { count:kripa,            emoji:"✋", color:"#ffe9a8", speed:0.7  },  // 4 कृपा
     { count:shankha,          emoji:"🐚", color:"#7dd3fc", speed:0.5  },  // 5 शंख
     { count:jyoti,            emoji:"🪔", color:"#ffe932", speed:-0.6 },  // 6 ज्योति
@@ -533,7 +533,7 @@ const tutorial = new TutorialManager(
 tutorial.start(engine.player.x);
 
 // gameLoop में (हर frame — update block के अंदर):
-tutorial.checkCompletion({ player, activeNaam, isNaamaJaapa,
+tutorial.checkCompletion({ player, sanchitaNaama, isNaamaJaapa,
                            playerInTunnel, praarabdha, antimaCharanaStarted });
 touch.syncWithTutorial(tutorial.hasActiveCard());
 
@@ -601,7 +601,7 @@ AM.updateAmbientVolumes();
 | Step | id | शास्त्रीय श्लोक | Completion Trigger |
 |---|---|---|---|
 | 0 | `move` | उद्धरेदात्मनात्मानं नात्मानमवसादयेत्। | ≥40px horizontal movement |
-| 1 | `maya` | मायाजालमिदं विश्वं मोहयत्यखिलं जगत्। | `activeNaam >= 1` (naama collect) |
+| 1 | `maya` | मायाजालमिदं विश्वं मोहयत्यखिलं जगत्। | `sanchitaNaama >= 1` (naama collect) |
 | 2 | `jaapa` | नाम जपत मंगल दिसि दसहूँ। | `isNaamaJaapa === true` (latch) |
 | 3 | `tunnel` | भक्त्या मामभिजानाति यावान्यश्चास्मि तत्त्वतः। | `playerInTunnel === true` (antimaCharana के बाद) |
 | 4 | `praarabdha` | भोगेन क्षीयते पापं, तपसा क्षीयते मलः। | dismiss = complete (प्रारब्ध मिलने के बाद card दिखे) |

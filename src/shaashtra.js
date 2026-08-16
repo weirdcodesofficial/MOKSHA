@@ -72,6 +72,7 @@ const PAGE_1 = {
             { type: 'term', label: '🌬️ श्वास', text: 'यह आयु-शेष का प्रतीक है — इस जीवन-चक्र में बचे शेष श्वासों की गिनती।' },
             { type: 'term', label: '⚖️ ब्रह्मांडीय क्षितिज — निर्णय का क्षण', text: 'जब समय शून्य पर पहुँचता है, यही निर्णय का क्षण है। यदि उस क्षण आत्मा सर्वथा निष्कर्म हो, चेतना जागृत हो (समर्पित ≥50), और पूर्ण नाम-समर्पण (⬆️ / W) किया गया हो — तभी मोक्ष प्राप्त होता है। अन्यथा पुनर्जन्म होता है।' },
             { type: 'term', label: '👁️ चेतना-जागृति — कर्म-रक्षा', text: 'जब चेतना जागृत होती है, तो माया का कर्म-प्रभाव शून्य हो जाता है। जागृत आत्मा पर कर्म-बंधन नहीं लगता।' },
+            { type: 'term', label: '♻️ पुनर्जन्म — पवित्र बनाम अपवित्र', text: 'जब समय शून्य पर कर्म-भार शेष हो — पुनर्जन्म होता है। पवित्र पुनर्जन्म (R key) तभी संभव है जब शुभकर्म, अशुभकर्म और प्रारब्ध — तीनों शून्य हों। यदि कोई भी शेष हो तो आत्मा "अपवित्र" रूप में पुनः आती है।' },
             { type: 'shloka', id: 'gita437' },
         ],
     },
@@ -83,6 +84,7 @@ const PAGE_1 = {
             { type: 'term', label: '🌬️ Swaansa (breath)', text: 'The symbol of remaining lifespan — the count of breaths left in this cycle of life.' },
             { type: 'term', label: '⚖️ Cosmic horizon — the moment of decision', text: 'When Samaya reaches zero, that is the moment of decision. If at that instant the soul is wholly free of karma, Chetana is awakened (Samarpita ≥ 50), and full Naama-Samarpana (⬆️ / W) has been offered — only then is Moksha attained. Otherwise, Punarjanma follows.' },
             { type: 'term', label: '👁️ Chetana-Jaagriti — karmic immunity', text: 'When Chetana awakens, the karmic effect of Maya falls to zero. Karma no longer binds an awakened soul.' },
+            { type: 'term', label: '♻️ Punarjanma — Pure vs Impure', text: 'When Samaya reaches zero with karma remaining, rebirth follows. A Pure Rebirth (R key) is only possible when Punya, Paapa, and Praarabdha are all zero. If any remains, the soul returns in an "impure" form.' },
             { type: 'shloka', id: 'gita437' },
         ],
     },
@@ -94,6 +96,7 @@ const PAGE_2 = {
         blocks: [
             // ── नियंत्रण ──
             { type: 'term', label: '☸️ ⬅️ ➡️ | DPAD_LEFT/RIGHT | A/D (रथ संचालन)', text: 'रथ का संचालन करें।' },
+            { type: 'note', text: '📱 Mobile: स्क्रीन पर virtual buttons (ॐ 🌿 🙏 💀 ♻️ 🐚 🪔) | 🔄 Gyroscope: device बाईं/दाईं झुकाएँ — iOS 13+ पर permission dialog।', color: '#a78bfa' },
             { type: 'term', label: '📿 नाम जाप : RT/R1 | SPACE', text: '1 नाम व्यय कर एक फैलती हुई आभा उत्पन्न करें।' },
             { type: 'term', label: '🪷 वैराग्य : ⬇️ / X | S', text: 'पुण्य का प्रलोभन ठुकराएँ — आसक्ति त्यागें।' },
             { type: 'term', label: '🌊 प्रलय : LB/L1 | Q', text: 'महाप्रलय का आह्वान — स्वेच्छा से रथ-त्याग।' },
@@ -104,6 +107,13 @@ const PAGE_2 = {
             { type: 'note', text: 'नाम अनुपलब्ध हो तो यंत्र-मार्ग।', color: '#7dd3fc' },
             { type: 'term', label: '🪔 ज्योति (दृष्टि-प्रकाश) : B | GAMEPAD B', text: 'पाप-अंधकार में दृष्टि पुनः प्राप्त करें।' },
             { type: 'note', text: 'पाप ≥ 3 होने पर दृष्टि अवरुद्ध।', color: '#ffe932' },
+
+            // ── चक्रवात ──
+            { type: 'heading', text: '🌀 चक्रवात — माया का भय-रूप 🌀' },
+            { type: 'term', label: '🌀 चक्रवात', text: 'संसार का भ्रम-तूफ़ान — 160px range में player को स्वयं की ओर खींचता है। अन्य शुभ/अशुभ माया को भी खींचता है।' },
+            { type: 'term', label: 'ॐ नाम-मार्ग', text: 'नाम-जाप वलय चक्रवात को भस्म करती है — नाम सर्वशक्तिमान है।' },
+            { type: 'term', label: '🐚 यंत्र-मार्ग', text: 'शंख-वलय (Y) भी चक्रवात नष्ट करती है — जब नाम संचित न हो।' },
+            { type: 'note', text: '⚠️ सीधे टकराने पर +1 अशुभ कर्म — नाम या शंख ही एकमात्र रक्षा।', color: '#ff3232' },
 
             // ── अंतिम चरण ──
             { type: 'heading', text: '🏔️ अंतिम चरण 🏔️' },
@@ -128,6 +138,7 @@ const PAGE_2 = {
         blocks: [
             // ── Controls ──
             { type: 'term', label: '☸️ ⬅️ ➡️ | DPAD_LEFT/RIGHT | A/D (steer)', text: 'Steer the chariot.' },
+            { type: 'note', text: '📱 Mobile: on-screen virtual buttons (ॐ 🌿 🙏 🌊 ♻️ 🐚 🪔) | 🔄 Gyroscope: tilt device left/right — iOS 13+ shows a permission dialog.', color: '#a78bfa' },
             { type: 'term', label: '📿 Naama-Japa : RT/R1 | SPACE', text: 'Spend 1 Naama to raise an expanding aura.' },
             { type: 'term', label: '🪷 Vairagya : ⬇️ / X | S', text: 'Refuse the lure of Punya — let go of attachment.' },
             { type: 'term', label: '🌊 Pralaya : LB/L1 | Q', text: 'Invoke dissolution — abandon the chariot willingly.' },
@@ -139,11 +150,18 @@ const PAGE_2 = {
             { type: 'term', label: '🪔 Jyoti (light of sight) : B | GAMEPAD B', text: 'Regain vision in the darkness of Paapa.' },
             { type: 'note', text: 'Vision is obscured once Paapa ≥ 3.', color: '#ffe932' },
 
+            // ── Chakravaata ──
+            { type: 'heading', text: '🌀 Chakravaata — The face of fear in Maya 🌀' },
+            { type: 'term', label: '🌀 Chakravaata', text: 'The storm of Samsara — pulls the player toward itself within a 160px range. Also drags nearby Shuvha and Ashuvha Maya into its vortex.' },
+            { type: 'term', label: 'ॐ Naama-Maarga', text: 'The Naama-Japa ring burns the Chakravaata — Naama is all-powerful.' },
+            { type: 'term', label: '🐚 Yantra-Maarga', text: 'The Shankha ring (Y) also destroys the Chakravaata — for when no Naama is available.' },
+            { type: 'note', text: '⚠️ A direct collision adds +1 Ashuvha Karma — only Naama or Shankha can protect you.', color: '#ff3232' },
+
             // ── Final phase ──
             { type: 'heading', text: '🏔️ The Final Phase 🏔️' },
             { type: 'term', label: '🙏 Samarpita (50)', text: 'Chetana awakens — the path toward Moksha opens.' },
             { type: 'term', label: '🌌 The Bhakti path', text: '1 Naama → burns Punya | 5 Naama → burns Paapa | 10 Naama → burns Praarabdha.' },
-            { type: 'term', label: 'ॐ 🙌 Poorna-Samarpana : ⬆️ | RB/R1 | W', text: 'Surrender completely while inside the Bhakti path.' },
+            { type: 'term', label: '🙌 Poorna-Samarpana : ⬆️ | RB/R1 | W', text: 'Surrender completely while inside the Bhakti path.' },
             { type: 'note', text: '⚠️ Only during the final phase (Samaya < 100s).', color: '#ff3232' },
 
             // ── Fruits of karma ──
@@ -194,8 +212,6 @@ const PAGE_3 = {
     },
 };
 // ── सम्पूर्ण ग्रंथ ───────────────────────────────────────────
-// ⚠️ PAGE_2, PAGE_3 अगले पैच में जुड़ेंगे।
-// ⚠️ PAGE_3 अगले पैच में जुड़ेगा।
 export const SHAASHTRA_PAGES = [PAGE_1, PAGE_2, PAGE_3];
 
 /**
@@ -247,9 +263,9 @@ export function renderShaashtraPage(pageIndex, lang) {
                 if (!sh) break;
                 html += `<p style="text-align:center;margin:14px 0;">`
                      +  `<em style="color:#ffecb4;">`
-+                    // बहु-पंक्ति श्लोक — '\n' को <br> बनाएँ (escape के बाद, सुरक्षित)
-+                    escapeHtml(sh.text).replace(/\n/g, '<br>')
-+                    `</em>`;
+                     // बहु-पंक्ति श्लोक — '\n' को <br> बनाएँ (escape के बाद, सुरक्षित)
+                     +  escapeHtml(sh.text).replace(/\n/g, '<br>')
+                     +  `</em>`;
                 const meaning = sh.meaning?.[lang];
                 if (meaning) {
                     html += `<br><span style="color:rgba(200,200,220,0.72);font-size:0.9em;">`
