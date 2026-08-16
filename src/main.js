@@ -618,7 +618,7 @@ function gameLoop(ts) {
         // tutorial completion हर frame check करें
         tutorial.checkCompletion({
             player:         engine.player,
-            activeNaam:     engine.activeNaam,
+            sanchitaNaama:     engine.sanchitaNaama,
             isNaamaJaapa:   engine.isNaamaJaapa,
             playerInTunnel: engine.playerInTunnel,
             praarabdha:     engine.praarabdha,
