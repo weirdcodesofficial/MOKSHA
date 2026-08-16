@@ -70,7 +70,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 - 🌀 **Chakravaata (Maya Tufaan)** — Can only be dispelled by Naam-Jaapa or Shankha if Naam-Jaap unavailable
 - 🎵 **Layered Ambient Audio** — 4 continuous loops (bgMusic, Shathendriya, SushuptiSwaansa, JaagritaSwaansa) with smooth duck/fade
 - 🔮 **Sci-Fi Yantra Visuals** — CRT scanlines, gold scan-sweep, Yantra polygons, cyberGrid
-- 🏆 **Three End States** — Moksha (liberation), Pralaya (dissolution), Punarjanma (rebirth)
+- 🔱 **Three End States** — Moksha (liberation), Pralaya (dissolution), Punarjanma (rebirth)
 - 🎮 **Full Gamepad Support** — Xbox/generic controller with deadzone handling
 - 📱 **Mobile Touch Controls** — On-screen virtual buttons overlay; multi-touch safe; blocker-stack visibility system
 - 🔄 **Gyroscope Steering** — Device tilt → chariot steering (gamma axis); iOS 13+ permission dialog; calibration support
@@ -81,7 +81,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 - ⚖️ **Prarabdha Bhog System** — Endure past karma over time; unit-break explosion; MAX 15 cap; samaya penalty ×1.15; `_praarabdhaSpeedMul` carry-forward across janma
 - 🧘 **Chetanaa Immunity** — चेतना-जागृति grants karma immunity (गीता 4.37 — ज्ञानाग्निः सर्वकर्माणि भस्मसात्)
 - 🧩 **ES6 Modular Architecture** — KarmaEngine split into 4 mixins: KarmaMixin, PhysicsMixin, StateMixin + Renderer + Touch + Tutorial
-- 🌀 **Bhakti-Marga Spawn Bias** — Naama always spawns inside the tunnel (tunnelProb=1.0); other Maya objects spawn 85% outside and 15% inside — obstacles remain but Naama stays dominant in the path
+- 🧘‍♀️ **Bhakti-Marga Spawn Bias** — Naama always spawns inside the tunnel (tunnelProb=1.0); other Maya objects spawn 85% outside and 15% inside — obstacles remain but Naama stays dominant in the path
 
 ---
 
