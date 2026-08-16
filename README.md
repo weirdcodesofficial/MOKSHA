@@ -79,7 +79,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 - 📜 **In-Game shaashtra** — Full philosophical treatise accessible via ESC
 - 🔔 **Canvas Alert Queue** — Contextual slide-in alert cards (top-right), category-colored, auto-dismiss; de-duplicated (no per-second flood)
 - ⚖️ **Prarabdha Bhog System** — Endure past karma over time; unit-break explosion; MAX 15 cap; samaya penalty ×1.15; `_praarabdhaSpeedMul` carry-forward across janma
-- 🧘 **Chetanaa Immunity** — चेतना-जागृति grants karma immunity (गीता 4.37 — ज्ञानाग्निः सर्वकर्माणि भस्मसात्)
+- 👁️ **Chetanaa Immunity** — चेतना-जागृति grants karma immunity (गीता 4.37 — ज्ञानाग्निः सर्वकर्माणि भस्मसात्)
 - 🧩 **ES6 Modular Architecture** — KarmaEngine split into 4 mixins: KarmaMixin, PhysicsMixin, StateMixin + Renderer + Touch + Tutorial
 - 🧘‍♀️ **Bhakti-Marga Spawn Bias** — Naama always spawns inside the tunnel (tunnelProb=1.0); other Maya objects spawn 85% outside and 15% inside — obstacles remain but Naama stays dominant in the path
 
