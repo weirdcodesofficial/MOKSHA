@@ -17,6 +17,23 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 
 let ctx = null;
 
+// ====================== ⚡ Quality Tier Detection ======================
+/**
+ * Low-end device detect — coarse pointer (touch) + ≤4 CPU cores।
+ * इस flag के आधार पर sb() shadow को disable करती है।
+ */
+const _isLowEnd = (window.matchMedia?.('(pointer: coarse)').matches === true && (navigator.hardwareConcurrency ?? 8) <= 4);
+
+/**
+ * shadowBlur helper — low-end पर 0, high-end पर actual value।
+ * हर `ctx.shadowBlur = X` को `ctx.shadowBlur = sb(X)` से replace करें।
+ * @param {number} val
+ * @returns {number}
+ */
+
+function sb(val) {return _isLowEnd ? 0 : val}
+
+
 // ====================== ⚡ कैशिंग (Caching) ======================
 const mayaSpriteCache = {};
 const emojiSpriteCache = {};
@@ -142,7 +159,7 @@ function drawGlowRing(cx, cy, ring) {
     ctx.beginPath(); ctx.arc(cx, cy, ring.radius, 0, Math.PI * 2);
     ctx.lineWidth = 3 + (ring.radius * ring.lineWidthMul);
     ctx.strokeStyle = ring.strokeColor;
-    ctx.shadowBlur = ring.shadowBlur; ctx.shadowColor = ring.glowColor;
+    ctx.shadowBlur = sb(ring.shadowBlur); ctx.shadowColor = ring.glowColor;
     ctx.stroke();
     ctx.fillStyle = ring.fillColor; ctx.fill();
     ctx.shadowBlur = 0; ctx.shadowColor = "transparent";
@@ -159,7 +176,7 @@ function drawPickupGlowIcon(cx, cy, bScale, icon, midColorRGB, midAlpha, shadowC
     grad.addColorStop(1, `rgba(${midColorRGB},0)`);
     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx, cy, r + 10, 0, Math.PI * 2); ctx.fill();
     ctx.font = (16 * bScale) + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.shadowBlur = 10; ctx.shadowColor = shadowColor; ctx.fillStyle = "#ffffff";
+    ctx.shadowBlur = sb(10); ctx.shadowColor = shadowColor; ctx.fillStyle = "#ffffff";
     ctx.fillText(icon, cx, cy);
     ctx.shadowBlur = 0; ctx.shadowColor = "transparent";
     ctx.restore();
@@ -185,16 +202,17 @@ function drawKarmaChain(cx, baseY, color, strength = 1, isHeavy = false, frameNo
     // praarabdha chain subtle opacity — orbit rings से distinguish हो
     ctx.globalAlpha = isHeavy ? 0.72 : 1.0;
     ctx.font = `${fontSize}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.shadowColor = color; ctx.shadowBlur = isHeavy ? (28 + strength * 22) : (25 + strength * 20);
+    ctx.shadowColor = color; ctx.shadowBlur = sb(isHeavy ? (28 + strength * 22) : (25 + strength * 20));
     ctx.fillText(isHeavy ? "📜" : "⛓️", cx, y);
-    ctx.shadowBlur = isHeavy ? 14 : 12;
+    ctx.shadowBlur = sb(isHeavy ? 14 : 12);
     ctx.fillText(isHeavy ? "📜" : "⛓️", cx, y);
+    ctx.shadowBlur = 0; // explicit leak guard — restore से पहले
     ctx.restore();
 }
 
 function drawYantraPolygon(cx, cy, radius, sides, rotation, strokeStyle, lineWidth, shadowColor, shadowBlur) {
     ctx.save();
-    ctx.shadowColor = shadowColor; ctx.shadowBlur = shadowBlur;
+    ctx.shadowColor = shadowColor; ctx.shadowBlur = sb(shadowBlur);
     ctx.strokeStyle = strokeStyle; ctx.lineWidth = lineWidth;
     ctx.beginPath();
     for (let i = 0; i < sides; i++) {
@@ -256,7 +274,7 @@ function drawAlerts(alertQueue, WIDTH) {
         const depthFade = 1 - (renderedCount * 0.12);
         ctx.globalAlpha = Math.min(1, a.opacity) * depthFade;
         // ── drop shadow ──
-        ctx.shadowBlur  = 18;
+        ctx.shadowBlur  = sb(18);
         ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
 
         // ── background rounded rect ──
@@ -275,7 +293,7 @@ function drawAlerts(alertQueue, WIDTH) {
 
         // ── left colored accent border ──
         ctx.fillStyle = color;
-        ctx.shadowBlur  = 8;
+        ctx.shadowBlur  = sb(8);
         ctx.shadowColor = color;
         ctx.beginPath();
         ctx.roundRect(cardX, cardY + RADIUS, BORDER_W, CARD_H - RADIUS * 2, 2);
@@ -290,7 +308,7 @@ function drawAlerts(alertQueue, WIDTH) {
             ctx.textAlign     = 'center';
             ctx.textBaseline  = 'middle';
             ctx.fillStyle     = '#ffffff';
-            ctx.shadowBlur    = 6;
+            ctx.shadowBlur    = sb(6);
             ctx.shadowColor   = color;
             ctx.fillText(a.icon, iconX, iconY);
             ctx.shadowBlur    = 0;
@@ -369,7 +387,7 @@ function drawProximateAlerts(alertQueue, player, smoothSize, WIDTH) {
 
         // ── background pill ──
         ctx.fillStyle   = 'rgba(6, 6, 18, 0.85)';
-        ctx.shadowBlur  = 10;
+        ctx.shadowBlur  = sb(10);
         ctx.shadowColor = 'rgba(0,0,0,0.6)';
         ctx.beginPath();
         ctx.roundRect(pillCX - PILL_W / 2, pillY - PILL_H / 2, PILL_W, PILL_H, PILL_R);
@@ -379,7 +397,7 @@ function drawProximateAlerts(alertQueue, player, smoothSize, WIDTH) {
         // ── colored border ──
         ctx.strokeStyle = color;
         ctx.lineWidth   = 1;
-        ctx.shadowBlur  = 5;
+        ctx.shadowBlur  = sb(5);
         ctx.shadowColor = color;
         ctx.beginPath();
         ctx.roundRect(pillCX - PILL_W / 2, pillY - PILL_H / 2, PILL_W, PILL_H, PILL_R);
@@ -392,7 +410,7 @@ function drawProximateAlerts(alertQueue, player, smoothSize, WIDTH) {
         if (icon) {
             ctx.font      = "14px 'Noto Sans Devanagari', sans-serif";
             ctx.fillStyle = '#ffffff';
-            ctx.shadowBlur  = 4;
+            ctx.shadowBlur  = sb(4);
             ctx.shadowColor = color;
             ctx.fillText(icon, pillCX - PILL_W / 2 + 16, pillY);
             ctx.shadowBlur = 0;
@@ -471,7 +489,7 @@ export const Renderer = {
         }
         ctx.fillStyle = cachedTunnelGrad; ctx.fillRect(TUNNEL_X, 0, TUNNEL_WIDTH, HEIGHT);
 
-        ctx.save(); ctx.shadowBlur = 8; ctx.shadowColor = "#00f0ff";
+        ctx.save(); ctx.shadowBlur = sb(8); ctx.shadowColor = "#00f0ff";
         ctx.fillStyle = "rgba(120, 245, 255, 0.65)";
         ctx.beginPath();
         tunnelSparkles.forEach(sparkle => {
@@ -490,15 +508,15 @@ export const Renderer = {
         ctx.fill();
         ctx.restore();
 
-        ctx.shadowBlur = 22 + (edgeIntensity * 25); ctx.shadowColor = "#ff00c8";
+        ctx.shadowBlur = sb(22 + (edgeIntensity * 25)); ctx.shadowColor = "#ff00c8";
         ctx.strokeStyle = "rgba(255, 0, 200, " + (0.35 + edgeIntensity * 0.35) + ")"; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.moveTo(TUNNEL_X, 0); ctx.lineTo(TUNNEL_X, HEIGHT); ctx.moveTo(TUNNEL_X + TUNNEL_WIDTH, 0); ctx.lineTo(TUNNEL_X + TUNNEL_WIDTH, HEIGHT); ctx.stroke();
 
-        ctx.shadowBlur = 12 + (edgeIntensity * 20); ctx.shadowColor = "#00f0ff";
+        ctx.shadowBlur = sb(12 + (edgeIntensity * 20)); ctx.shadowColor = "#00f0ff";
         ctx.strokeStyle = "rgba(0, 240, 255, " + (0.7 + edgeIntensity * 0.3) + ")"; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(TUNNEL_X, 0); ctx.lineTo(TUNNEL_X, HEIGHT); ctx.moveTo(TUNNEL_X + TUNNEL_WIDTH, 0); ctx.lineTo(TUNNEL_X + TUNNEL_WIDTH, HEIGHT); ctx.stroke();
 
-        let scanY = (frameNow * 0.15) % HEIGHT; ctx.fillStyle = "rgba(0, 240, 255, " + (0.2 + edgeIntensity * 0.35) + ")"; ctx.shadowBlur = 14; ctx.shadowColor = "#ff00c8"; ctx.fillRect(TUNNEL_X, scanY, TUNNEL_WIDTH, 3);
+        let scanY = (frameNow * 0.15) % HEIGHT; ctx.fillStyle = "rgba(0, 240, 255, " + (0.2 + edgeIntensity * 0.35) + ")"; ctx.shadowBlur = sb(14); ctx.shadowColor = "#ff00c8"; ctx.fillRect(TUNNEL_X, scanY, TUNNEL_WIDTH, 3);
         ctx.shadowBlur = 0;
         ctx.restore();
 
@@ -509,8 +527,8 @@ export const Renderer = {
             if (!g.active) return;
             ctx.save(); ctx.globalAlpha = Math.max(0, g.alpha);
             ctx.beginPath(); ctx.arc(g.x, g.y, g.radius, 0, Math.PI * 2);
-            ctx.strokeStyle = g.color; ctx.lineWidth = 2; ctx.shadowBlur = 10; ctx.shadowColor = g.color;
-            ctx.stroke(); ctx.restore();
+            ctx.strokeStyle = g.color; ctx.lineWidth = 2; ctx.shadowBlur = sb(10); ctx.shadowColor = g.color;
+            ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
         });
         ctx.globalAlpha = 1.0;
         if (swaansaSamapta) { ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, player.y - 10); ctx.lineTo(WIDTH, player.y - 10); ctx.stroke(); }
@@ -540,19 +558,20 @@ export const Renderer = {
             ctx.save();
             if (naamaGlowTimer > 0) {
                 let a = naamaGlowTimer / 40;
-                ctx.shadowBlur = 18; ctx.shadowColor = "rgba(255, 255, 255, " + a + ")";
+                ctx.shadowBlur = sb(18); ctx.shadowColor = "rgba(255, 255, 255, " + a + ")";
                 ctx.fillStyle = "rgba(255, 255, 255, " + a + ")";
                 ctx.beginPath(); ctx.arc(cx, cy, (swaansaringSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
             }
             if (bodyGlowTimer > 0) {
                 ctx.globalAlpha = bodyGlowTimer / 40;
-                ctx.shadowBlur = 18; ctx.shadowColor = bodyGlowColor; ctx.fillStyle = bodyGlowColor;
+                ctx.shadowBlur = sb(18); ctx.shadowColor = bodyGlowColor; ctx.fillStyle = bodyGlowColor;
                 ctx.beginPath(); ctx.arc(cx, cy, (swaansaringSmoothSize / 2) + 12, 0, Math.PI * 2); ctx.fill();
             }
+            ctx.shadowBlur = 0;
             ctx.restore();
         }
 
-        ctx.save(); ctx.shadowBlur = sharirGlow; ctx.shadowColor = `rgba(255,255,255,${sharirAlpha})`; ctx.strokeStyle = `rgba(255,255,255,${sharirAlpha})`; ctx.lineWidth = (0.5 + worldSwaansaPulse * 1.2) * (smoothSize / 60); ctx.beginPath(); ctx.arc(cx, cy, swaansaringSmoothSize / 2, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.shadowBlur = sb(sharirGlow); ctx.shadowColor = `rgba(255,255,255,${sharirAlpha})`; ctx.strokeStyle = `rgba(255,255,255,${sharirAlpha})`; ctx.lineWidth = (0.5 + worldSwaansaPulse * 1.2) * (smoothSize / 60); ctx.beginPath(); ctx.arc(cx, cy, swaansaringSmoothSize / 2, 0, Math.PI * 2); ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
         
         let sRadius = (swaansaringSmoothSize / 2) - 7; 
         let sCy = cy; 
@@ -574,13 +593,14 @@ export const Renderer = {
             cachedBuddhiSprite = { canvas: bOff, sz: bSz };
         }
         ctx.save();
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = sb(12);
         ctx.shadowColor = "rgba(255, 160, 60, 0.55)";
         ctx.drawImage(cachedBuddhiSprite.canvas, cx - cachedBuddhiSprite.sz / 2, sCy - cachedBuddhiSprite.sz / 2);
-        ctx.shadowBlur = 22;
+        ctx.shadowBlur = sb(22);
         ctx.shadowColor = "rgba(255, 170, 50, 0.88)";
         ctx.strokeStyle = "rgba(255, 200, 60, 0.65)"; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(cx, sCy, sRadius, 0, Math.PI * 2); ctx.stroke();
+        ctx.shadowBlur = 0;
         ctx.restore();
 
         let triRadius = sRadius; 
@@ -641,16 +661,16 @@ export const Renderer = {
         // आत्मन् sprite — swaansa-pulse से shadowBlur dynamic
         const atmanGlow = 20 + worldSwaansaPulse * 45; // peak पर ~65
         const atmanOpacity = 0.55 + worldSwaansaPulse * 0.45;
-        ctx.shadowBlur = atmanGlow;
+        ctx.shadowBlur = sb(atmanGlow);
         ctx.shadowColor =  `rgba(220, 200, 255, ${atmanOpacity})`; // divine violet — चित्-शक्ति
         ctx.drawImage(cachedAtmanSprite.canvas, cx - cachedAtmanSprite.sz / 2, atmanY - cachedAtmanSprite.sz / 2);
         // केंद्र बिंदु — radius और glow दोनों pulse होंगे
         const atmanDotR = 0.7 + worldSwaansaPulse * 0.5;
-        ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = atmanGlow * 1.4;
+        ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = sb(atmanGlow * 1.4);
         ctx.beginPath(); ctx.arc(cx, atmanY, atmanDotR, 0, Math.PI * 2); ctx.fill(); 
         ctx.restore();
 
-        ctx.save(); ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = 3;
+        ctx.save(); ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = sb(3);
         let horseCount = 6; let horseSpacing = 10; let startX = cx - ((horseCount - 1) * horseSpacing) / 2;
         for (let i = 0; i < horseCount; i++) { 
             let hx, hy; 
@@ -693,9 +713,10 @@ export const Renderer = {
                 ctx.arc(gcx, gcy, pBaseR + pPulse * 2, 0, Math.PI * 2);
                 ctx.strokeStyle = pIsShuvha ? "rgba(50,255,50,0.45)" : "rgba(255,50,50,0.45)";
                 ctx.lineWidth = 1.2;
-                ctx.shadowBlur = 4;
+                ctx.shadowBlur = sb(4);
                 ctx.shadowColor = pIsShuvha ? "#32ff32" : "#ff3232";
                 ctx.stroke();
+                ctx.shadowBlur = 0;
                 ctx.restore();
             } else if (m.type === "naama") {
                 let r = 18 * bScale; let ncx = m.x + m.width / 2; let ncy = m.y + m.height / 2; let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.save();
@@ -704,9 +725,10 @@ export const Renderer = {
                 ctx.save();
                 ctx.font = (16 * bScale) + "px 'Noto Sans Devanagari', sans-serif";
                 ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.shadowBlur = 10; ctx.shadowColor = "#ffffff";
+                ctx.shadowBlur = sb(10); ctx.shadowColor = "#ffffff";
                 ctx.fillStyle = "#1a1a2e"; 
                 ctx.fillText("ॐ", ncx, ncy);
+                ctx.shadowBlur = 0;
                 ctx.restore();
             } else if (m.type === "kripa") {
                 drawPickupGlowIcon(m.x + m.width / 2, m.y + m.height / 2, bScale, "✋", "255,215,0", 0.55, "#ffd700", frameNow, 130, 5);
@@ -718,8 +740,8 @@ export const Renderer = {
                 ctx.fillStyle = cGrad; ctx.beginPath(); ctx.arc(0, 0, 20 * bScale, 0, Math.PI * 2); ctx.fill();
                 ctx.rotate(-(frameNow / 120) % (Math.PI * 2));
                 ctx.font = (18 * bScale) + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.shadowBlur = 10; ctx.shadowColor = "#aaaaaa"; ctx.fillStyle = "#ffffff";
-                ctx.fillText("🌪️", 0, 0); ctx.restore();
+                ctx.shadowBlur = sb(10); ctx.shadowColor = "#aaaaaa"; ctx.fillStyle = "#ffffff";
+                ctx.fillText("🌪️", 0, 0); ctx.shadowBlur = 0; ctx.restore();
             } else if (m.type === "shankha") {
                 drawPickupGlowIcon(m.x + m.width / 2, m.y + m.height / 2, bScale, "🐚", "125,211,252", 0.55, "#7dd3fc", frameNow, 140, 3);
             } else if (m.type === "jyoti") {
@@ -757,11 +779,12 @@ export const Renderer = {
                 ctx.fillText(t('hud.punyaTimerLabel') + pendingGoodKarmaCount, timerCx, baseY - 13);                // countdown
                 ctx.font      = "900 " + (20 + pulse * 3) + "px 'Orbitron', sans-serif";
                 ctx.fillStyle = "#ffffff";
-                ctx.shadowBlur = 12 + pulse * 10; ctx.shadowColor = "#00ff00";
+                ctx.shadowBlur = sb(12 + pulse * 10); ctx.shadowColor = "#00ff00";
                 ctx.fillText(secondsLeft + "s", timerCx, baseY + 10);
                 ctx.lineWidth = 1.2;
                 ctx.strokeStyle = "rgba(50,255,50," + (0.7 + pulse * 0.3) + ")";
                 ctx.strokeText(secondsLeft + "s", timerCx, baseY + 10);
+                ctx.shadowBlur = 0;
                 ctx.restore();
             }
 
@@ -786,17 +809,18 @@ export const Renderer = {
                 // countdown
                 ctx.font      = "900 " + (20 + pulse * 3) + "px 'Orbitron', sans-serif";
                 ctx.fillStyle = "#ffffff";
-                ctx.shadowBlur = 12 + pulse * 10; ctx.shadowColor = "#a78bfa";
+                ctx.shadowBlur = sb(12 + pulse * 10); ctx.shadowColor = "#a78bfa";
                 ctx.fillText(secLeft + "s", timerCx, baseY + 10);
                 ctx.lineWidth = 1.2;
                 ctx.strokeStyle = "rgba(167,139,250," + (0.7 + pulse * 0.3) + ")";
                 ctx.strokeText(secLeft + "s", timerCx, baseY + 10);
+                ctx.shadowBlur = 0;
                 ctx.restore();
             }
         }
 
         if (samaya < 100 && samaya > 0 && !swaansaSamapta && !gameOver) {
-            ctx.save(); let currentSamay = Math.ceil(samaya); let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let textY = cy - smoothSize / 2 - 55; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = 10; ctx.shadowColor = "#ff3232"; ctx.fillStyle = "rgba(255, 200, 200, 0.9)"; ctx.fillText(t('hud.finalPhase'), cx, textY - 24); ctx.font = "900 " + (26 + pulse * 3) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 20 + pulse * 35; ctx.shadowColor = "#ff0000"; ctx.fillText(currentSamay + "s", cx, textY); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255, 50, 50, " + (0.8 + pulse * 0.2) + ")"; ctx.strokeText(currentSamay + "s", cx, textY); ctx.restore();
+            ctx.save(); let currentSamay = Math.ceil(samaya); let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let textY = cy - smoothSize / 2 - 55; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = sb(10); ctx.shadowColor = "#ff3232"; ctx.fillStyle = "rgba(255, 200, 200, 0.9)"; ctx.fillText(t('hud.finalPhase'), cx, textY - 24); ctx.font = "900 " + (26 + pulse * 3) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = sb(20 + pulse * 35); ctx.shadowColor = "#ff0000"; ctx.fillText(currentSamay + "s", cx, textY); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255, 50, 50, " + (0.8 + pulse * 0.2) + ")"; ctx.strokeText(currentSamay + "s", cx, textY); ctx.shadowBlur = 0; ctx.restore();
         }
 
         ctx.save();
@@ -846,9 +870,10 @@ export const Renderer = {
             ctx.fill();
             ctx.lineWidth = ft.isBigName ? 2.4 : 1.8;
             ctx.strokeStyle = ft.color;
-            ctx.shadowBlur = ft.isBigName ? 18 : 10;
+            ctx.shadowBlur = sb(ft.isBigName ? 18 : 10);
             ctx.shadowColor = ft.color;
             ctx.stroke();
+            ctx.shadowBlur = 0;
             ctx.restore();
 
             ctx.lineWidth = Math.max(2, currentFontSize * 0.07);
@@ -857,10 +882,11 @@ export const Renderer = {
             ctx.globalAlpha = ft.alpha;
             ctx.strokeText(ft.text, safeX, ft.y);
 
-            ctx.shadowBlur = ft.isBigName ? 22 : 16;
+            ctx.shadowBlur = sb(ft.isBigName ? 22 : 16);
             ctx.shadowColor = ft.color;
             ctx.fillStyle = ft.color;
             ctx.fillText(ft.text, safeX, ft.y);
+            ctx.shadowBlur = 0;
         });
         ctx.restore();
 
@@ -900,10 +926,11 @@ export const Renderer = {
             ctx.textAlign    = "center";
             ctx.textBaseline = "middle";
             ctx.font         = "700 18px 'Orbitron', sans-serif";
-            ctx.shadowBlur   = 18;
+            ctx.shadowBlur   = sb(18);
             ctx.shadowColor  = "#ffffff";
             ctx.fillStyle    = "#ffffff";
             ctx.fillText(notifyText, WIDTH / 2, HEIGHT / 2, PILL_W - 24);
+            ctx.shadowBlur = 0;
             ctx.restore();
         }
 
@@ -929,7 +956,7 @@ export const Renderer = {
         ctx.arc(cx, cy, gateeRadius, 0, Math.PI * 2);
         ctx.lineWidth   = 5;
         ctx.strokeStyle = `rgba(${gateeNeonRGB}, 0.18)`;
-        ctx.shadowBlur  = 12; ctx.shadowColor = gateeShadowClr;
+        ctx.shadowBlur  = sb(12); ctx.shadowColor = gateeShadowClr;
         ctx.globalAlpha = 0.6;
         ctx.stroke();
 
@@ -938,7 +965,7 @@ export const Renderer = {
         ctx.arc(cx, cy, gateeRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * gateeRatio));
         ctx.lineWidth   = gateeCritical ? 6 : 5;
         ctx.strokeStyle = `rgba(${gateeNeonRGB}, 0.55)`;
-        ctx.shadowBlur  = gateeCritical ? 28 : 18; ctx.shadowColor = gateeShadowClr;
+        ctx.shadowBlur  = sb(gateeCritical ? 28 : 18); ctx.shadowColor = gateeShadowClr;
         ctx.globalAlpha = 0.7 + Math.sin(frameNow / 200) * 0.2;
         ctx.stroke();
 
@@ -947,7 +974,7 @@ export const Renderer = {
         ctx.arc(cx, cy, gateeRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * gateeRatio));
         ctx.lineWidth   = 2.5;
         ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-        ctx.shadowBlur  = gateeCritical ? 16 : 10; ctx.shadowColor = gateeShadowClr;
+        ctx.shadowBlur  = sb(gateeCritical ? 16 : 10); ctx.shadowColor = gateeShadowClr;
         ctx.globalAlpha = 0.9 + Math.sin(frameNow / 200) * 0.1;
         ctx.stroke();
 
@@ -957,9 +984,10 @@ export const Renderer = {
             const ghx = cx + Math.cos(gateeHeadAngle) * gateeRadius;
             const ghy = cy + Math.sin(gateeHeadAngle) * gateeRadius;
             ctx.save();
-            ctx.shadowBlur = gateeCritical ? 20 : 14; ctx.shadowColor = gateeShadowClr;
+            ctx.shadowBlur = sb(gateeCritical ? 20 : 14); ctx.shadowColor = gateeShadowClr;
             ctx.font = "10px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.fillText(gateeHeadIcon, ghx, ghy);
+            ctx.shadowBlur = 0;
             ctx.restore();
         }
 
@@ -970,9 +998,10 @@ export const Renderer = {
             ctx.arc(cx, cy, gateeRadius, 0, Math.PI * 2);
             ctx.lineWidth   = 2;
             ctx.strokeStyle = "#a78bfa";
-            ctx.shadowBlur  = 20 + pulse * 15; ctx.shadowColor = "#a78bfa";
+            ctx.shadowBlur  = sb(20 + pulse * 15); ctx.shadowColor = "#a78bfa";
             ctx.globalAlpha = 0.4 + pulse * 0.3;
             ctx.stroke();
+            ctx.shadowBlur = 0;
         }
         ctx.restore();
 
@@ -982,8 +1011,9 @@ export const Renderer = {
         ctx.beginPath();
         ctx.arc(cx, cy, samayRadius, 0, Math.PI * 2);
         ctx.lineWidth   = 7; ctx.strokeStyle = "rgba(100, 40, 255, 0.18)";
-        ctx.shadowBlur  = 45; ctx.shadowColor = "rgba(120, 60, 255, 0.90)";
+        ctx.shadowBlur  = sb(45); ctx.shadowColor = "rgba(120, 60, 255, 0.90)";
         ctx.globalAlpha = 0.75; ctx.stroke();
+        ctx.shadowBlur = 0;
         ctx.restore();
 
         let samayRatio = Math.max(0, samaya / SAMAYA_PRAARAMBHIKA);
@@ -1004,14 +1034,14 @@ export const Renderer = {
         ctx.arc(cx, cy, samayRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * arcLengthMultiplier));
         ctx.lineWidth = (samaya < 100) ? 6 : 5; 
         ctx.strokeStyle = "rgba(" + samayNeonColor + ", 0.5)";
-        ctx.shadowBlur = (samaya < 100) ? 28 : 18; ctx.shadowColor = samayNeonShadow;
+        ctx.shadowBlur = sb((samaya < 100) ? 28 : 18); ctx.shadowColor = samayNeonShadow;
         ctx.globalAlpha = 0.7 + Math.sin(frameNow / 150) * 0.2;
         ctx.stroke();
 
         ctx.beginPath();
         ctx.arc(cx, cy, samayRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * arcLengthMultiplier));
         ctx.lineWidth = 2.5; ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-        ctx.shadowBlur = (samaya < 100) ? 16 : 10; ctx.shadowColor = samayNeonShadow;
+        ctx.shadowBlur = sb((samaya < 100) ? 16 : 10); ctx.shadowColor = samayNeonShadow;
         ctx.globalAlpha = 0.9 + Math.sin(frameNow / 150) * 0.1;
         ctx.stroke();
         
@@ -1020,9 +1050,10 @@ export const Renderer = {
             let shx = cx + Math.cos(samayHeadAngle) * samayRadius;
             let shy = cy + Math.sin(samayHeadAngle) * samayRadius;
             ctx.save();
-            ctx.shadowBlur = (samaya < 100) ? 20 : 14; ctx.shadowColor = samayNeonShadow;
+            ctx.shadowBlur = sb((samaya < 100) ? 20 : 14); ctx.shadowColor = samayNeonShadow;
             ctx.font = "10px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.fillText("⏳", shx, shy);
+            ctx.shadowBlur = 0;
             ctx.restore();
         }
         ctx.restore();
@@ -1084,7 +1115,7 @@ export const Renderer = {
             ctx.quadraticCurveTo(pankhudiRadius + curLength * 0.4,  curWidth / 2, pankhudiRadius, pankhudiBaseHalfWidth);
             ctx.closePath();
 
-            ctx.shadowBlur  = isActive ? 22 : isConsumed ? 0 : 12;
+            ctx.shadowBlur  = sb(isActive ? 22 : isConsumed ? 0 : 12);
             ctx.shadowColor = isActive ? "rgba(255, 220, 80, 1.0)" : "rgba(255, 180, 50, 0.85)";
             ctx.globalAlpha = isConsumed ? 0.7 : 1.0;
             ctx.fillStyle = grad;
@@ -1150,7 +1181,7 @@ export const Renderer = {
                 }
                 // extraGlow cap — over-bright orbit clutter रोकें
                 extraGlow = Math.min(extraGlow, 28);
-                ctx.shadowBlur = (orbit.glow || 6) + extraGlow;
+                ctx.shadowBlur = sb((orbit.glow || 6) + extraGlow);
                 ctx.shadowColor = orbit.color; let renderTime = frameNow / 1000;
                 let pulse = Math.sin(renderTime * 1.2 + o) * 2; let actualDist = baseDist + pulse; let visibleCount = Math.min(orbit.count, 36); let step = Math.max(1, Math.ceil(orbit.count / visibleCount)); let drawCount = Math.ceil(orbit.count / step);
                 let extraRadius = (orbit.glowTimer && orbit.glowTimer > 0) ? (orbit.glowTimer / 60) * 1.6 : 0; 
@@ -1172,8 +1203,9 @@ export const Renderer = {
             ctx.save();
             ctx.beginPath(); ctx.arc(cx, cy, naamaGhera, 0, Math.PI * 2);
             ctx.lineWidth = 3 + (naamaGhera * 0.005); ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
-            ctx.shadowBlur = 20; ctx.shadowColor = "#ffffff"; ctx.stroke();
+            ctx.shadowBlur = sb(20); ctx.shadowColor = "#ffffff"; ctx.stroke();
             ctx.fillStyle = "rgba(255, 255, 255, 0.06)"; ctx.fill();
+            ctx.shadowBlur = 0;
             ctx.restore();
         }
         ctx.restore();
@@ -1291,7 +1323,7 @@ export const Renderer = {
         context.fillRect(0, 0, W, H);
 
         // ── 2. Card drop-shadow ──
-        context.shadowBlur  = 40;
+        context.shadowBlur  = sb(40);
         context.shadowColor = 'rgba(255, 215, 0, 0.35)';
 
         // ── 3. Card background ──
@@ -1311,7 +1343,7 @@ export const Renderer = {
         // ── 5. Top accent line (saffron) ──
         context.strokeStyle = '#ff9933';
         context.lineWidth   = 3;
-        context.shadowBlur  = 8;
+        context.shadowBlur  = sb(8);
         context.shadowColor = '#ff9933';
         context.beginPath();
         context.roundRect(CARD_X + 24, CARD_Y, CARD_W - 48, 3, 2);
@@ -1329,7 +1361,7 @@ export const Renderer = {
             // gold border को हरे border से ओवरड्रॉ करें
             context.strokeStyle = 'rgba(50, 255, 100, 0.60)';
             context.lineWidth   = 1.5;
-            context.shadowBlur  = 8;
+            context.shadowBlur  = sb(8);
             context.shadowColor = 'rgba(50, 255, 100, 0.40)';
             context.beginPath();
             context.roundRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS);
@@ -1370,7 +1402,7 @@ export const Renderer = {
         context.fillStyle = '#ffd700';
         context.textAlign = 'center';
         context.textBaseline = 'top';
-        context.shadowBlur  = 14;
+        context.shadowBlur  = sb(14);
         context.shadowColor = '#ffd700';
         context.fillText('🕉️', W / 2, CARD_Y + 16);
         context.shadowBlur  = 0;
@@ -1456,7 +1488,7 @@ export const Renderer = {
             // fill — बीता हुआ हिस्सा (हरा)
             const filled = Math.max(2, BTN_W * card.resolveProgress);
             context.fillStyle   = '#32ff64';
-            context.shadowBlur  = 8;
+            context.shadowBlur  = sb(8);
             context.shadowColor = '#32ff64';
             context.beginPath();
             context.roundRect(BTN_X, BAR_Y, filled, BAR_H, 3);
@@ -1465,7 +1497,7 @@ export const Renderer = {
         } else {
             // ── normal state: dismiss button ──
             context.fillStyle   = 'rgba(255, 153, 51, 0.18)';
-            context.shadowBlur  = 10;
+            context.shadowBlur  = sb(10);
             context.shadowColor = '#ff9933';
             context.beginPath();
             context.roundRect(BTN_X, BTN_Y, BTN_W, BTN_H, 8);
