@@ -323,7 +323,7 @@ export class KarmaEngine {
         this.HUD_TOP_Y    = HUD_TOP_Y;  // gameplay area इससे नीचे शुरू होती है
         // player प्रारंभिक position
         this.player.x = WIDTH / 2 - 30;
-        this.player.y = HEIGHT - 250;   // HUD_TOP_Y से नीचे — unchanged (player नीचे है)
+        this.player.y = HEIGHT - 150;   // HUD_TOP_Y से नीचे — unchanged (player नीचे है)
 
         // ── Pre-allocate pools (§2.3) — push/splice कभी नहीं ──
         for (let i = 0; i < 50; i++) {
