@@ -559,14 +559,23 @@ export const Renderer = {
         ctx.fillStyle = "rgba(255, 255, 255, 0.25)"; ctx.beginPath(); stars.forEach(star => { ctx.moveTo(star.x + star.size, star.y); ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2); }); ctx.fill();
         particlePool.forEach(p => { if (!p.active) return; ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1.0;
         
+        // ── Issue #96: glowEffectPool batch — shadowBlur=10 सभी glows पर समान ──
+        // प्रति-glow save/restore → एक outer save/restore; N sets → 1 set।
+        ctx.save();
+        ctx.lineWidth  = 2;
+        ctx.shadowBlur = 10;
         glowEffectPool.forEach(g => {
             if (!g.active) return;
-            ctx.save(); ctx.globalAlpha = Math.max(0, g.alpha);
+            ctx.globalAlpha = Math.max(0, g.alpha);
             ctx.beginPath(); ctx.arc(g.x, g.y, g.radius, 0, Math.PI * 2);
-            ctx.strokeStyle = g.color; ctx.lineWidth = 2; ctx.shadowBlur = sb(10); ctx.shadowColor = g.color;
-            ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
+            ctx.strokeStyle = g.color;
+            ctx.shadowColor = g.color;
+            ctx.stroke();
         });
+        ctx.shadowBlur  = 0;
+        ctx.shadowColor = "transparent";
         ctx.globalAlpha = 1.0;
+        ctx.restore();
         if (swaansaSamapta) { ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, player.y - 10); ctx.lineTo(WIDTH, player.y - 10); ctx.stroke(); }
 
         let scale = smoothSize / 60; let cx = player.x + smoothSize / 2; let cy = player.y + smoothSize / 2;
@@ -706,7 +715,8 @@ export const Renderer = {
         ctx.beginPath(); ctx.arc(cx, atmanY, atmanDotR, 0, Math.PI * 2); ctx.fill(); 
         ctx.restore();
 
-        ctx.save(); ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = sb(3);
+        // ── Issue #96: horse dots shadowBlur=3 हटाया — 2.2px arc पर imperceptible ──
+        ctx.save(); ctx.fillStyle = "#ffffff";
         let horseCount = 6; let horseSpacing = 10; let startX = cx - ((horseCount - 1) * horseSpacing) / 2;
         for (let i = 0; i < horseCount; i++) { 
             let hx, hy; 
@@ -754,18 +764,16 @@ export const Renderer = {
                 let gcx = bx + bw / 2; let gcy = by + bh / 2;
                 let sprite = getMayaSprite(m.type, bScale);
                 ctx.drawImage(sprite.canvas, gcx - sprite.size / 2, gcy - sprite.size / 2);
-                let pIsShuvha = m.type === "shuvha";
-                let pPulse = (Math.sin(frameNow / 140) + 1) / 2; 
-                let pBaseR = (sprite.size / 2) * 0.92;           
+                // ── Issue #96: pulse arc shadowBlur=4 हटाया — opacity बढ़ाई (equivalent visual) ──
+                const pIsShuvha = m.type === "shuvha";
+                const pPulse    = (Math.sin(frameNow / 140) + 1) / 2;
+                const pBaseR    = (sprite.size / 2) * 0.92;
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(gcx, gcy, pBaseR + pPulse * 2, 0, Math.PI * 2);
-                ctx.strokeStyle = pIsShuvha ? "rgba(50,255,50,0.45)" : "rgba(255,50,50,0.45)";
-                ctx.lineWidth = 1.2;
-                ctx.shadowBlur = sb(4);
-                ctx.shadowColor = pIsShuvha ? "#32ff32" : "#ff3232";
+                ctx.strokeStyle = pIsShuvha ? "rgba(50,255,50,0.62)" : "rgba(255,50,50,0.62)";
+                ctx.lineWidth   = 1.2;
                 ctx.stroke();
-                ctx.shadowBlur = 0;
                 ctx.restore();
             } else if (m.type === "naama") {
                 const r   = 18 * bScale;
@@ -1164,80 +1172,131 @@ export const Renderer = {
         }
         ctx.restore();
 
-        let PANKHUDI_COUNT = 10;                    
-        let pankhudiRadius = samayRadius + 3;        
-        let pankhudiLength = 22;                     
-        let pankhudiWidth = 45;                       
-        let pankhudiBaseHalfWidth = 8;                
-        let pankhudiRotation = frameNow / 4500;      
-        
-        let swaansaProgress = swaansaTimer / 360;
-        let swaansaBoost = Math.sin(swaansaProgress * Math.PI); 
+        const PANKHUDI_COUNT        = 10;
+        const pankhudiRadius        = samayRadius + 3;
+        const pankhudiLength        = 22;
+        const pankhudiWidth         = 45;
+        const pankhudiBaseHalfWidth  = 8;
+        const pankhudiRotation      = frameNow / 4500;
+        const swaansaProgress       = swaansaTimer / 360;
+        const swaansaBoost          = Math.sin(swaansaProgress * Math.PI);
+        const p_consumed            = 10 - swaansa;
+        // सक्रिय (अभी-सांस) पंखुड़ी — -1 अगर कोई नहीं
+        const p_active              = (swaansa > 0 && p_consumed < PANKHUDI_COUNT) ? p_consumed : -1;
 
-        let p_consumed = 10 - swaansa; 
-
-        for (let p = 0; p < PANKHUDI_COUNT; p++) {
-            let pAngle = pankhudiRotation + (p * (Math.PI * 2 / PANKHUDI_COUNT));
-            let isConsumed = p < p_consumed;          
-            let isActive   = p === p_consumed && swaansa > 0; 
-            
-            let curLength = isActive ? pankhudiLength * (1 + swaansaBoost * 0.5) : pankhudiLength;
-            let curWidth = isActive ? pankhudiWidth * (1 + swaansaBoost * 0.4) : isConsumed ? pankhudiWidth * 0.7 : pankhudiWidth;
-
+        // ── Gradient cache — translate(cx,cy) CTM में एक बार बनाएँ ──
+        // draw-time CTM (rotate per petal) gradient coords को correctly align करेगा
+        if (!cachedPankhudiConsumed) {
             ctx.save();
             ctx.translate(cx, cy);
-            ctx.rotate(pAngle);
+            // 🌑 खर्च — dim/धुंधला
+            cachedPankhudiConsumed  = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
+            cachedPankhudiConsumed.addColorStop(0,    "rgba(140, 120, 90, 0.55)");
+            cachedPankhudiConsumed.addColorStop(0.55, "rgba(120, 100, 72, 0.50)");
+            cachedPankhudiConsumed.addColorStop(1,    "rgba(100, 90, 70, 0.45)");
+            // 🌸 सक्रिय — gold burst
+            cachedPankhudiActive    = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
+            cachedPankhudiActive.addColorStop(0,    "rgba(255, 140, 60, 1.00)");
+            cachedPankhudiActive.addColorStop(0.30, "rgba(255, 240, 180, 1.00)");
+            cachedPankhudiActive.addColorStop(0.70, "rgba(255, 200, 60, 0.95)");
+            cachedPankhudiActive.addColorStop(1,    "rgba(255, 160, 20, 0.90)");
+            // 🌕 निष्क्रिय — सामान्य gold
+            cachedPankhudiInactive  = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
+            cachedPankhudiInactive.addColorStop(0,    "rgba(255, 236, 139, 0.85)");
+            cachedPankhudiInactive.addColorStop(0.55, "rgba(255, 170, 40, 0.85)");
+            cachedPankhudiInactive.addColorStop(1,    "rgba(255, 179, 60, 0.85)");
+            ctx.restore();
+        }
 
-            let grad;
+        // ── Issue #96: 3-pass pankhudi — 20 shadowBlur state-changes → 4 ──
 
-            if (!cachedPankhudiConsumed) {
-                // 🌑 खर्च — dim/धुंधला (consumed petals)
-                cachedPankhudiConsumed = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                // खर्च श्वास — ash-grey-gold (spent/dim breath petals)
-                cachedPankhudiConsumed.addColorStop(0,    "rgba(140, 120, 90, 0.55)");
-                cachedPankhudiConsumed.addColorStop(0.55, "rgba(120, 100, 72, 0.50)");
-                cachedPankhudiConsumed.addColorStop(1,    "rgba(100, 90, 70, 0.45)");
-
-                // 🌸 अभी सांस — चमकीला white → gold (active petal)
-                cachedPankhudiActive = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                cachedPankhudiActive.addColorStop(0, "rgba(255, 140, 60, 1.00)");
-                cachedPankhudiActive.addColorStop(0.30, "rgba(255, 240, 180, 1.00)");
-                cachedPankhudiActive.addColorStop(0.70, "rgba(255, 200, 60, 0.95)");
-                cachedPankhudiActive.addColorStop(1, "rgba(255, 160, 20, 0.90)");
-
-                // 🌕 future — सामान्य gold (inactive petals)
-                cachedPankhudiInactive = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                cachedPankhudiInactive.addColorStop(0, "rgba(255, 236, 139, 0.85)");
-                cachedPankhudiInactive.addColorStop(0.55, "rgba(255, 170, 40, 0.85)");
-                cachedPankhudiInactive.addColorStop(1, "rgba(255, 179, 60, 0.85)");
+        // Pass 1: consumed petals — shadowBlur=0 (no glow; dim appearance)
+        if (p_consumed > 0) {
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle   = cachedPankhudiConsumed;
+            ctx.strokeStyle = "rgba(100, 100, 100, 0.3)";
+            ctx.lineWidth   = 1;
+            for (let p = 0; p < p_consumed; p++) {
+                const pAngle = pankhudiRotation + (p * (Math.PI * 2 / PANKHUDI_COUNT));
+                const cW     = pankhudiWidth * 0.7;
+                ctx.save();
+                ctx.translate(cx, cy); ctx.rotate(pAngle);
+                ctx.beginPath();
+                ctx.moveTo(pankhudiRadius, -pankhudiBaseHalfWidth);
+                ctx.quadraticCurveTo(pankhudiRadius + pankhudiLength * 0.4, -cW / 2, pankhudiRadius + pankhudiLength, 0);
+                ctx.quadraticCurveTo(pankhudiRadius + pankhudiLength * 0.4,  cW / 2, pankhudiRadius, pankhudiBaseHalfWidth);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
             }
+            ctx.restore();
+        }
 
+        // Pass 2: inactive petals — shadowBlur एक बार set (सभी के लिए)
+        {
+            ctx.save();
+            ctx.shadowBlur  = 12;
+            ctx.shadowColor = "rgba(255, 180, 50, 0.85)";
+            ctx.fillStyle   = cachedPankhudiInactive;
+            ctx.lineWidth   = 1;
+            for (let p = p_consumed; p < PANKHUDI_COUNT; p++) {
+                if (p === p_active) continue;   // active → pass 3
+                const pAngle = pankhudiRotation + (p * (Math.PI * 2 / PANKHUDI_COUNT));
+                ctx.save();
+                ctx.translate(cx, cy); ctx.rotate(pAngle);
+                ctx.beginPath();
+                ctx.moveTo(pankhudiRadius, -pankhudiBaseHalfWidth);
+                ctx.quadraticCurveTo(pankhudiRadius + pankhudiLength * 0.4, -pankhudiWidth / 2, pankhudiRadius + pankhudiLength, 0);
+                ctx.quadraticCurveTo(pankhudiRadius + pankhudiLength * 0.4,  pankhudiWidth / 2, pankhudiRadius, pankhudiBaseHalfWidth);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = "rgba(255, 223, 120, 0.55)";
+                ctx.stroke();
+                // midrib
+                ctx.strokeStyle = "rgba(200, 110, 15, 0.5)";
+                ctx.lineWidth   = 0.6;
+                ctx.beginPath();
+                ctx.moveTo(pankhudiRadius + pankhudiBaseHalfWidth, 0);
+                ctx.lineTo(pankhudiRadius + pankhudiLength * 0.92, 0);
+                ctx.stroke();
+                ctx.restore();   // lineWidth और strokeStyle restore होते हैं
+            }
+            ctx.shadowBlur  = 0;
+            ctx.shadowColor = "transparent";
+            ctx.restore();
+        }
 
-            grad = isActive ? cachedPankhudiActive : isConsumed ? cachedPankhudiConsumed : cachedPankhudiInactive;
-
+        // Pass 3: active petal — एकमात्र, shadowBlur=22
+        if (p_active >= 0) {
+            const pAngle = pankhudiRotation + (p_active * (Math.PI * 2 / PANKHUDI_COUNT));
+            const curLen = pankhudiLength * (1 + swaansaBoost * 0.5);
+            const curW   = pankhudiWidth  * (1 + swaansaBoost * 0.4);
+            ctx.save();
+            ctx.translate(cx, cy); ctx.rotate(pAngle);
+            // fill — glow सहित
+            ctx.shadowBlur  = 22;
+            ctx.shadowColor = "rgba(255, 220, 80, 1.0)";
+            ctx.fillStyle   = cachedPankhudiActive;
             ctx.beginPath();
             ctx.moveTo(pankhudiRadius, -pankhudiBaseHalfWidth);
-            ctx.quadraticCurveTo(pankhudiRadius + curLength * 0.4, -curWidth / 2, pankhudiRadius + curLength, 0);
-            ctx.quadraticCurveTo(pankhudiRadius + curLength * 0.4,  curWidth / 2, pankhudiRadius, pankhudiBaseHalfWidth);
+            ctx.quadraticCurveTo(pankhudiRadius + curLen * 0.4, -curW / 2, pankhudiRadius + curLen, 0);
+            ctx.quadraticCurveTo(pankhudiRadius + curLen * 0.4,  curW / 2, pankhudiRadius, pankhudiBaseHalfWidth);
             ctx.closePath();
-
-            ctx.shadowBlur  = sb(isActive ? 22 : isConsumed ? 0 : 12);
-            ctx.shadowColor = isActive ? "rgba(255, 220, 80, 1.0)" : "rgba(255, 180, 50, 0.85)";
-            ctx.globalAlpha = isConsumed ? 0.7 : 1.0;
-            ctx.fillStyle = grad;
             ctx.fill();
-
-            ctx.shadowBlur = 0;
-            ctx.strokeStyle = isConsumed ? "rgba(100, 100, 100, 0.3)" : "rgba(255, 223, 120, 0.55)";
-            ctx.lineWidth = 1; ctx.stroke();
-
-            if (!isConsumed) {
-                ctx.strokeStyle = "rgba(200, 110, 15, 0.5)";
-                ctx.lineWidth = 0.6;
-                ctx.beginPath(); ctx.moveTo(pankhudiRadius + pankhudiBaseHalfWidth, 0); ctx.lineTo(pankhudiRadius + curLength * 0.92, 0); ctx.stroke();
-            }
-            ctx.shadowBlur = 0; ctx.shadowColor = "transparent"; 
-            ctx.globalAlpha = 1.0; 
+            // stroke — shadow बिना
+            ctx.shadowBlur  = 0;
+            ctx.strokeStyle = "rgba(255, 223, 120, 0.55)";
+            ctx.lineWidth   = 1;
+            ctx.stroke();
+            // midrib
+            ctx.strokeStyle = "rgba(200, 110, 15, 0.5)";
+            ctx.lineWidth   = 0.6;
+            ctx.beginPath();
+            ctx.moveTo(pankhudiRadius + pankhudiBaseHalfWidth, 0);
+            ctx.lineTo(pankhudiRadius + curLen * 0.92, 0);
+            ctx.stroke();
             ctx.restore();
         }
 
