@@ -50,6 +50,14 @@ let cachedPankhudiConsumed = null;
 let cachedPankhudiActive = null;
 let cachedPankhudiInactive = null;
 
+// ── Issue #97: per-frame gradient → sprite cache ───────────────────────────
+/** pickup glow sprites — key: "${midColorRGB}_${midAlpha}_${bScaleBucket}" */
+const pickupGlowSpriteCache  = {};
+/** naama glow sprites — key: "naama_${bScaleBucket}" */
+const naamaSpriteCache        = {};
+/** chakravaata radial sprites — key: "chakra_${bScaleBucket}" */
+const chakravaataSpriteCache  = {};
+
 // ====================== 🎨 स्प्राइट और हेल्पर फंक्शन्स ======================
 
 function buildSciFiGridSprite(WIDTH, HEIGHT) {
@@ -167,18 +175,46 @@ function drawGlowRing(cx, cy, ring) {
 }
 
 function drawPickupGlowIcon(cx, cy, bScale, icon, midColorRGB, midAlpha, shadowColor, frameNow, pulseSpeed = 130, pulseAmp = 4) {
-    let r = 16 * bScale;
-    let pulse = (Math.sin(frameNow / pulseSpeed) + 1) / 2;
+    // ── Issue #97: radial gradient offscreen sprite में bake — per-frame allocation शून्य ──
+    // bScale सदा 0.5 या 1.0 → 2–3 unique sprite variants ही बनेंगे।
+    // pulse अब globalAlpha (0.80→1.0) से simulate होता है।
+    const bScaleBucket = Math.round(bScale * 2) / 2;           // 0.5 unit bucket
+    const spriteKey    = `${midColorRGB}_${midAlpha}_${bScaleBucket}`;
+
+    if (!pickupGlowSpriteCache[spriteKey]) {
+        const r    = 16 * bScaleBucket;
+        const maxR = Math.ceil(r + 12);    // max outer radius — pulseAmp margin included
+        const sz   = maxR * 2 + 4;
+        const off  = document.createElement('canvas');
+        off.width  = sz; off.height = sz;
+        const octx = off.getContext('2d');
+        const ocx  = sz / 2, ocy = sz / 2;
+        const grad = octx.createRadialGradient(ocx, ocy, 0, ocx, ocy, maxR);
+        grad.addColorStop(0,   "rgba(255,255,255,0.95)");
+        grad.addColorStop(0.5, `rgba(${midColorRGB},${midAlpha})`);
+        grad.addColorStop(1,   `rgba(${midColorRGB},0)`);
+        octx.fillStyle = grad;
+        octx.beginPath(); octx.arc(ocx, ocy, maxR, 0, Math.PI * 2); octx.fill();
+        pickupGlowSpriteCache[spriteKey] = { canvas: off, sz };
+    }
+
+    const sp    = pickupGlowSpriteCache[spriteKey];
+    const pulse = (Math.sin(frameNow / pulseSpeed) + 1) / 2;
+
     ctx.save();
-    let grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r + 8 + pulse * pulseAmp);
-    grad.addColorStop(0, "rgba(255,255,255,0.95)");
-    grad.addColorStop(0.5, `rgba(${midColorRGB},${midAlpha})`);
-    grad.addColorStop(1, `rgba(${midColorRGB},0)`);
-    ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx, cy, r + 10, 0, Math.PI * 2); ctx.fill();
-    ctx.font = (16 * bScale) + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.shadowBlur = sb(10); ctx.shadowColor = shadowColor; ctx.fillStyle = "#ffffff";
+    ctx.globalAlpha = 0.80 + pulse * 0.20;                     // glow pulse via alpha
+    ctx.drawImage(sp.canvas, cx - sp.sz / 2, cy - sp.sz / 2);
+    ctx.globalAlpha = 1.0;
+    // icon text
+    ctx.font         = (16 * bScale) + "px sans-serif";
+    ctx.textAlign    = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowBlur   = 10;
+    ctx.shadowColor  = shadowColor;
+    ctx.fillStyle    = "#ffffff";
     ctx.fillText(icon, cx, cy);
-    ctx.shadowBlur = 0; ctx.shadowColor = "transparent";
+    ctx.shadowBlur  = 0;
+    ctx.shadowColor = "transparent";
     ctx.restore();
 }
 
@@ -682,10 +718,23 @@ export const Renderer = {
         for (let i = 0; i < horseCount; i++) {
             let hx = finalHorsePositions[i].x; let hy = finalHorsePositions[i].y;
             if (totalKarma > 0) {
-                let ashuvhaRatio = ashuvhaKarma / totalKarma; let reinGrad = ctx.createLinearGradient(hx, hy, cx, sCy);
-                if (ashuvhaRatio === 0) { ctx.strokeStyle = "rgba(50, 255, 50, 0.65)"; } 
-                else if (ashuvhaRatio === 1) { ctx.strokeStyle = "rgba(255, 50, 50, 0.65)"; } 
-                else { let splitPoint = 1 - ashuvhaRatio; reinGrad.addColorStop(0, "rgba(50, 255, 50, 0.65)"); reinGrad.addColorStop(splitPoint, "rgba(50, 255, 50, 0.65)"); reinGrad.addColorStop(splitPoint, "rgba(255, 50, 50, 0.65)"); reinGrad.addColorStop(1, "rgba(255, 50, 50, 0.65)"); ctx.strokeStyle = reinGrad; }
+                // ── Issue #97: gradient केवल mixed karma (0 < ratio < 1) पर बनाएँ ──
+                // pure green / pure red → solid color, zero allocation।
+                const ashuvhaRatio = ashuvhaKarma / totalKarma;
+                if (ashuvhaRatio === 0) {
+                    ctx.strokeStyle = "rgba(50, 255, 50, 0.65)";
+                } else if (ashuvhaRatio === 1) {
+                    ctx.strokeStyle = "rgba(255, 50, 50, 0.65)";
+                } else {
+                    // mixed karma — gradient per-horse, per-frame (positions vary)
+                    const reinGrad   = ctx.createLinearGradient(hx, hy, cx, sCy);
+                    const splitPoint = 1 - ashuvhaRatio;
+                    reinGrad.addColorStop(0,          "rgba(50, 255, 50, 0.65)");
+                    reinGrad.addColorStop(splitPoint, "rgba(50, 255, 50, 0.65)");
+                    reinGrad.addColorStop(splitPoint, "rgba(255, 50, 50, 0.65)");
+                    reinGrad.addColorStop(1,          "rgba(255, 50, 50, 0.65)");
+                    ctx.strokeStyle = reinGrad;
+                }
             } else { ctx.strokeStyle = (i === pulledHorseIndex) ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.4)"; }
             ctx.lineWidth = (i === pulledHorseIndex) ? 1.6 : 1.1; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(cx, sCy - sRadius); ctx.stroke();
         }
@@ -719,29 +768,86 @@ export const Renderer = {
                 ctx.shadowBlur = 0;
                 ctx.restore();
             } else if (m.type === "naama") {
-                let r = 18 * bScale; let ncx = m.x + m.width / 2; let ncy = m.y + m.height / 2; let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.save();
-                let nGrad = ctx.createRadialGradient(ncx, ncy, 0, ncx, ncy, r + pulse * 4); nGrad.addColorStop(0, "#ffffff"); nGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.9)"); nGrad.addColorStop(1, "rgba(255, 255, 255, 0)"); ctx.fillStyle = nGrad; ctx.beginPath(); ctx.arc(ncx, ncy, r + 6, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(ncx, ncy, r * 0.6, 0, Math.PI * 2);
-                ctx.fill(); ctx.restore();
+                const r   = 18 * bScale;
+                const ncx = m.x + m.width  / 2;
+                const ncy = m.y + m.height / 2;
+                // ── Issue #97: naama radial gradient → sprite cache ──
+                // bScale (0.5/1.0) → 2 sprites; inner core भी bake होती है।
+                const nBucket = Math.round(bScale * 2) / 2;
+                const nKey    = `naama_${nBucket}`;
+                if (!naamaSpriteCache[nKey]) {
+                    const maxR = Math.ceil(r + 6) + 2;
+                    const sz   = maxR * 2 + 4;
+                    const off  = document.createElement('canvas');
+                    off.width  = sz; off.height = sz;
+                    const octx = off.getContext('2d');
+                    const ocx  = sz / 2, ocy = sz / 2;
+                    const grad = octx.createRadialGradient(ocx, ocy, 0, ocx, ocy, maxR);
+                    grad.addColorStop(0,   "#ffffff");
+                    grad.addColorStop(0.5, "rgba(255,255,255,0.9)");
+                    grad.addColorStop(1,   "rgba(255,255,255,0)");
+                    octx.fillStyle = grad;
+                    octx.beginPath(); octx.arc(ocx, ocy, maxR, 0, Math.PI * 2); octx.fill();
+                    // inner solid core — sprite में bake
+                    octx.fillStyle = "#ffffff";
+                    octx.beginPath(); octx.arc(ocx, ocy, r * 0.6, 0, Math.PI * 2); octx.fill();
+                    naamaSpriteCache[nKey] = { canvas: off, sz };
+                }
+                const nSp   = naamaSpriteCache[nKey];
+                const pulse = (Math.sin(frameNow / 150) + 1) / 2;
                 ctx.save();
-                ctx.font = (16 * bScale) + "px 'Noto Sans Devanagari', sans-serif";
-                ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.shadowBlur = sb(10); ctx.shadowColor = "#ffffff";
-                ctx.fillStyle = "#1a1a2e"; 
+                ctx.globalAlpha = 0.85 + pulse * 0.15;          // pulse via alpha
+                ctx.drawImage(nSp.canvas, ncx - nSp.sz / 2, ncy - nSp.sz / 2);
+                ctx.globalAlpha = 1.0;
+                ctx.restore();
+                // ॐ text — हमेशा ताज़ा draw (shadow + color context-dependent)
+                ctx.save();
+                ctx.font         = (16 * bScale) + "px 'Noto Sans Devanagari', sans-serif";
+                ctx.textAlign    = "center";
+                ctx.textBaseline = "middle";
+                ctx.shadowBlur   = 10;
+                ctx.shadowColor  = "#ffffff";
+                ctx.fillStyle    = "#1a1a2e";
                 ctx.fillText("ॐ", ncx, ncy);
-                ctx.shadowBlur = 0;
                 ctx.restore();
             } else if (m.type === "kripa") {
                 drawPickupGlowIcon(m.x + m.width / 2, m.y + m.height / 2, bScale, "✋", "255,215,0", 0.55, "#ffd700", frameNow, 130, 5);
             } else if (m.type === "chakravaata") {
-                let ccx = m.x + m.width / 2; let ccy = m.y + m.height / 2; ctx.save();
-                ctx.translate(ccx, ccy); ctx.rotate((frameNow / 120) % (Math.PI * 2));
-                let cGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 22 * bScale);
-                cGrad.addColorStop(0, "rgba(200,200,210,0.9)"); cGrad.addColorStop(0.6, "rgba(120,120,140,0.5)"); cGrad.addColorStop(1, "rgba(120,120,140,0)");
-                ctx.fillStyle = cGrad; ctx.beginPath(); ctx.arc(0, 0, 20 * bScale, 0, Math.PI * 2); ctx.fill();
+                const ccx = m.x + m.width  / 2;
+                const ccy = m.y + m.height / 2;
+                // ── Issue #97: chakravaata radial gradient → sprite cache ──
+                // gradient center = (0,0) after translate — rotation-invariant radial, cache safe।
+                const cBucket = Math.round(bScale * 2) / 2;
+                const cKey    = `chakra_${cBucket}`;
+                if (!chakravaataSpriteCache[cKey]) {
+                    const cR    = Math.ceil(22 * cBucket) + 2;
+                    const cSz   = cR * 2 + 4;
+                    const cOff  = document.createElement('canvas');
+                    cOff.width  = cSz; cOff.height = cSz;
+                    const cOctx = cOff.getContext('2d');
+                    const cOcx  = cSz / 2, cOcy = cSz / 2;
+                    const cGrad = cOctx.createRadialGradient(cOcx, cOcy, 0, cOcx, cOcy, cR);
+                    cGrad.addColorStop(0,   "rgba(200,200,210,0.9)");
+                    cGrad.addColorStop(0.6, "rgba(120,120,140,0.5)");
+                    cGrad.addColorStop(1,   "rgba(120,120,140,0)");
+                    cOctx.fillStyle = cGrad;
+                    cOctx.beginPath(); cOctx.arc(cOcx, cOcy, 20 * cBucket, 0, Math.PI * 2); cOctx.fill();
+                    chakravaataSpriteCache[cKey] = { canvas: cOff, sz: cSz };
+                }
+                const cSp = chakravaataSpriteCache[cKey];
+                ctx.save();
+                ctx.translate(ccx, ccy);
+                ctx.rotate((frameNow / 120) % (Math.PI * 2));
+                ctx.drawImage(cSp.canvas, -cSp.sz / 2, -cSp.sz / 2);
                 ctx.rotate(-(frameNow / 120) % (Math.PI * 2));
-                ctx.font = (18 * bScale) + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.shadowBlur = sb(10); ctx.shadowColor = "#aaaaaa"; ctx.fillStyle = "#ffffff";
-                ctx.fillText("🌪️", 0, 0); ctx.shadowBlur = 0; ctx.restore();
+                ctx.font         = (18 * bScale) + "px sans-serif";
+                ctx.textAlign    = "center";
+                ctx.textBaseline = "middle";
+                ctx.shadowBlur   = 10;
+                ctx.shadowColor  = "#aaaaaa";
+                ctx.fillStyle    = "#ffffff";
+                ctx.fillText("🌪️", 0, 0);
+                ctx.restore();
             } else if (m.type === "shankha") {
                 drawPickupGlowIcon(m.x + m.width / 2, m.y + m.height / 2, bScale, "🐚", "125,211,252", 0.55, "#7dd3fc", frameNow, 140, 3);
             } else if (m.type === "jyoti") {
