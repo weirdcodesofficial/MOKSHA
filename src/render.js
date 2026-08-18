@@ -58,6 +58,45 @@ const naamaSpriteCache        = {};
 /** chakravaata radial sprites — key: "chakra_${bScaleBucket}" */
 const chakravaataSpriteCache  = {};
 
+// ── Issue #142: rein linear gradient cache ──
+// सभी 6 घोड़े एक ही ashuvhaRatio share करते हैं — एक object काफ़ी है।
+let cachedReinGrad    = null;
+let cachedReinGradKey = '';
+
+// ── Issue #98: sin/cos lookup table — orbit/yantra trig calls का मुख्य स्थान ──// 2048 entries → ~0.18° precision; 200px orbit पर max error ≈ 0.003px (अदृश्य)।
+// Float32Array — cache-friendly; regular Array से ~2× तेज़ access।
+const _LUT_SIZE  = 2048;
+const _LUT_MASK  = _LUT_SIZE - 1;          // bitwise AND के लिए (power-of-2)
+const _LUT_SCALE = _LUT_SIZE / (Math.PI * 2);
+const _LUT_SIN   = new Float32Array(_LUT_SIZE);
+const _LUT_COS   = new Float32Array(_LUT_SIZE);
+(function _buildLUT() {
+    for (let i = 0; i < _LUT_SIZE; i++) {
+        const a   = (i / _LUT_SIZE) * Math.PI * 2;
+        _LUT_SIN[i] = Math.sin(a);
+        _LUT_COS[i] = Math.cos(a);
+    }
+})();
+
+/**
+ * LUT-based sin — arbitrary angle (positive/negative/large) safe।
+ * `a % 2π` → [-2π, 2π] → `* _LUT_SCALE | 0` → int → `+ _LUT_SIZE & _LUT_MASK` → [0, 2047]
+ * @param {number} a — radians
+ * @returns {number}
+ */
+function lutSin(a) {
+    return _LUT_SIN[(((a % (Math.PI * 2)) * _LUT_SCALE | 0) + _LUT_SIZE) & _LUT_MASK];
+}
+
+/**
+ * LUT-based cos।
+ * @param {number} a — radians
+ * @returns {number}
+ */
+function lutCos(a) {
+    return _LUT_COS[(((a % (Math.PI * 2)) * _LUT_SCALE | 0) + _LUT_SIZE) & _LUT_MASK];
+}
+
 // ====================== 🎨 स्प्राइट और हेल्पर फंक्शन्स ======================
 
 function buildSciFiGridSprite(WIDTH, HEIGHT) {
@@ -247,14 +286,16 @@ function drawKarmaChain(cx, baseY, color, strength = 1, isHeavy = false, frameNo
 }
 
 function drawYantraPolygon(cx, cy, radius, sides, rotation, strokeStyle, lineWidth, shadowColor, shadowBlur) {
+    // ── Issue #98: Math.cos/sin → lutCos/lutSin ──
     ctx.save();
-    ctx.shadowColor = shadowColor; ctx.shadowBlur = sb(shadowBlur);
+    ctx.shadowColor = shadowColor; ctx.shadowBlur = shadowBlur;
     ctx.strokeStyle = strokeStyle; ctx.lineWidth = lineWidth;
     ctx.beginPath();
+    const step = (Math.PI * 2) / sides;
     for (let i = 0; i < sides; i++) {
-        let angle = rotation + i * (2 * Math.PI / sides);
-        let px = cx + radius * Math.cos(angle);
-        let py = cy + radius * Math.sin(angle);
+        const angle = rotation + i * step;
+        const px    = cx + radius * lutCos(angle);
+        const py    = cy + radius * lutSin(angle);
         if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.closePath(); ctx.stroke();
@@ -559,14 +600,23 @@ export const Renderer = {
         ctx.fillStyle = "rgba(255, 255, 255, 0.25)"; ctx.beginPath(); stars.forEach(star => { ctx.moveTo(star.x + star.size, star.y); ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2); }); ctx.fill();
         particlePool.forEach(p => { if (!p.active) return; ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1.0;
         
+        // ── Issue #96: glowEffectPool batch — shadowBlur=10 सभी glows पर समान ──
+        // प्रति-glow save/restore → एक outer save/restore; N sets → 1 set।
+        ctx.save();
+        ctx.lineWidth  = 2;
+        ctx.shadowBlur = 10;
         glowEffectPool.forEach(g => {
             if (!g.active) return;
-            ctx.save(); ctx.globalAlpha = Math.max(0, g.alpha);
+            ctx.globalAlpha = Math.max(0, g.alpha);
             ctx.beginPath(); ctx.arc(g.x, g.y, g.radius, 0, Math.PI * 2);
-            ctx.strokeStyle = g.color; ctx.lineWidth = 2; ctx.shadowBlur = sb(10); ctx.shadowColor = g.color;
-            ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
+            ctx.strokeStyle = g.color;
+            ctx.shadowColor = g.color;
+            ctx.stroke();
         });
+        ctx.shadowBlur  = 0;
+        ctx.shadowColor = "transparent";
         ctx.globalAlpha = 1.0;
+        ctx.restore();
         if (swaansaSamapta) { ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, player.y - 10); ctx.lineTo(WIDTH, player.y - 10); ctx.stroke(); }
 
         let scale = smoothSize / 60; let cx = player.x + smoothSize / 2; let cy = player.y + smoothSize / 2;
@@ -706,7 +756,8 @@ export const Renderer = {
         ctx.beginPath(); ctx.arc(cx, atmanY, atmanDotR, 0, Math.PI * 2); ctx.fill(); 
         ctx.restore();
 
-        ctx.save(); ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = sb(3);
+        // ── Issue #96: horse dots shadowBlur=3 हटाया — 2.2px arc पर imperceptible ──
+        ctx.save(); ctx.fillStyle = "#ffffff";
         let horseCount = 6; let horseSpacing = 10; let startX = cx - ((horseCount - 1) * horseSpacing) / 2;
         for (let i = 0; i < horseCount; i++) { 
             let hx, hy; 
@@ -715,25 +766,41 @@ export const Renderer = {
             finalHorsePositions[i].x = hx; finalHorsePositions[i].y = hy; 
             ctx.beginPath(); ctx.arc(hx, hy, 2.2, 0, Math.PI * 2); ctx.fill(); 
         }
+        // ── Issue #142: rein gradient — loop के बाहर, एक बार per unique state ──
+        // सभी 6 घोड़े एक ही ashuvhaRatio share करते हैं।
+        // key: ratioBucket_cxBucket_scyBucket → karma stable रहे तो 0 re-create।
+        // center horse (index 2) representative start-point — ±25px diff imperceptible।
+        if (totalKarma > 0) {
+            const _ratio = ashuvhaKarma / totalKarma;
+            if (_ratio > 0 && _ratio < 1) {
+                const _refHx  = Math.round(startX + 2 * horseSpacing);
+                const _refHy  = Math.round(cy - swaansaringSmoothSize / 2 - 45);
+                const _cxBkt  = Math.round(cx);
+                const _scyBkt = Math.round(sCy - sRadius);
+                const _newKey = `${Math.round(_ratio * 40)}_${_cxBkt}_${_scyBkt}`;
+                if (_newKey !== cachedReinGradKey || !cachedReinGrad) {
+                    cachedReinGradKey = _newKey;
+                    const _sp = 1 - _ratio;
+                    const _g  = ctx.createLinearGradient(_refHx, _refHy, _cxBkt, _scyBkt);
+                    _g.addColorStop(0,   "rgba(50, 255, 50, 0.65)");
+                    _g.addColorStop(_sp, "rgba(50, 255, 50, 0.65)");
+                    _g.addColorStop(_sp, "rgba(255, 50, 50, 0.65)");
+                    _g.addColorStop(1,   "rgba(255, 50, 50, 0.65)");
+                    cachedReinGrad = _g;
+                }
+            }
+        }
         for (let i = 0; i < horseCount; i++) {
             let hx = finalHorsePositions[i].x; let hy = finalHorsePositions[i].y;
             if (totalKarma > 0) {
-                // ── Issue #97: gradient केवल mixed karma (0 < ratio < 1) पर बनाएँ ──
-                // pure green / pure red → solid color, zero allocation।
-                const ashuvhaRatio = ashuvhaKarma / totalKarma;
-                if (ashuvhaRatio === 0) {
+                const _ratio = ashuvhaKarma / totalKarma;
+                if (_ratio === 0) {
                     ctx.strokeStyle = "rgba(50, 255, 50, 0.65)";
-                } else if (ashuvhaRatio === 1) {
+                } else if (_ratio === 1) {
                     ctx.strokeStyle = "rgba(255, 50, 50, 0.65)";
                 } else {
-                    // mixed karma — gradient per-horse, per-frame (positions vary)
-                    const reinGrad   = ctx.createLinearGradient(hx, hy, cx, sCy);
-                    const splitPoint = 1 - ashuvhaRatio;
-                    reinGrad.addColorStop(0,          "rgba(50, 255, 50, 0.65)");
-                    reinGrad.addColorStop(splitPoint, "rgba(50, 255, 50, 0.65)");
-                    reinGrad.addColorStop(splitPoint, "rgba(255, 50, 50, 0.65)");
-                    reinGrad.addColorStop(1,          "rgba(255, 50, 50, 0.65)");
-                    ctx.strokeStyle = reinGrad;
+                    // ── Issue #142: cached gradient — 6×/frame → 0–1×/frame ──
+                    ctx.strokeStyle = cachedReinGrad;
                 }
             } else { ctx.strokeStyle = (i === pulledHorseIndex) ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.4)"; }
             ctx.lineWidth = (i === pulledHorseIndex) ? 1.6 : 1.1; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(cx, sCy - sRadius); ctx.stroke();
@@ -754,18 +821,16 @@ export const Renderer = {
                 let gcx = bx + bw / 2; let gcy = by + bh / 2;
                 let sprite = getMayaSprite(m.type, bScale);
                 ctx.drawImage(sprite.canvas, gcx - sprite.size / 2, gcy - sprite.size / 2);
-                let pIsShuvha = m.type === "shuvha";
-                let pPulse = (Math.sin(frameNow / 140) + 1) / 2; 
-                let pBaseR = (sprite.size / 2) * 0.92;           
+                // ── Issue #96: pulse arc shadowBlur=4 हटाया — opacity बढ़ाई (equivalent visual) ──
+                const pIsShuvha = m.type === "shuvha";
+                const pPulse    = (Math.sin(frameNow / 140) + 1) / 2;
+                const pBaseR    = (sprite.size / 2) * 0.92;
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(gcx, gcy, pBaseR + pPulse * 2, 0, Math.PI * 2);
-                ctx.strokeStyle = pIsShuvha ? "rgba(50,255,50,0.45)" : "rgba(255,50,50,0.45)";
-                ctx.lineWidth = 1.2;
-                ctx.shadowBlur = sb(4);
-                ctx.shadowColor = pIsShuvha ? "#32ff32" : "#ff3232";
+                ctx.strokeStyle = pIsShuvha ? "rgba(50,255,50,0.62)" : "rgba(255,50,50,0.62)";
+                ctx.lineWidth   = 1.2;
                 ctx.stroke();
-                ctx.shadowBlur = 0;
                 ctx.restore();
             } else if (m.type === "naama") {
                 const r   = 18 * bScale;
@@ -1164,80 +1229,131 @@ export const Renderer = {
         }
         ctx.restore();
 
-        let PANKHUDI_COUNT = 10;                    
-        let pankhudiRadius = samayRadius + 3;        
-        let pankhudiLength = 22;                     
-        let pankhudiWidth = 45;                       
-        let pankhudiBaseHalfWidth = 8;                
-        let pankhudiRotation = frameNow / 4500;      
-        
-        let swaansaProgress = swaansaTimer / 360;
-        let swaansaBoost = Math.sin(swaansaProgress * Math.PI); 
+        const PANKHUDI_COUNT        = 10;
+        const pankhudiRadius        = samayRadius + 3;
+        const pankhudiLength        = 22;
+        const pankhudiWidth         = 45;
+        const pankhudiBaseHalfWidth  = 8;
+        const pankhudiRotation      = frameNow / 4500;
+        const swaansaProgress       = swaansaTimer / 360;
+        const swaansaBoost          = Math.sin(swaansaProgress * Math.PI);
+        const p_consumed            = 10 - swaansa;
+        // सक्रिय (अभी-सांस) पंखुड़ी — -1 अगर कोई नहीं
+        const p_active              = (swaansa > 0 && p_consumed < PANKHUDI_COUNT) ? p_consumed : -1;
 
-        let p_consumed = 10 - swaansa; 
-
-        for (let p = 0; p < PANKHUDI_COUNT; p++) {
-            let pAngle = pankhudiRotation + (p * (Math.PI * 2 / PANKHUDI_COUNT));
-            let isConsumed = p < p_consumed;          
-            let isActive   = p === p_consumed && swaansa > 0; 
-            
-            let curLength = isActive ? pankhudiLength * (1 + swaansaBoost * 0.5) : pankhudiLength;
-            let curWidth = isActive ? pankhudiWidth * (1 + swaansaBoost * 0.4) : isConsumed ? pankhudiWidth * 0.7 : pankhudiWidth;
-
+        // ── Gradient cache — translate(cx,cy) CTM में एक बार बनाएँ ──
+        // draw-time CTM (rotate per petal) gradient coords को correctly align करेगा
+        if (!cachedPankhudiConsumed) {
             ctx.save();
             ctx.translate(cx, cy);
-            ctx.rotate(pAngle);
+            // 🌑 खर्च — dim/धुंधला
+            cachedPankhudiConsumed  = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
+            cachedPankhudiConsumed.addColorStop(0,    "rgba(140, 120, 90, 0.55)");
+            cachedPankhudiConsumed.addColorStop(0.55, "rgba(120, 100, 72, 0.50)");
+            cachedPankhudiConsumed.addColorStop(1,    "rgba(100, 90, 70, 0.45)");
+            // 🌸 सक्रिय — gold burst
+            cachedPankhudiActive    = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
+            cachedPankhudiActive.addColorStop(0,    "rgba(255, 140, 60, 1.00)");
+            cachedPankhudiActive.addColorStop(0.30, "rgba(255, 240, 180, 1.00)");
+            cachedPankhudiActive.addColorStop(0.70, "rgba(255, 200, 60, 0.95)");
+            cachedPankhudiActive.addColorStop(1,    "rgba(255, 160, 20, 0.90)");
+            // 🌕 निष्क्रिय — सामान्य gold
+            cachedPankhudiInactive  = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
+            cachedPankhudiInactive.addColorStop(0,    "rgba(255, 236, 139, 0.85)");
+            cachedPankhudiInactive.addColorStop(0.55, "rgba(255, 170, 40, 0.85)");
+            cachedPankhudiInactive.addColorStop(1,    "rgba(255, 179, 60, 0.85)");
+            ctx.restore();
+        }
 
-            let grad;
+        // ── Issue #96: 3-pass pankhudi — 20 shadowBlur state-changes → 4 ──
 
-            if (!cachedPankhudiConsumed) {
-                // 🌑 खर्च — dim/धुंधला (consumed petals)
-                cachedPankhudiConsumed = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                // खर्च श्वास — ash-grey-gold (spent/dim breath petals)
-                cachedPankhudiConsumed.addColorStop(0,    "rgba(140, 120, 90, 0.55)");
-                cachedPankhudiConsumed.addColorStop(0.55, "rgba(120, 100, 72, 0.50)");
-                cachedPankhudiConsumed.addColorStop(1,    "rgba(100, 90, 70, 0.45)");
-
-                // 🌸 अभी सांस — चमकीला white → gold (active petal)
-                cachedPankhudiActive = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                cachedPankhudiActive.addColorStop(0, "rgba(255, 140, 60, 1.00)");
-                cachedPankhudiActive.addColorStop(0.30, "rgba(255, 240, 180, 1.00)");
-                cachedPankhudiActive.addColorStop(0.70, "rgba(255, 200, 60, 0.95)");
-                cachedPankhudiActive.addColorStop(1, "rgba(255, 160, 20, 0.90)");
-
-                // 🌕 future — सामान्य gold (inactive petals)
-                cachedPankhudiInactive = ctx.createLinearGradient(pankhudiRadius, 0, pankhudiRadius + pankhudiLength, 0);
-                cachedPankhudiInactive.addColorStop(0, "rgba(255, 236, 139, 0.85)");
-                cachedPankhudiInactive.addColorStop(0.55, "rgba(255, 170, 40, 0.85)");
-                cachedPankhudiInactive.addColorStop(1, "rgba(255, 179, 60, 0.85)");
+        // Pass 1: consumed petals — shadowBlur=0 (no glow; dim appearance)
+        if (p_consumed > 0) {
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle   = cachedPankhudiConsumed;
+            ctx.strokeStyle = "rgba(100, 100, 100, 0.3)";
+            ctx.lineWidth   = 1;
+            for (let p = 0; p < p_consumed; p++) {
+                const pAngle = pankhudiRotation + (p * (Math.PI * 2 / PANKHUDI_COUNT));
+                const cW     = pankhudiWidth * 0.7;
+                ctx.save();
+                ctx.translate(cx, cy); ctx.rotate(pAngle);
+                ctx.beginPath();
+                ctx.moveTo(pankhudiRadius, -pankhudiBaseHalfWidth);
+                ctx.quadraticCurveTo(pankhudiRadius + pankhudiLength * 0.4, -cW / 2, pankhudiRadius + pankhudiLength, 0);
+                ctx.quadraticCurveTo(pankhudiRadius + pankhudiLength * 0.4,  cW / 2, pankhudiRadius, pankhudiBaseHalfWidth);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
             }
+            ctx.restore();
+        }
 
+        // Pass 2: inactive petals — shadowBlur एक बार set (सभी के लिए)
+        {
+            ctx.save();
+            ctx.shadowBlur  = 12;
+            ctx.shadowColor = "rgba(255, 180, 50, 0.85)";
+            ctx.fillStyle   = cachedPankhudiInactive;
+            ctx.lineWidth   = 1;
+            for (let p = p_consumed; p < PANKHUDI_COUNT; p++) {
+                if (p === p_active) continue;   // active → pass 3
+                const pAngle = pankhudiRotation + (p * (Math.PI * 2 / PANKHUDI_COUNT));
+                ctx.save();
+                ctx.translate(cx, cy); ctx.rotate(pAngle);
+                ctx.beginPath();
+                ctx.moveTo(pankhudiRadius, -pankhudiBaseHalfWidth);
+                ctx.quadraticCurveTo(pankhudiRadius + pankhudiLength * 0.4, -pankhudiWidth / 2, pankhudiRadius + pankhudiLength, 0);
+                ctx.quadraticCurveTo(pankhudiRadius + pankhudiLength * 0.4,  pankhudiWidth / 2, pankhudiRadius, pankhudiBaseHalfWidth);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = "rgba(255, 223, 120, 0.55)";
+                ctx.stroke();
+                // midrib
+                ctx.strokeStyle = "rgba(200, 110, 15, 0.5)";
+                ctx.lineWidth   = 0.6;
+                ctx.beginPath();
+                ctx.moveTo(pankhudiRadius + pankhudiBaseHalfWidth, 0);
+                ctx.lineTo(pankhudiRadius + pankhudiLength * 0.92, 0);
+                ctx.stroke();
+                ctx.restore();   // lineWidth और strokeStyle restore होते हैं
+            }
+            ctx.shadowBlur  = 0;
+            ctx.shadowColor = "transparent";
+            ctx.restore();
+        }
 
-            grad = isActive ? cachedPankhudiActive : isConsumed ? cachedPankhudiConsumed : cachedPankhudiInactive;
-
+        // Pass 3: active petal — एकमात्र, shadowBlur=22
+        if (p_active >= 0) {
+            const pAngle = pankhudiRotation + (p_active * (Math.PI * 2 / PANKHUDI_COUNT));
+            const curLen = pankhudiLength * (1 + swaansaBoost * 0.5);
+            const curW   = pankhudiWidth  * (1 + swaansaBoost * 0.4);
+            ctx.save();
+            ctx.translate(cx, cy); ctx.rotate(pAngle);
+            // fill — glow सहित
+            ctx.shadowBlur  = 22;
+            ctx.shadowColor = "rgba(255, 220, 80, 1.0)";
+            ctx.fillStyle   = cachedPankhudiActive;
             ctx.beginPath();
             ctx.moveTo(pankhudiRadius, -pankhudiBaseHalfWidth);
-            ctx.quadraticCurveTo(pankhudiRadius + curLength * 0.4, -curWidth / 2, pankhudiRadius + curLength, 0);
-            ctx.quadraticCurveTo(pankhudiRadius + curLength * 0.4,  curWidth / 2, pankhudiRadius, pankhudiBaseHalfWidth);
+            ctx.quadraticCurveTo(pankhudiRadius + curLen * 0.4, -curW / 2, pankhudiRadius + curLen, 0);
+            ctx.quadraticCurveTo(pankhudiRadius + curLen * 0.4,  curW / 2, pankhudiRadius, pankhudiBaseHalfWidth);
             ctx.closePath();
-
-            ctx.shadowBlur  = sb(isActive ? 22 : isConsumed ? 0 : 12);
-            ctx.shadowColor = isActive ? "rgba(255, 220, 80, 1.0)" : "rgba(255, 180, 50, 0.85)";
-            ctx.globalAlpha = isConsumed ? 0.7 : 1.0;
-            ctx.fillStyle = grad;
             ctx.fill();
-
-            ctx.shadowBlur = 0;
-            ctx.strokeStyle = isConsumed ? "rgba(100, 100, 100, 0.3)" : "rgba(255, 223, 120, 0.55)";
-            ctx.lineWidth = 1; ctx.stroke();
-
-            if (!isConsumed) {
-                ctx.strokeStyle = "rgba(200, 110, 15, 0.5)";
-                ctx.lineWidth = 0.6;
-                ctx.beginPath(); ctx.moveTo(pankhudiRadius + pankhudiBaseHalfWidth, 0); ctx.lineTo(pankhudiRadius + curLength * 0.92, 0); ctx.stroke();
-            }
-            ctx.shadowBlur = 0; ctx.shadowColor = "transparent"; 
-            ctx.globalAlpha = 1.0; 
+            // stroke — shadow बिना
+            ctx.shadowBlur  = 0;
+            ctx.strokeStyle = "rgba(255, 223, 120, 0.55)";
+            ctx.lineWidth   = 1;
+            ctx.stroke();
+            // midrib
+            ctx.strokeStyle = "rgba(200, 110, 15, 0.5)";
+            ctx.lineWidth   = 0.6;
+            ctx.beginPath();
+            ctx.moveTo(pankhudiRadius + pankhudiBaseHalfWidth, 0);
+            ctx.lineTo(pankhudiRadius + curLen * 0.92, 0);
+            ctx.stroke();
             ctx.restore();
         }
 
@@ -1260,13 +1376,15 @@ export const Renderer = {
         if (samarpita > 0) innerOrbit.push("🙏");
 
         ctx.save();
-        ctx.globalAlpha = 1.0; 
-        const innerEmojiFontSize = 10; 
+        ctx.globalAlpha = 1.0;
+        const innerEmojiFontSize = 10;
+        // ── Issue #98: innerOrbit trig → LUT ──
+        const innerStep = Math.PI * 2 / innerOrbit.length;
         for (let i = 0; i < innerOrbit.length; i++) {
-            let angle = emojiRenderTime + (i * (Math.PI * 2 / innerOrbit.length));
-            let ex = cx + Math.cos(angle) * outerRadius;
-            let ey = cy + Math.sin(angle) * outerRadius;
-            const sp = getEmojiSprite(innerOrbit[i], innerEmojiFontSize);
+            const angle = emojiRenderTime + i * innerStep;
+            const ex    = cx + lutCos(angle) * outerRadius;
+            const ey    = cy + lutSin(angle) * outerRadius;
+            const sp    = getEmojiSprite(innerOrbit[i], innerEmojiFontSize);
             ctx.drawImage(sp.canvas, ex - sp.sz / 2, ey - sp.sz / 2, sp.sz, sp.sz);
         }
         ctx.restore();
@@ -1293,12 +1411,15 @@ export const Renderer = {
                 let extraRadius = (orbit.glowTimer && orbit.glowTimer > 0) ? (orbit.glowTimer / 60) * 1.6 : 0; 
                 let dotRadius = Math.max(1.0, Math.min(1.8, 15 / Math.sqrt(drawCount))) * (orbit.sizeMult || 1.0) + extraRadius;
                 
-                const orbitFontSize = dotRadius * 4.2;
-                const sp = getEmojiSprite(orbit.emoji, orbitFontSize);
+                // ── Issue #98: outerOrbit trig → LUT ──
+                const orbitFontSize  = dotRadius * 4.2;
+                const sp             = getEmojiSprite(orbit.emoji, orbitFontSize);
+                const orbitBaseAngle = renderTime * orbit.speed;
+                const orbitStep      = Math.PI * 2 / orbit.count;
                 for (let i = 0; i < orbit.count; i += step) {
-                    let angle = (renderTime * orbit.speed) + (i * (Math.PI * 2 / orbit.count));
-                    let dx = cx + Math.cos(angle) * actualDist;
-                    let dy = cy + Math.sin(angle) * actualDist;
+                    const angle = orbitBaseAngle + i * orbitStep;
+                    const dx    = cx + lutCos(angle) * actualDist;
+                    const dy    = cy + lutSin(angle) * actualDist;
                     ctx.drawImage(sp.canvas, dx - sp.sz / 2, dy - sp.sz / 2, sp.sz, sp.sz);
                 }
                 ctx.restore(); baseDist += orbitGap;
