@@ -58,6 +58,45 @@ const naamaSpriteCache        = {};
 /** chakravaata radial sprites — key: "chakra_${bScaleBucket}" */
 const chakravaataSpriteCache  = {};
 
+// ── Issue #142: rein linear gradient cache ──
+// सभी 6 घोड़े एक ही ashuvhaRatio share करते हैं — एक object काफ़ी है।
+let cachedReinGrad    = null;
+let cachedReinGradKey = '';
+
+// ── Issue #98: sin/cos lookup table — orbit/yantra trig calls का मुख्य स्थान ──// 2048 entries → ~0.18° precision; 200px orbit पर max error ≈ 0.003px (अदृश्य)।
+// Float32Array — cache-friendly; regular Array से ~2× तेज़ access।
+const _LUT_SIZE  = 2048;
+const _LUT_MASK  = _LUT_SIZE - 1;          // bitwise AND के लिए (power-of-2)
+const _LUT_SCALE = _LUT_SIZE / (Math.PI * 2);
+const _LUT_SIN   = new Float32Array(_LUT_SIZE);
+const _LUT_COS   = new Float32Array(_LUT_SIZE);
+(function _buildLUT() {
+    for (let i = 0; i < _LUT_SIZE; i++) {
+        const a   = (i / _LUT_SIZE) * Math.PI * 2;
+        _LUT_SIN[i] = Math.sin(a);
+        _LUT_COS[i] = Math.cos(a);
+    }
+})();
+
+/**
+ * LUT-based sin — arbitrary angle (positive/negative/large) safe।
+ * `a % 2π` → [-2π, 2π] → `* _LUT_SCALE | 0` → int → `+ _LUT_SIZE & _LUT_MASK` → [0, 2047]
+ * @param {number} a — radians
+ * @returns {number}
+ */
+function lutSin(a) {
+    return _LUT_SIN[(((a % (Math.PI * 2)) * _LUT_SCALE | 0) + _LUT_SIZE) & _LUT_MASK];
+}
+
+/**
+ * LUT-based cos।
+ * @param {number} a — radians
+ * @returns {number}
+ */
+function lutCos(a) {
+    return _LUT_COS[(((a % (Math.PI * 2)) * _LUT_SCALE | 0) + _LUT_SIZE) & _LUT_MASK];
+}
+
 // ====================== 🎨 स्प्राइट और हेल्पर फंक्शन्स ======================
 
 function buildSciFiGridSprite(WIDTH, HEIGHT) {
@@ -247,14 +286,16 @@ function drawKarmaChain(cx, baseY, color, strength = 1, isHeavy = false, frameNo
 }
 
 function drawYantraPolygon(cx, cy, radius, sides, rotation, strokeStyle, lineWidth, shadowColor, shadowBlur) {
+    // ── Issue #98: Math.cos/sin → lutCos/lutSin ──
     ctx.save();
-    ctx.shadowColor = shadowColor; ctx.shadowBlur = sb(shadowBlur);
+    ctx.shadowColor = shadowColor; ctx.shadowBlur = shadowBlur;
     ctx.strokeStyle = strokeStyle; ctx.lineWidth = lineWidth;
     ctx.beginPath();
+    const step = (Math.PI * 2) / sides;
     for (let i = 0; i < sides; i++) {
-        let angle = rotation + i * (2 * Math.PI / sides);
-        let px = cx + radius * Math.cos(angle);
-        let py = cy + radius * Math.sin(angle);
+        const angle = rotation + i * step;
+        const px    = cx + radius * lutCos(angle);
+        const py    = cy + radius * lutSin(angle);
         if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.closePath(); ctx.stroke();
@@ -725,25 +766,41 @@ export const Renderer = {
             finalHorsePositions[i].x = hx; finalHorsePositions[i].y = hy; 
             ctx.beginPath(); ctx.arc(hx, hy, 2.2, 0, Math.PI * 2); ctx.fill(); 
         }
+        // ── Issue #142: rein gradient — loop के बाहर, एक बार per unique state ──
+        // सभी 6 घोड़े एक ही ashuvhaRatio share करते हैं।
+        // key: ratioBucket_cxBucket_scyBucket → karma stable रहे तो 0 re-create।
+        // center horse (index 2) representative start-point — ±25px diff imperceptible।
+        if (totalKarma > 0) {
+            const _ratio = ashuvhaKarma / totalKarma;
+            if (_ratio > 0 && _ratio < 1) {
+                const _refHx  = Math.round(startX + 2 * horseSpacing);
+                const _refHy  = Math.round(cy - swaansaringSmoothSize / 2 - 45);
+                const _cxBkt  = Math.round(cx);
+                const _scyBkt = Math.round(sCy - sRadius);
+                const _newKey = `${Math.round(_ratio * 40)}_${_cxBkt}_${_scyBkt}`;
+                if (_newKey !== cachedReinGradKey || !cachedReinGrad) {
+                    cachedReinGradKey = _newKey;
+                    const _sp = 1 - _ratio;
+                    const _g  = ctx.createLinearGradient(_refHx, _refHy, _cxBkt, _scyBkt);
+                    _g.addColorStop(0,   "rgba(50, 255, 50, 0.65)");
+                    _g.addColorStop(_sp, "rgba(50, 255, 50, 0.65)");
+                    _g.addColorStop(_sp, "rgba(255, 50, 50, 0.65)");
+                    _g.addColorStop(1,   "rgba(255, 50, 50, 0.65)");
+                    cachedReinGrad = _g;
+                }
+            }
+        }
         for (let i = 0; i < horseCount; i++) {
             let hx = finalHorsePositions[i].x; let hy = finalHorsePositions[i].y;
             if (totalKarma > 0) {
-                // ── Issue #97: gradient केवल mixed karma (0 < ratio < 1) पर बनाएँ ──
-                // pure green / pure red → solid color, zero allocation।
-                const ashuvhaRatio = ashuvhaKarma / totalKarma;
-                if (ashuvhaRatio === 0) {
+                const _ratio = ashuvhaKarma / totalKarma;
+                if (_ratio === 0) {
                     ctx.strokeStyle = "rgba(50, 255, 50, 0.65)";
-                } else if (ashuvhaRatio === 1) {
+                } else if (_ratio === 1) {
                     ctx.strokeStyle = "rgba(255, 50, 50, 0.65)";
                 } else {
-                    // mixed karma — gradient per-horse, per-frame (positions vary)
-                    const reinGrad   = ctx.createLinearGradient(hx, hy, cx, sCy);
-                    const splitPoint = 1 - ashuvhaRatio;
-                    reinGrad.addColorStop(0,          "rgba(50, 255, 50, 0.65)");
-                    reinGrad.addColorStop(splitPoint, "rgba(50, 255, 50, 0.65)");
-                    reinGrad.addColorStop(splitPoint, "rgba(255, 50, 50, 0.65)");
-                    reinGrad.addColorStop(1,          "rgba(255, 50, 50, 0.65)");
-                    ctx.strokeStyle = reinGrad;
+                    // ── Issue #142: cached gradient — 6×/frame → 0–1×/frame ──
+                    ctx.strokeStyle = cachedReinGrad;
                 }
             } else { ctx.strokeStyle = (i === pulledHorseIndex) ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.4)"; }
             ctx.lineWidth = (i === pulledHorseIndex) ? 1.6 : 1.1; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(cx, sCy - sRadius); ctx.stroke();
@@ -1319,13 +1376,15 @@ export const Renderer = {
         if (samarpita > 0) innerOrbit.push("🙏");
 
         ctx.save();
-        ctx.globalAlpha = 1.0; 
-        const innerEmojiFontSize = 10; 
+        ctx.globalAlpha = 1.0;
+        const innerEmojiFontSize = 10;
+        // ── Issue #98: innerOrbit trig → LUT ──
+        const innerStep = Math.PI * 2 / innerOrbit.length;
         for (let i = 0; i < innerOrbit.length; i++) {
-            let angle = emojiRenderTime + (i * (Math.PI * 2 / innerOrbit.length));
-            let ex = cx + Math.cos(angle) * outerRadius;
-            let ey = cy + Math.sin(angle) * outerRadius;
-            const sp = getEmojiSprite(innerOrbit[i], innerEmojiFontSize);
+            const angle = emojiRenderTime + i * innerStep;
+            const ex    = cx + lutCos(angle) * outerRadius;
+            const ey    = cy + lutSin(angle) * outerRadius;
+            const sp    = getEmojiSprite(innerOrbit[i], innerEmojiFontSize);
             ctx.drawImage(sp.canvas, ex - sp.sz / 2, ey - sp.sz / 2, sp.sz, sp.sz);
         }
         ctx.restore();
@@ -1352,12 +1411,15 @@ export const Renderer = {
                 let extraRadius = (orbit.glowTimer && orbit.glowTimer > 0) ? (orbit.glowTimer / 60) * 1.6 : 0; 
                 let dotRadius = Math.max(1.0, Math.min(1.8, 15 / Math.sqrt(drawCount))) * (orbit.sizeMult || 1.0) + extraRadius;
                 
-                const orbitFontSize = dotRadius * 4.2;
-                const sp = getEmojiSprite(orbit.emoji, orbitFontSize);
+                // ── Issue #98: outerOrbit trig → LUT ──
+                const orbitFontSize  = dotRadius * 4.2;
+                const sp             = getEmojiSprite(orbit.emoji, orbitFontSize);
+                const orbitBaseAngle = renderTime * orbit.speed;
+                const orbitStep      = Math.PI * 2 / orbit.count;
                 for (let i = 0; i < orbit.count; i += step) {
-                    let angle = (renderTime * orbit.speed) + (i * (Math.PI * 2 / orbit.count));
-                    let dx = cx + Math.cos(angle) * actualDist;
-                    let dy = cy + Math.sin(angle) * actualDist;
+                    const angle = orbitBaseAngle + i * orbitStep;
+                    const dx    = cx + lutCos(angle) * actualDist;
+                    const dy    = cy + lutSin(angle) * actualDist;
                     ctx.drawImage(sp.canvas, dx - sp.sz / 2, dy - sp.sz / 2, sp.sz, sp.sz);
                 }
                 ctx.restore(); baseDist += orbitGap;
