@@ -191,10 +191,10 @@ function drawRingTicks(cxr, cyr, radius, count, color) {
     const tickLen = 4;
     for (let i = 0; i < count; i++) {
         let angle = (Math.PI * 2 / count) * i;
-        let x1 = cxr + Math.cos(angle) * (radius - tickLen / 2);
-        let y1 = cyr + Math.sin(angle) * (radius - tickLen / 2);
-        let x2 = cxr + Math.cos(angle) * (radius + tickLen / 2);
-        let y2 = cyr + Math.sin(angle) * (radius + tickLen / 2);
+        let x1 = cxr + lutCos(angle) * (radius - tickLen / 2);
+        let y1 = cyr + lutSin(angle) * (radius - tickLen / 2);
+        let x2 = cxr + lutCos(angle) * (radius + tickLen / 2);
+        let y2 = cyr + lutSin(angle) * (radius + tickLen / 2);
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
     }
     ctx.restore();
@@ -541,8 +541,7 @@ export const Renderer = {
 
         ctx.save();
         let worldSwaansaPhase = swaansaTimer / 360;
-        let worldSwaansaPulse = (Math.sin(worldSwaansaPhase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
-
+        let worldSwaansaPulse = (lutSin(worldSwaansaPhase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
         ctx.globalCompositeOperation = 'screen';
         let swaansaGradBucket = Math.round(worldSwaansaPulse * 24);
         if (swaansaGradBucket !== cachedSwaansaGradBucket || !cachedSwaansaGrad) {
@@ -762,7 +761,7 @@ export const Renderer = {
         for (let i = 0; i < horseCount; i++) { 
             let hx, hy; 
             if (i === pulledHorseIndex) { hx = pulledHorseX; hy = pulledHorseY; } 
-            else { hx = startX + i * horseSpacing; hy = cy - swaansaringSmoothSize / 2 - 45 + (isPaused || gameOver ? 0 : Math.sin((frameNow / 70) + i) * 3); } 
+            else { hx = startX + i * horseSpacing; hy = cy - swaansaringSmoothSize / 2 - 45 + (isPaused || gameOver ? 0 : lutSin((frameNow / 70) + i) * 3); }
             finalHorsePositions[i].x = hx; finalHorsePositions[i].y = hy; 
             ctx.beginPath(); ctx.arc(hx, hy, 2.2, 0, Math.PI * 2); ctx.fill(); 
         }
@@ -932,8 +931,8 @@ export const Renderer = {
 
             if (hasPunya) {
                 const timerCx     = hasPraarabdha ? cx - HALF_GAP : cx;
-                const secondsLeft = Math.ceil(punyaTimer / 60);
-                const pulse       = (Math.sin(frameNow / 150) + 1) / 2;
+    const secondsLeft = Math.ceil(punyaTimer / 60);
+    const pulse       = (lutSin(frameNow / 150) + 1) / 2;
                 ctx.save();
                 // pill background
                 ctx.beginPath();
@@ -961,8 +960,8 @@ export const Renderer = {
 
             if (hasPraarabdha) {
                 const timerCx = hasPunya ? cx + HALF_GAP : cx;
-                const secLeft = Math.ceil(praarabdhaTimer / 60);
-                const pulse   = (Math.sin(frameNow / 150) + 1) / 2;
+    const secLeft = Math.ceil(praarabdhaTimer / 60);
+    const pulse   = (lutSin(frameNow / 150) + 1) / 2;
                 ctx.save();
                 // pill background
                 ctx.beginPath();
@@ -991,7 +990,7 @@ export const Renderer = {
         }
 
         if (samaya < 100 && samaya > 0 && !swaansaSamapta && !gameOver) {
-            ctx.save(); let currentSamay = Math.ceil(samaya); let pulse = (Math.sin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let textY = cy - smoothSize / 2 - 55; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = sb(10); ctx.shadowColor = "#ff3232"; ctx.fillStyle = "rgba(255, 200, 200, 0.9)"; ctx.fillText(t('hud.finalPhase'), cx, textY - 24); ctx.font = "900 " + (26 + pulse * 3) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = sb(20 + pulse * 35); ctx.shadowColor = "#ff0000"; ctx.fillText(currentSamay + "s", cx, textY); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255, 50, 50, " + (0.8 + pulse * 0.2) + ")"; ctx.strokeText(currentSamay + "s", cx, textY); ctx.shadowBlur = 0; ctx.restore();
+            ctx.save(); let currentSamay = Math.ceil(samaya); let pulse = (lutSin(frameNow / 150) + 1) / 2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; let textY = cy - smoothSize / 2 - 55; ctx.font = "800 13px 'Orbitron', sans-serif"; ctx.shadowBlur = sb(10); ctx.shadowColor = "#ff3232"; ctx.fillStyle = "rgba(255, 200, 200, 0.9)"; ctx.fillText(t('hud.finalPhase'), cx, textY - 24); ctx.font = "900 " + (26 + pulse * 3) + "px 'Orbitron', sans-serif"; ctx.fillStyle = "#ffffff"; ctx.shadowBlur = sb(20 + pulse * 35); ctx.shadowColor = "#ff0000"; ctx.fillText(currentSamay + "s", cx, textY); ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255, 50, 50, " + (0.8 + pulse * 0.2) + ")"; ctx.strokeText(currentSamay + "s", cx, textY); ctx.shadowBlur = 0; ctx.restore();
         }
 
         ctx.save();
@@ -1137,7 +1136,7 @@ export const Renderer = {
         ctx.lineWidth   = gateeCritical ? 6 : 5;
         ctx.strokeStyle = `rgba(${gateeNeonRGB}, 0.55)`;
         ctx.shadowBlur  = sb(gateeCritical ? 28 : 18); ctx.shadowColor = gateeShadowClr;
-        ctx.globalAlpha = 0.7 + Math.sin(frameNow / 200) * 0.2;
+        ctx.globalAlpha = 0.7 + lutSin(frameNow / 200) * 0.2;
         ctx.stroke();
 
         // ── shareeragatee: white core arc ──
@@ -1145,15 +1144,15 @@ export const Renderer = {
         ctx.arc(cx, cy, gateeRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * gateeRatio));
         ctx.lineWidth   = 2.5;
         ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-        ctx.shadowBlur  = sb(gateeCritical ? 16 : 10); ctx.shadowColor = gateeShadowClr;
-        ctx.globalAlpha = 0.9 + Math.sin(frameNow / 200) * 0.1;
+        ctx.shadowBlur = sb(gateeCritical ? 16 : 10); ctx.shadowColor = gateeShadowClr;
+        ctx.globalAlpha = 0.9 + lutSin(frameNow / 200) * 0.1;
         ctx.stroke();
 
         // ── shareeragatee: head indicator ──
         if (gateeRatio > 0.01) {
             const gateeHeadAngle = -Math.PI / 2 + (Math.PI * 2 * gateeRatio);
-            const ghx = cx + Math.cos(gateeHeadAngle) * gateeRadius;
-            const ghy = cy + Math.sin(gateeHeadAngle) * gateeRadius;
+            const ghx = cx + lutCos(gateeHeadAngle) * gateeRadius;
+            const ghy = cy + lutSin(gateeHeadAngle) * gateeRadius;
             ctx.save();
             ctx.shadowBlur = sb(gateeCritical ? 20 : 14); ctx.shadowColor = gateeShadowClr;
             ctx.font = "10px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -1164,8 +1163,7 @@ export const Renderer = {
 
         // ── प्रारब्ध गति-दण्ड — purple pulse ring on gateeRadius ──
         if (praarabdha > 0) {
-            const pulse = 0.5 + Math.sin(frameNow / 120) * 0.5;
-            ctx.beginPath();
+            const pulse = 0.5 + lutSin(frameNow / 120) * 0.5;            ctx.beginPath();
             ctx.arc(cx, cy, gateeRadius, 0, Math.PI * 2);
             ctx.lineWidth   = 2;
             ctx.strokeStyle = "#a78bfa";
@@ -1206,20 +1204,20 @@ export const Renderer = {
         ctx.lineWidth = (samaya < 100) ? 6 : 5; 
         ctx.strokeStyle = "rgba(" + samayNeonColor + ", 0.5)";
         ctx.shadowBlur = sb((samaya < 100) ? 28 : 18); ctx.shadowColor = samayNeonShadow;
-        ctx.globalAlpha = 0.7 + Math.sin(frameNow / 150) * 0.2;
+        ctx.globalAlpha = 0.7 + lutSin(frameNow / 150) * 0.2;
         ctx.stroke();
 
         ctx.beginPath();
         ctx.arc(cx, cy, samayRadius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * arcLengthMultiplier));
         ctx.lineWidth = 2.5; ctx.strokeStyle = "rgba(255, 255, 255, 1)";
         ctx.shadowBlur = sb((samaya < 100) ? 16 : 10); ctx.shadowColor = samayNeonShadow;
-        ctx.globalAlpha = 0.9 + Math.sin(frameNow / 150) * 0.1;
+        ctx.globalAlpha = 0.9 + lutSin(frameNow / 150) * 0.1;
         ctx.stroke();
         
         if (arcLengthMultiplier > 0) {
             let samayHeadAngle = -Math.PI / 2 + (Math.PI * 2 * arcLengthMultiplier);
-            let shx = cx + Math.cos(samayHeadAngle) * samayRadius;
-            let shy = cy + Math.sin(samayHeadAngle) * samayRadius;
+            let shx = cx + lutCos(samayHeadAngle) * samayRadius;
+            let shy = cy + lutSin(samayHeadAngle) * samayRadius;
             ctx.save();
             ctx.shadowBlur = sb((samaya < 100) ? 20 : 14); ctx.shadowColor = samayNeonShadow;
             ctx.font = "10px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -1236,8 +1234,7 @@ export const Renderer = {
         const pankhudiBaseHalfWidth  = 8;
         const pankhudiRotation      = frameNow / 4500;
         const swaansaProgress       = swaansaTimer / 360;
-        const swaansaBoost          = Math.sin(swaansaProgress * Math.PI);
-        const p_consumed            = 10 - swaansa;
+        const swaansaBoost          = lutSin(swaansaProgress * Math.PI);        const p_consumed            = 10 - swaansa;
         // सक्रिय (अभी-सांस) पंखुड़ी — -1 अगर कोई नहीं
         const p_active              = (swaansa > 0 && p_consumed < PANKHUDI_COUNT) ? p_consumed : -1;
 
@@ -1407,7 +1404,7 @@ export const Renderer = {
                 extraGlow = Math.min(extraGlow, 28);
                 ctx.shadowBlur = sb((orbit.glow || 6) + extraGlow);
                 ctx.shadowColor = orbit.color; let renderTime = frameNow / 1000;
-                let pulse = Math.sin(renderTime * 1.2 + o) * 2; let actualDist = baseDist + pulse; let visibleCount = Math.min(orbit.count, 36); let step = Math.max(1, Math.ceil(orbit.count / visibleCount)); let drawCount = Math.ceil(orbit.count / step);
+                let pulse = lutSin(renderTime * 1.2 + o) * 2; let actualDist = baseDist + pulse; let visibleCount = Math.min(orbit.count, 36); let step = Math.max(1, Math.ceil(orbit.count / visibleCount)); let drawCount = Math.ceil(orbit.count / step);
                 let extraRadius = (orbit.glowTimer && orbit.glowTimer > 0) ? (orbit.glowTimer / 60) * 1.6 : 0; 
                 let dotRadius = Math.max(1.0, Math.min(1.8, 15 / Math.sqrt(drawCount))) * (orbit.sizeMult || 1.0) + extraRadius;
                 
