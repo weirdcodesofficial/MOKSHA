@@ -927,7 +927,7 @@ debugging, optimization, और refactoring सहायता के लिए 
 | 📝 dev.to | [@weirdcodesofficial](https://dev.to/weirdcodesofficial) |
 | 🐘 Mastodon | [@pjatmasto](https://mastodon.social/@pjatmasto) |
 | 𝕏 X (Twitter) | [@weirdcodesx](https://x.com/weirdcodesx) |
-| ▶️ YouTube | [@weirdcodes-official](https://www.youtube.com/@weirdcodes-official) |
+| ▶️ YouTube | [@weirdcodes-official](https://www.youtube.com/@weirdcodesofficial) |
 | 📘 Facebook | [weirdcodesofficial](https://www.facebook.com/weirdcodesofficial/) |
 | 📸 Instagram | [@weirdcodes.dev](https://www.instagram.com/weirdcodes.dev/) |
 | 🧵 Threads | [@weirdcodes.dev](https://www.threads.com/@weirdcodes.dev) |
