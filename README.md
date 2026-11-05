@@ -50,7 +50,7 @@ The game is built on **Katha Upanishad's chariot metaphor** (Nachiketopakhyana):
 | Action | Keyboard | Gamepad | Spiritual Meaning |
 |---|---|---|---|
 | Steer Chariot | `A` / `D`, `←` / `→` | DPAD L/R | इंद्रिय-नियंत्रण |
-| Naam-Jaap (Chant) | `SPACE` | RT (7) | 1 Naam burns Punya; 5 = Paap; 10 = Prarabdha |
+| Naam-Jaap (Chant) | `SPACE` | RT (7) | Naama jaapa maya ko bhashma karke samarpita karta hai. |
 | Vairagya (Detach) | `S`, `↓` | X (2) | Prevent good-karma bondage |
 | Samarpana (Surrender) | `W`, `↑` | RB (5) | Only in final phase (samaya < 100) |
 | Pralaya (Sacrifice) | `Q` | LB (4) | Voluntary chariot dissolution |
