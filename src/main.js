@@ -21,7 +21,7 @@
  *
  * ============================================================
  */
-import { initLang, setLang, getLang, t, tLines } from './i18n.js';
+import { initLang, setLang, getLang, t, tLines, onLangChange, applyTitles } from './i18n.js';
 import { Renderer }     from './render.js';
 import { KarmaEngine, SAMAYA_PRAARAMBHIKA }  from './engine.js';
 import Audio from './audio.js';
@@ -723,6 +723,11 @@ function applyStartScreenLanguage() {
 }
 
 initLang();
+
+// ── Tooltips (title / aria-label) की भाषा ──
+applyTitles();                        // page load पर सही भाषा में सेट करो
+onLangChange(() => applyTitles());    // हर भाषा-बदलाव पर दोबारा सेट करो
+
 if(languageToggle) languageToggle.checked = (getLang() === 'en');
 applyStartScreenLanguage();
 

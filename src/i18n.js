@@ -7,7 +7,7 @@ const STRINGS = {
         'start.title': 'मोक्ष',
         'start.description': 'जीवन और मृत्यु के चक्र से मुक्त हों।\nक्या आप तैयार हैं?',
         'start.button': 'खेल प्रारंभ करें',
-        'start.switchLabel': 'Switch game language to English',
+        'start.switchLabel': 'खेल की भाषा बदलें',
         'start.status': 'हिंदी चुनी गई',
         'start.pageTitle': 'मोक्ष',
         'start.pageDescription': 'मोक्ष - जीवन और मृत्यु के चक्र से मुक्त हों।',
@@ -177,6 +177,17 @@ const STRINGS = {
         'hud.finalPhase':          'अंतिम चरण',
         'hud.punyaTimerLabel':     'पुण्य +',
         'hud.praarabdhaTimerLabel': 'प्रारब्ध {n} शेष',
+        // ── Footer / HUD tooltips ──
+        'hud.muteToggleTip':      'पृष्ठभूमि ध्वनि म्यूट/अनम्यूट करें',
+        'hud.shaashtraHelpTip':   'शास्त्र पढ़ें (खेल की जानकारी)',
+        'hud.modeCheckingLabel':  '⏳ जाँच रहे हैं...',
+        'hud.modeCheckingTip':    'तत्परता की जाँच हो रही है...',
+        'hud.modeHigh':           '🟢 उच्च मोड',
+        'hud.modeLow':            '🟡 निम्न मोड',
+        'hud.modeHighTip':        'सभी संसाधन सफलतापूर्वक लोड हुए — पूर्ण अनुभव सक्रिय',
+        'hud.modeLowTip':         'कुछ ध्वनि-संसाधन लोड नहीं हो सके (धीमा नेट/पुराना डिवाइस) — मूल अनुभव सक्रिय, खेल पूर्णतः खेलने-योग्य है',                       
+        'hud.musicVolumeTip':     'संगीत वॉल्यूम',
+        'hud.gyroEnableTip':      'झुकाव-संचालन सक्रिय करें',        
         // ── notify overlay ──
         'notify.praarabdhaMukta':   '📜🔥 मुक्त!',
         'notify.prathamaJanma':     '🌅 प्रथम जन्म',
@@ -204,7 +215,7 @@ const STRINGS = {
         'start.title': 'MOKSHA',
         'start.description': 'Break free from the cycle of life and death.\nAre you ready?',
         'start.button': 'START GAME',
-        'start.switchLabel': 'खेल की भाषा हिंदी में बदलें',
+        'start.switchLabel': 'Switch game language',
         'start.status': 'English selected',
         'start.pageTitle': 'Moksha',
         'start.pageDescription': 'Moksha - Break free from the cycle of life and death.',
@@ -369,6 +380,17 @@ const STRINGS = {
         'hud.finalPhase':          'Final Phase',
         'hud.punyaTimerLabel':     'Punya +',
         'hud.praarabdhaTimerLabel': 'Praarabdha {n} remaining',
+        // ── Footer / HUD tooltips ──
+        'hud.muteToggleTip':      'Mute/Unmute background music',
+        'hud.shaashtraHelpTip':   'Read the Shaashtra (game guide)',
+        'hud.modeCheckingLabel':  '⏳ Checking...',
+        'hud.modeCheckingTip':    'Checking device readiness...',
+        'hud.modeHigh':           '🟢 High Mode',
+        'hud.modeLow':            '🟡 Low Mode',
+        'hud.modeHighTip':        'All resources loaded successfully — full experience active',
+        'hud.modeLowTip':         'Some audio resources could not load (slow network/older device) — core experience active, the game is fully playable',                        
+        'hud.musicVolumeTip':     'Music volume',
+        'hud.gyroEnableTip':      'Enable tilt steering',        
         // ── notify overlay ──
         'notify.praarabdhaMukta':   '📜🔥 Freed!',
         'notify.prathamaJanma':     '🌅 First Birth',
@@ -462,4 +484,18 @@ export function resolveAlert(a) {
         title:    a.titleKey    ? t(a.titleKey,    a.params) : (a.title    ?? ''),
         subtitle: a.subtitleKey ? t(a.subtitleKey, a.params) : (a.subtitle ?? ''),
     };
+}
+
+/**
+ * [data-i18n-title] वाले सभी elements का tooltip वर्तमान भाषा में सेट करता है।
+ * - title: हर element पर
+ * - aria-label: सिर्फ़ <button> पर (icon-only बटन के लिए; बाकी में visible text है)
+ */
+export function applyTitles(root = document) {
+    root.querySelectorAll('[data-i18n-title]').forEach((el) => {
+        const text = t(el.dataset.i18nTitle);
+        el.title = text;
+        // icon-only controls (button, slider) के लिए aria-label भी सेट करो
+        if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') el.setAttribute('aria-label', text);        
+    });
 }

@@ -200,7 +200,8 @@ canvas {
 /* Hover सिर्फ बटन्स पर — credits indicator पर नहीं */
 button.hud-icon-btn:hover {
     background: rgba(255, 120, 30, 0.22);
-    filter: drop-shadow(0 0 6px rgba(255, 120, 30, 0.6));
+    /* TEST: filter बंद करके देखें कि बीच पर tooltip आता है या नहीं */
+    /* filter: drop-shadow(0 0 6px rgba(255, 120, 30, 0.6)); */    
 }
 
 /* ====================== STAT ROWS ====================== */
