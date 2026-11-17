@@ -49,6 +49,8 @@
  * ============================================================
  */
 
+import { t, onLangChange } from './i18n.js';
+
 // ====================== स्थिरांक (CONSTANTS) ======================
 
 /** bgMusic.mp3 — बहुत हल्का ambient bed (सांस से असंबद्ध) */
@@ -155,6 +157,10 @@ class AudioManager {
 
         /** सुरक्षा-timeout handle */
         this._readinessTimeoutId = null;
+
+        // ── भाषा-समर्थन: mode-badge ──
+        onLangChange(() => this._renderModeBadge()); // भाषा बदलने पर badge दोबारा लिखो
+        this._renderModeBadge();                     // पहली बार सही भाषा में "जाँच" दिखाओ        
 
         // ── 28 mp3 AudioBuffers ─────────────────────────────
         // ⚠️ key नाम index.html के audioBuffers object से 1:1 मेल खाते हैं
@@ -994,19 +1000,11 @@ class AudioManager {
      */
     _showReadyState() {
         const overlay  = document.getElementById('loading-overlay');
-        const badge    = document.getElementById('mode-badge');
         const startBtn = document.getElementById('start-btn');
 
-        if (badge) {
-            if (this.gameReadinessMode === 'high') {
-                badge.textContent = '🟢 उच्च मोड';
-                badge.title = 'सभी संसाधन सफलतापूर्वक लोड हुए — पूर्ण अनुभव सक्रिय';
-            } else {
-                badge.textContent = '🟡 निम्न मोड';
-                badge.title = 'कुछ ध्वनि-संसाधन लोड नहीं हो सके (धीमा नेट/पुराना डिवाइस) ' +
-                              '— मूल अनुभव सक्रिय, खेल पूर्णतः खेलने-योग्य है';
-            }
-        }
+        // readiness पूरी हो चुकी है — अब badge "जाँच" की जगह असली मोड दिखाएगा
+        this._readyStateShown = true;
+        this._renderModeBadge();        
 
         if (overlay) {
             overlay.style.opacity      = '0';
@@ -1019,6 +1017,33 @@ class AudioManager {
         // tutorial-btn भी साथ ही enable — दोनों readiness-gated हैं
         const tutorialBtn = document.getElementById('tutorial-btn');
         if (tutorialBtn) tutorialBtn.disabled = false;
+    }
+
+    /**
+     * mode-badge का text और tooltip वर्तमान भाषा + readiness स्थिति के अनुसार लिखता है।
+     * भाषा बदलने पर (onLangChange) भी यही चलता है, ताकि badge कभी पुरानी भाषा में न रहे।
+     *
+     * तीन स्थितियाँ:
+     *   1. अभी जाँच जारी है   → "जाँच रहे हैं..." / "Checking..."
+     *   2. gameReadinessMode === 'high' → उच्च मोड
+     *   3. बाकी सब            → निम्न मोड
+     */
+    _renderModeBadge() {
+        const badge = document.getElementById('mode-badge');
+        if (!badge) return;
+
+        if (!this._readyStateShown) {
+            badge.textContent = t('hud.modeCheckingLabel');
+            badge.title       = t('hud.modeCheckingTip');
+            return;
+        }
+
+        const isHigh = this.gameReadinessMode === 'high';
+        badge.textContent = t(isHigh ? 'hud.modeHigh'    : 'hud.modeLow');
+        badge.title       = t(isHigh ? 'hud.modeHighTip' : 'hud.modeLowTip');
+
+        // तैयार होने के बाद applyTitles() इस tooltip को "जाँच" वाले से ओवरराइट न करे
+        badge.removeAttribute('data-i18n-title');
     }
 
     // ── Buffer loading (private) ────────────────────────────
