@@ -874,7 +874,7 @@ gameReadinessMode = (audioLoadFailures.length === 0) ? 'high' : 'low';
 
 ### Browser requirements
 - ✅ Chrome — fully tested, smooth 60fps
-- ⚠️ Firefox — lag, gamepad auto-detect नहीं, audio autoplay blocked
+- ⚠️ Firefox — gamepad auto-detect नहीं, audio autoplay blocked
 - ⚠️ Edge / Safari — untested
 - HTML5 Canvas 2D, RAF, fetch, **ES6 Modules** — अनिवार्य
 - Web Audio API — High Mode हेतु
