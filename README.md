@@ -109,7 +109,7 @@ http://localhost:8080
 
 ### Browser
 - ✅ **Recommended:** Chrome (fully tested — smooth 60fps)
-- ⚠️ **Firefox:** laggy; known issues — gamepad auto-detect, audio autoplay blocked
+- ⚠️ **Firefox:** gamepad auto-detect, audio autoplay blocked
 - ⚠️ **Edge / Safari:** untested
 - **Required APIs:** HTML5 Canvas 2D, RequestAnimationFrame, Web Audio API, Fetch, **ES6 Modules**
 
